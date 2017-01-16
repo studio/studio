@@ -1,0 +1,15 @@
+{
+	"category" : "Studio-Nix",
+	"classinstvars" : [
+		 ],
+	"classvars" : [
+		 ],
+	"commentStamp" : "",
+	"instvars" : [
+		"attrpath",
+		"table" ],
+	"name" : "NixPackage",
+	"pools" : [
+		 ],
+	"super" : "Object",
+	"type" : "normal" }

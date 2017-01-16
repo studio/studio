@@ -1,0 +1,14 @@
+{
+	"category" : "Studio-Nix",
+	"classinstvars" : [
+		"default" ],
+	"classvars" : [
+		 ],
+	"commentStamp" : "",
+	"instvars" : [
+		"nixpkgs" ],
+	"name" : "NixPkgs",
+	"pools" : [
+		 ],
+	"super" : "Object",
+	"type" : "normal" }
