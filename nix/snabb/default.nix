@@ -19,7 +19,14 @@ let
       owner = "snabbco"; repo = "snabb"; rev = tag; sha256 = hash;
     });
 
-  snabbs = { master-v2016-11 = master "v2016.11" "0v9phzxi3mi8yy71p52nb5kjvqlpzx82qghb7m0skdyc4rfn470f"; };
+  lukego = rev: hash:
+    mkSnabb rev (fetchFromGitHub {
+      owner = "lukego"; repo = "snabb"; rev = rev; sha256 = hash;
+    });
+
+  snabbs = { master-v2016-11 = master "v2016.11" "0v9phzxi3mi8yy71p52nb5kjvqlpzx82qghb7m0skdyc4rfn470f";
+             timeline-pmu    = lukego "56e4a59f489e186a6f93bb27d6f6009142f4c316" "1lhqgb2j0nl7aq051l84xz2xsnmr99910xc01r6wd8vs0cnvz7h6";
+  };
 
   # Return the derivation to build LuaJIT DWARF debug info corresponding
   # with a Snabb package.
@@ -27,7 +34,8 @@ let
     overrideDerivation snabb (oldAttrs:
       {
         buildInputs = [ gcc ];
-	buildPhase = ''
+	postBuild = ''
+          # build debug info
 	  cp ${./lj_dwarf.c} lib/luajit/src/lj_dwarf.c
 	  pushd lib/luajit/src
 	  gcc -g3 -gdwarf-4 -fno-eliminate-unused-debug-types -gsplit-dwarf \
@@ -36,7 +44,8 @@ let
           objdump --dwarf --wide lib/luajit/src/lj_dwarf.dwo > luajit-dwarf.txt
         '';
 	installPhase = ''
-	  mkdir -p $out
+	  mkdir -p $out/bin
+          cp src/snabb $out/bin/
 	  cp luajit-dwarf.txt $out/
 	'';
       });
