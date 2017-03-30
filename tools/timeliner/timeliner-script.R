@@ -1,9 +1,9 @@
-#!/usr/bin/env Rscript
+#!/usr/bin/env nix-shell
+#!nix-shell -i Rscript -p 'with pkgs; with rPackages; [ R dplyr ggplot2 bit64 ]'
 suppressMessages(source("timeliner.R"))
 args <- commandArgs(trailingOnly=T)
 if (length(args) == 0) {
   stop("no timeline log(s) provided")
 } else {
-  ggplot_timelines(args)
-  ggsave("timeline-cycles_per_packet-by_process-per_app.png")
+  analyze_timelines(args)
 }
