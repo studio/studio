@@ -1,30 +1,34 @@
+# timerliner.R: Process Snabb timeline logs
+
 library(dplyr)
 library(stringr)
 library(bit64)
-library(ggplot2)
+library(readr)
 
-# Counter for automatically assigning process numbers when in doubt
-count <- 0
-counter <- function () { counter <<- count + 1; count }
+# ------------------------------------------------------------
+# High-level API functions
+# ------------------------------------------------------------
 
-# This special filename format is recognized:
-#   .../[$group/]$process/engine/timeline
-# ... and in this case the group and process names are used for the data.
-# if group is not matched then it is left blank, if process is not matched then one is assigned.
+# Frontend for loading a binary timeline and saving R summaries.
+preprocess_timeline <- function(filename, outdir) {
+  save_timeline_summaries(read_timeline(filename), outdir)
+}
+
+# ------------------------------------------------------------
+# Reading and decoding timelines
+# ------------------------------------------------------------
+
+# Read a timeline file into a data frame.
 read_timeline <- function(filename) {
-  message("  reading ", filename)
-  group <- str_match(filename, "([^/]+)/[^/]+/engine/timeline")[2]
-  process <- str_match(filename, "([^/]+)/engine/timeline")[2]
-  if (is.na(process)) { process <- paste("p", counter(), sep="") }
-  process <- paste(group, process)
-  message("    group=", group, " process=", process)
-  timeline <- read_binary_timeline(filename)
-  timeline$cycles <- cycles(timeline)
-  timeline$unixtime <- unix_time(timeline)
-  timeline$group <- as.factor(group)
-  timeline$process <- as.factor(process)
-  timeline$numa <- as.factor(timeline$numa)
-  return(timeline)
+  tl <- read_binary_timeline(filename)
+  tl$numa <- as.factor(tl$numa)
+  tl$core <- as.factor(tl$core)
+  tl$unixtime <- calculate_unixtime(tl)
+  tl$cycles <- calculate_cycles(tl)
+  # Sort entries by unix time. Should roughly take care of log wrap-around.
+  # See FIXME comment in unixtime() though.
+#  tl <- arrange(tl, unixtime)
+  tl
 }
 
 # Read a timeline file into a tibble.
@@ -46,7 +50,6 @@ read_binary_timeline <- function(filename) {
   entries <- readBin(f, "double", n=log_bytes/8, size=8, endian="little")
   elem0 = seq(1, log_bytes/8, 64/8)
   # Tricky: Second element is integer on disk but double in R
-  message("    decoding entries")
   tmp <- entries[elem0+1]
   class(tmp) <- "integer64"
   entries[elem0+1] <- as.numeric(tmp)
@@ -62,7 +65,6 @@ read_binary_timeline <- function(filename) {
                arg5 = entries[elem0+7])
   tl <- na.omit(tl)
   # Read strings
-  message("    decoding string table")
   stringtable <- character(strings_bytes/16) # dense array
   start <- 64+log_bytes
   seek(f, start)
@@ -82,10 +84,35 @@ read_binary_timeline <- function(filename) {
   # Combine messages with events
   left_join(tl, messages, by="msgid")
 }
+
+# Calculate unix timestamps for each entry.
+calculate_unixtime <- function(tl) {
+  times <- filter(tl, grepl("got_monotonic_time", event))
+
+  # FIXME: Make sure the delta is taken between two timestamps from
+  # the _same CPU core_. If we take the delta between two timestamps
+  # whose TSCs are not synchronized (e.g. different NUMA nodes) then
+  # we will misestimate the clock speed (maybe even negative...)
   
-# Calculate cycles for each event.
-cycles <- function(tl) {
-  message("    calculating cycle deltas")  
+  if (length(times) < 2) {
+    stop("could not calculate unix time: need two timestamps to compare.")  
+  } else {
+
+    # Calculate GHz (cycles per nanosecond) from timestamp deltas.
+    GHz <- (max(times$tsc)-min(times$tsc)) / (max(times$arg0)-min(times$arg0))
+    # Pick an epoch (any will do)
+    reftsc <- last(times$tsc)
+    reftime <- last(times$arg0)
+    # Function from cycles to unix nanoseconds
+    unixtime <- function(tsc) {
+      reftime + ((tsc - reftsc) / GHz)
+    }
+    mapply(unixtime, tl$tsc)
+  }
+}
+
+# Calculate cycles since log entry of >= level ("lag") for each entry.
+calculate_cycles <- function(tl) {
   # reference timestamp accumulator for update inside closure.
   # index is log level and value is reference timestamp for delta.
   ref <- as.numeric(rep(NA, 9))
@@ -99,253 +126,47 @@ cycles <- function(tl) {
   mapply(tscdelta, tl$level, tl$tsc)
 }
 
-unix_time <- function(tl) {
-  message("    calculating unix timestamps")  
-  # Estimate CPU frequency
-  times <- filter(tl, grepl("got_monotonic_time", event))
-  if (length(times) < 2) {
-    message("      failed: need at least two unix timestamps")  
-    NA
-  } else {
-    Hz <- (max(times$tsc)-min(times$tsc)) / (max(times$arg0)-min(times$arg0))
-    message("      estimated CPU base frequency: ", round(Hz,3), " GHz")  
-    reftsc <- last(times$tsc)
-    reftime <- last(times$arg0)
-    unixtime <- function(tsc) {
-      reftime + ((tsc - reftsc) / Hz)
-    }
-    mapply(unixtime, tl$tsc)
-  }
+# ------------------------------------------------------------
+# Saving CSV summaries of timelines
+# ------------------------------------------------------------
+
+# Save R object summaries of a timeline.
+save_timeline_summaries <- function(tl, outdir=".") {
+  if (!dir.exists(outdir)) { dir.create(outdir, recursive=T) }
+  br <- breaths(tl)
+  cb <- callbacks(tl)
+  save_data(br, file.path(outdir, "breaths.rds.xz"))
+  save_data(cb, file.path(outdir, "callbacks.rds.xz"))
 }
 
-read_timelines <- function(filenames) {
-  return(do.call(rbind,lapply(filenames, read_timeline)))
+save_data <- function(data, filename) {
+  message("Saving ", filename)
+  write_rds(data, filename, compress="xz")
 }
 
-# Tables of information:
-#  Groupings: overall, group, pid
-# Common columns:
-#  tsc, unixtime
-# Specifics:
-# breaths:
-# callbacks:
-# engine:
-
-breaths <- function(data) {
-  data %>% 
+# Create a data frame with one row for each breath.
+breaths <- function(tl) {
+  tl %>% 
     filter(grepl("breath_end|breath_start", event)) %>%
-    mutate(packets = arg1-lag(arg1), bytes = arg2-lag(arg2)) %>%
+    mutate(breath = arg0,
+           total_packets = arg1, total_bytes = arg2, total_ethbits = arg3,
+           packets = arg1-lag(arg1), bytes = arg2-lag(arg2), ethbits = arg3-lag(arg3)) %>%
     filter(grepl("breath_end", event)) %>%
     na.omit() %>%
-    select(tsc, unixtime, cycles, group, numa, core, process,
-           packets, bytes)
+    select(tsc, unixtime, cycles, numa, core,
+           breath, total_packets, total_bytes, total_ethbits, packets, bytes, ethbits)
 }
 
-callbacks <- function(data) {
-  data %>% filter(grepl("^app.(pull|push)", event)) %>%
+# Create a data frame with one row for each app callback.
+callbacks <- function(tl) {
+  tl %>% filter(grepl("^app.(pull|push)", event)) %>%
     mutate(inpackets = arg0 - lag(arg0), inbytes = arg1 - lag(arg1),
            outpackets = arg2 - lag(arg2), outbytes = arg3 - lag(arg3)) %>%
     mutate(packets = pmax(inpackets, outpackets), bytes = pmax(inbytes + outbytes)) %>%
     filter(grepl("^app.(pushed|pulled)", event)) %>%
     na.omit() %>%
-    select(tsc, unixtime, cycles, group, numa, core, process,
+    select(tsc, unixtime, cycles, numa, core,
            event, packets, bytes, inpackets, inbytes, outpackets, outbytes)
 }
 
-# Efficiency terrain (overall)
-
-prepare_efficiency_terrain <- function(data) {
-  data %>% filter(grepl("^engine.breath_end$", event)) %>%
-    transmute(packets=arg1, bpp=arg2, bits=arg1*arg2*8, bpc = bits/cycles) %>%
-    na.omit() %>%
-    group_by(floor(packets/20), floor(bpp/64)) %>% summarize(bpp = floor(first(bpp)/64)*64, packets=floor(first(packets)/20)*20, bpc = mean(bpc))
-}
-
-ggplot_efficiency_terrain <- function(data) {
-  message("  plotting")
-  ggplot(data, aes(y=packets, x=bpp)) + #, fill=bpc, color=bpc, z=bpc)) +
-  geom_raster(aes(fill=bpc), interpolate=T) +
-    stat_contour(aes(z=bpc), color="white", alpha=0.075) +
-    scale_color_gradient(low="red", high="blue") +
-    labs(title = "Map of 'efficiency terrain' in bits of traffic per CPU cycle (bpc)",
-         x = "bytes per packet (average for breath)",
-         y = "packets processed in breath (burst size)")
-}
-
-# Efficiency terrain (per app)
-
-prepare_app_terrain <- function(data) {
-  data %>% filter(grepl("^app.(pull|push)", event)) %>%
-    rowwise() %>% mutate(tpackets = max(arg0, arg2), tbytes = max(arg1, arg3)) %>% ungroup() %>%
-    mutate(packets = tpackets - lag(tpackets), bytes = tbytes - lag(tbytes), bpp = bytes/packets, bpc = bytes*8/cycles) %>%
-    filter(grepl("^app.(pushed|pulled)", event))
-}
-
-ggplot_app_terrain <- function(data) {
-  data <- data %>%
-    group_by(event, floor(packets/20), floor(bpp/20)) %>%
-    summarize(bpp = floor(first(bpp)/64)*64, packets=floor(first(packets)/20)*20, bpc = min(100, mean(bpc))) %>%
-    ungroup()
-  ggplot(data, aes(y=packets, x=bpp)) +
-    geom_raster(aes(fill=bpc), interpolate=T) +
-    facet_wrap(ncol=2, ~event) 
-}
-
-# Per second
-
-prepare_per_second <- function(data) {
-  Hz <- GHz(data)*1000000000
-  data %>%
-    filter(grepl("breath_start", event)) %>%
-    mutate(totalpackets = arg1, totalbytes = arg2, totalbits=arg3) %>%
-    group_by(process) %>%
-    group_by(process, sec = round((tsc - min(tsc))/Hz), 1) %>%
-    summarize(time = (last(tsc) - first(tsc)) / Hz,
-              packets = (last(totalpackets) - first(totalpackets)) / time,
-              bytes = (last(totalbytes) - first(totalbytes)) / time,
-              gigabits = (last(totalbits) - first(totalbits)) / time)
-}
-
-GHz <- function(data) {
-  time <- data %>% filter(grepl("got_monotonic_time", event))
-  (max(time$tsc)-min(time$tsc)) / (max(time$arg0)-min(time$arg0))
-}
-
-ggplot_per_second <- function(data) {
-  ggplot(data, aes(y=packets/1e6, x=sec, color=process)) +
-    geom_line() +
-    labs(y="Mpps",
-         x="seconds since process started",
-         title="Traffic rate over time")
-}
-
-kpi <- function(data) {
-  data %>% 
-    filter(grepl("breath_end|breath_start", event)) %>%
-    mutate(packets = arg1-lag(arg1), bytes = arg2-lag(arg2)) %>%
-    filter(grepl("breath_end", event)) %>%
-    na.omit() %>%
-    group_by(burst_size = cut(packets, c(0, 16, 32, 64,999), include.lowest=T), numa, group) %>%
-    summarize(cycles_per_byte   = median(cycles/bytes),
-              cycles_per_packet = median(cycles/packets),
-              cycles_per_breath = median(cycles),
-              packets_per_breath = median(packets),
-              count = n())
-}
-
-kpi2 <- function(data) {
-  data %>%
-    filter(grepl("breath_end|breath_start", event)) %>%
-    mutate(packets = arg1-lag(arg1), bytes = arg2-lag(arg2)) %>%
-    filter(grepl("breath_end", event)) %>%
-    na.omit() %>%
-    group_by(burst_size = cut(packets, c(-1, 0, 16, 32, 64,999)), group) %>%
-    summarize()
-}
-
-kpi3 <- function(data) {
-  data %>%
-    filter(grepl("breath_end|breath_start", event)) %>%
-    mutate(packets = arg1-lag(arg1), bytes = arg2-lag(arg2)) %>%
-    filter(grepl("breath_end", event)) %>%
-    na.omit() %>%
-    mutate(cycles_per_byte   = cycles/bytes,
-           cycles_per_packet = cycles/packets,
-           cycles_per_breath = cycles,
-           packets_per_breath = packets)
-}
-
-# KPIs per app
-
-kpi_app <- function(data) {
-  data %>% filter(grepl("^app.(pull|push)", event)) %>%
-    rowwise() %>% mutate(tpackets = max(arg0, arg2), tbytes = max(arg1, arg3)) %>% ungroup() %>%
-    mutate(packets = tpackets - lag(tpackets), bytes = tbytes - lag(tbytes),
-           bpp = bytes/packets, cycles_per_packet = cycles/packets, cycles_per_byte = cycles/bytes) %>%
-    filter(grepl("^app.(pushed|pulled)", event)) %>%
-    na.omit() %>%
-    group_by(group, event, burst_size = cut(packets, c(-1, 0, 16, 32, 64,999))) %>%
-    summarize(median_packets_per_breath = median(packets),
-              median_cycles_per_packet = round(median(cycles_per_packet), 1),
-              median_cycles_per_byte = round(median(cycles_per_byte), 3),
-              mean_bytes_per_packet = round(sum(bytes)/sum(packets), 0),
-              n = n())
-}
-
-add_breath_statistics <- function(data) {
-#  data %>%
-    
-}
-
-# Graph: engine cycles per packet
-
-prepare_cycles_per_packet <- function(data) {
-  data %>% 
-    filter(grepl("breath_end|breath_start", event)) %>%
-    mutate(packets = arg1-lag(arg1), bytes = arg2-lag(arg2)) %>%
-    filter(grepl("breath_end", event)) %>%
-    filter(packets>0) %>%
-    na.omit()
-}
-
-ggplot_cycles_per_packet <- function(data) {
-  ggplot(data, aes(x=packets, y=cycles, fill=..density..*100)) +
-    stat_binhex() +
-    theme(aspect.ratio = 1) +
-    facet_wrap(~group) +
-    scale_fill_gradient(name="% of breaths", low="lightgray", high="blue") +
-#    geom_point(alpha=0.1) +
-#    geom_smooth() +
-#    scale_y_log10(labels = scales::comma) +
-#    scale_y_continuous(labels = scales::comma, limits = c(0, 200000), breaks=seq(0, 200000, 20000)) +
-    scale_y_log10() +
-    scale_x_continuous(labels = scales::comma, limits = c(0, 512), breaks=seq(0, 512, 64)) +
-    labs(title = "Cycles per breath compared with packets per breath",
-         x="packets processed in breath",
-         y="cycles for breath",
-         color="%")
-}
-
-# Graph: app cycles per packet
-
-prepare_app_cycles_per_packet <- function(timeline) {
-  message("  preparing data")
-  timeline %>%
-    filter(grepl("^app.(push|pull)", event)) %>%
-    # Just the information needed for the graph
-    mutate(what = gsub("^app.(pushed|pulled) app=P[0-9]+_(.*)$", "\\1 \\2", event),
-           id = as.factor(paste(group, process)),
-           packets = arg0-lag(arg0)+arg2-lag(arg2)) %>%
-    # Just meaningful events
-    filter(grepl("^app.(pushed|pulled)", event)) %>%
-    filter(!is.na(cycles) & !is.na(packets) & packets>0)
-}
-
-ggplot_app_cycles_per_packet <- function(data) {
-  message("  plotting")
-  ggplot(data, aes(x=packets, y=cycles/packets, color=process)) +
-    facet_wrap(~ what) +
-    geom_point(alpha=0.25) +
-#    geom_smooth(method=loess) +
-#    scale_y_log10(limits = c(0, 1000000)) + # , breaks=seq(0, 1000000, 1)) +
-    scale_y_log10() +
-    scale_x_continuous(limits = c(0, 512), breaks=seq(0, 512, 64)) +
-    labs(title = "Packet processing cost (cycles/packet) breakdown",
-         x = "number of packets processed together in a batch",
-         y = "cycles per packet")
-}
-
-save <- function(filename) {
-  message("  saving ", filename)
-  ggsave(filename)
-}
-
-analyze_timelines <- function(filenames) {
-  message("Reading timeline files")
-  tl <- read_timelines(filenames)
-  message("Creating app-wise cycles-per-packet graphs")
-  appcyc <- prepare_app_cycles_per_packet(tl)
-  plot <- ggplot_app_cycles_per_packet(appcyc)
-  save("timeline-cycles_per_packet-by_process-per_app.png")
-}
 
