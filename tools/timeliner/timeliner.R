@@ -4,14 +4,28 @@ library(dplyr)
 library(stringr)
 library(bit64)
 library(readr)
+library(ggplot2)
 
 # ------------------------------------------------------------
 # High-level API functions
 # ------------------------------------------------------------
 
-# Frontend for loading a binary timeline and saving R summaries.
-preprocess_timeline <- function(filename, outdir) {
+# Load a binary timeline and save summary data for further processing.
+summarize_timeline <- function(filename, outdir) {
   save_timeline_summaries(read_timeline(filename), outdir)
+}
+
+# Load summary data and save diverse visualizations.
+plot_timeline_summary <- function(summarydir, outdir) {
+  dir.create(outdir, recursive=T, showWarnings=F)
+  # Breaths
+  br <- read_rds(file.path(summarydir, "breaths.rds.xz"))
+  ggsave(file.path(outdir, "breath_duration.png"),   breath_duration(br))
+  ggsave(file.path(outdir, "breath_outliers.png"),   breath_outliers(br))
+  ggsave(file.path(outdir, "breath_efficiency.png"), breath_efficiency(br))
+  # Callbacks
+  cb <- read_rds(file.path(summarydir, "callbacks.rds.xz"))
+  ggsave(file.path(outdir, "callback_efficiency.png"), callback_efficiency(cb))
 }
 
 # ------------------------------------------------------------
@@ -169,4 +183,52 @@ callbacks <- function(tl) {
            event, packets, bytes, inpackets, inbytes, outpackets, outbytes)
 }
 
+# ------------------------------------------------------------
+# Visualizing the callbacks summary
+# ------------------------------------------------------------
+
+breath_outliers <- function(br, cutoff=1000000) {
+  d <- filter(br, cycles>cutoff)
+  ggplot(d, aes(y = cycles, x = packets)) +
+    scale_y_continuous(labels = scales::comma) +
+    geom_point(alpha=0.5, color="blue") +
+    labs(title = "Outlier breaths",
+           subtitle = paste("Breaths that took more than ", scales::comma(cutoff), " cycles ",
+                            "(", scales::percent(nrow(d)/nrow(br)), " of sampled breaths)", sep=""),
+           x = "packets processed in engine breath (burst size)")
+}
+
+breath_duration <- function(br, cutoff=1000000) {
+  d <- filter(br, cycles <= cutoff)
+  ggplot(d, aes(y = cycles, x = packets)) +
+    geom_point(color="blue", alpha=0.25, shape=1) +
+    geom_smooth(se=F, weight=1, alpha=0.1) +
+    labs(title = "Breath duration",
+         subtitle = "")
+}
+
+breath_efficiency <- function(br, cutoff=5000) {
+  nonzero <- filter(br, packets>0)
+  d <- nonzero %>% filter(cycles/packets <= 5000)
+  pct <- (nrow(nonzero) - nrow(d)) / nrow(nonzero)
+  ggplot(d, aes(y = cycles / packets, x = packets)) +
+    geom_point(color="blue", alpha=0.25, shape=1) +
+    geom_smooth(se=F, weight=1, alpha=0.1) +
+    labs(title = "Engine breath efficiency",
+         subtitle = paste("Processing cost in cycles per packet ",
+                          "(ommitting ", scales::percent(pct), " outliers above ", scales::comma(cutoff), " cycles/packet cutoff)",
+                          sep=""),
+         y = "cycles/packet",
+         x = "packets processed in engine breath (burst size)")
+}
+
+callback_efficiency <- function(cb) {
+  d <- cb %>%
+        mutate(packets = pmax(inpackets, outpackets)) %>%
+        filter(packets>0)
+  ggplot(d, aes(y = pmin(1000, cycles/packets), x = packets)) +
+    geom_point(color="blue", alpha=0.25, shape=1) +
+    geom_smooth(se=F, weight=1, alpha=0.1) +
+    facet_wrap(~ event)
+}
 
