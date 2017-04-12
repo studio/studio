@@ -1,8 +1,31 @@
+# vmprofiler.R: Process LuaJIT/Snabb VMProfile logs
+
+options(warn=-1)
+
 library(dplyr)
 library(bit64)
 library(tibble)
 library(tools)
 library(purrr)
+library(readr)
+library(stringr)
+
+# ------------------------------------------------------------
+# High-level API functions
+# ------------------------------------------------------------
+
+summarize_vmprofile <- function(inputdir, outputdir) {
+  dir.create(outputdir, recursive=T, showWarnings=F)
+  data <- read_files(Sys.glob(file.path(inputdir, "*")))
+  save_data(outputdir, "overview", analyze_profile(data))
+  save_data(outputdir, "what",     analyze_what(data))
+  save_data(outputdir, "gc",       analyze_gc(data))
+  save_data(outputdir, "where",    analyze_where(data))
+}
+
+# ------------------------------------------------------------
+# Reading and decoding profiler samples
+# ------------------------------------------------------------
 
 states <- c("interp", "c", "gc", "exit", "record", "opt", "asm")
 traces <- unlist(map(0:4096,
@@ -24,6 +47,10 @@ read_file <- function(filename) {
   tibble(profile = profile, where = columns, num = samples) %>% filter(num>0)
 }
 
+# ------------------------------------------------------------
+# Analysis to create summaries (data frames)
+# ------------------------------------------------------------
+
 analyze_profile <- function(data) {
   data %>%
     group_by(profile) %>%
@@ -31,7 +58,7 @@ analyze_profile <- function(data) {
     ungroup() %>%
     transmute(profile = profile, percent = round(100*num/sum(num),1)) %>%
     arrange(-percent) %>%
-    as.data.frame() %>% print(row.names=F)
+    as.data.frame()
 }
 
 analyze_what <- function(data) {
@@ -42,7 +69,7 @@ analyze_what <- function(data) {
     ungroup() %>%
     transmute(what = what, percent = round(100*num/sum(num),1)) %>%
     arrange(-percent) %>%
-    as.data.frame() %>% print(row.names=F)
+    as.data.frame()
 }
 
 analyze_gc <- function(data) {
@@ -55,5 +82,17 @@ analyze_where <- function(data) {
     arrange(profile, -percent) %>%
     select(profile, where, percent) %>%
     filter(percent >= 0.5) %>%
-    as.data.frame() %>% print(row.names=F)
+    as.data.frame()
 }
+
+# ------------------------------------------------------------
+# Utilities
+# ------------------------------------------------------------
+
+# Save a data frame to a directory in both .csv and .txt format.
+save_data <- function(dir, name, data) {
+  write_csv(data, file.path(dir, paste(name, '.csv', sep="")))
+  capture.output(print(data, row.names=F), type="output",
+                 file = file.path(dir, paste(name, '.txt', sep="")))
+}
+
