@@ -1,0 +1,23 @@
+---
+title: "Snabb process analysis"
+output:
+  html_notebook:
+    fig_width: 8
+    fig_height: 6
+---
+
+```{r include=FALSE}
+source("vmprofiler.R")
+source("latencyr.R")
+source("snabbr.R")
+
+set <- read_process_set("data")
+```
+
+## Latency
+
+```{r echo=FALSE}
+#set$latency.histogram
+plot_latency_histogram(set$latency.histogram)
+```
+
