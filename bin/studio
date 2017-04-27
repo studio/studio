@@ -1,0 +1,102 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p getopt
+
+set -e
+
+studio="$(dirname $(readlink -f $0))/.."
+
+usage() {
+    cat >&2 <<EOF
+Studio - software diagnostics environment
+
+Usage:
+
+  studio <subcommand> options
+
+Subcommands:
+
+    snabb gui                  Open the graphical user interface.
+    snabb process              Analyze a Snabb timeline log file.
+
+Timeline options:
+
+    -i, --input SHMDIR         Select the shm folder to operate on.
+
+EOF
+    exit 1
+}
+
+[ "$#" == 0 ] && usage
+
+error() {
+    echo "error: $*" >&2
+    exit 1
+}
+
+subcommand="$1"; shift
+case "$subcommand" in
+    --help|-h)
+        usage
+        ;;
+    gui)
+        gui
+        ;;
+    import)
+        info=""
+        while [ "$#" -gt 0 ]; do
+            case "$1" in
+                -i|--info)
+                    info="$2"
+                    shift 2
+                    ;;
+                *)
+                    nix-build $studio/nix/import-product.nix \
+                              --arg info $(readlink -f "$info") \
+                              --arg data $(readlink -f "$1") \
+                              --no-out-link
+                    shift 1
+                    ;;
+            esac
+        done
+        ;;
+    process)
+        tmpdir=$(mktemp -d)
+        nixexpr=$tmpdir/process-report.nix
+ 
+        cat > $nixexpr <<EOF
+with import $(pwd)/../nix/import.nix {};
+
+snabbProcessReport
+  (snabbProcessSet [
+EOF
+        group="other"
+        while [ "$#" -gt 0 ]; do
+            case "$1" in
+                -g|--group)
+                    group=$2
+                    shift 2
+                    ;;
+                *)
+                    path=$1
+                    cat >> $nixexpr <<EOF
+    (snabbProcessGroup "$group" [
+      (snabbProcess (snabbProcessTarball $path)) ])
+EOF
+                    shift 1
+                    ;;
+            esac
+        done
+        cat >> $nixexpr <<EOF
+  ])
+EOF
+        echo "building:"
+        cat $nixexpr
+        nix-build $nixexpr
+        rm -rf "$tmpdir"
+        ;;
+    *)
+        echo "unrecognized subcommand: $subcommand"
+        echo "use -h/--help for usage"
+        ;;
+esac
+        

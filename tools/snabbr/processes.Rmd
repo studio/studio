@@ -6,18 +6,16 @@ output:
     fig_height: 6
 ---
 
-```{r include=FALSE}
-source("vmprofiler.R")
-source("latencyr.R")
-source("snabbr.R")
-
+```{r include=FALSE,debug=TRUE}
+library(knitr)
 set <- read_process_set("data")
 ```
 
 ## Latency
 
 ```{r echo=FALSE}
-#set$latency.histogram
+#summary(set$latency.histogram)
+#kable(set$latency.histogram)
 plot_latency_histogram(set$latency.histogram)
 ```
 
