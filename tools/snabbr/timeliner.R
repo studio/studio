@@ -209,7 +209,7 @@ breath_duration <- function(br, cutoff=1000000) {
 
 breath_efficiency <- function(br, cutoff=5000) {
   nonzero <- filter(br, packets>0)
-  d <- nonzero %>% filter(cycles/packets <= 5000)
+  d <- nonzero %>% filter(cycles/packets <= cutoff)
   pct <- (nrow(nonzero) - nrow(d)) / nrow(nonzero)
   ggplot(d, aes(y = cycles / packets, x = packets)) +
     geom_point(color="blue", alpha=0.25, shape=1) +
