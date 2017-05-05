@@ -1,5 +1,9 @@
 # snabbr.R: Analyze Snabb process state (timeline, latency histogram, etc)
 
+library(plyr)
+library(yaml)
+library(ggplot2)
+
 # ------------------------------------------------------------
 # Read data
 # ------------------------------------------------------------

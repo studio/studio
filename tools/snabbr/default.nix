@@ -13,9 +13,13 @@
 
 { pkgs ? import ../../nix/pkgs.nix {} }:
 
-with pkgs; with stdenv;
+with pkgs; with stdenv; with rPackages;
 
-let buildInputs = with rPackages; [ R dplyr readr ggplot2 bit64 mgcv ]; in
+
+let buildInputs = with rPackages;
+  [ R dplyr readr ggplot2 bit64 mgcv yaml purrr plyr stringr tibble
+    rmarkdown pandoc which
+    strace ]; in
 
 {
   # shmTarball: path to a tarball containing a Snabb shm folder.
@@ -34,5 +38,24 @@ let buildInputs = with rPackages; [ R dplyr readr ggplot2 bit64 mgcv ]; in
       source("${./timeliner.R}")
       plot_timeline_summary("${summaryData}", "$out")
     '';
+
+  report = processSet:
+    runCommand "snabb-process-report" { inherit processSet buildInputs; } ''
+        mkdir $out
+        ln -s $processSet data
+        cp ${./.}/*.R .
+        echo $processSet
+        ls -l
+        Rscript - <<EOF
+        library(rmarkdown); 
+        source('${./vmprofiler.R}')
+        source('${./latencyr.R}')
+        source('${./snabbr.R}')
+        render('${./processes.Rmd}', 
+               knit_root_dir='$PWD',
+               output_file='$out/snabb-processes.html')
+        EOF
+      '';
+
 }
 
