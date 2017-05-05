@@ -16,8 +16,43 @@ set <- read_process_set("data")
 
 ## Latency
 
+Latency histogram data records the duration of each breath that the engine takes. Every breath is counted into one of ~500 bins corresponding to durations from one microsecond up to one second.
+
 ```{r echo=FALSE}
-#set$latency.histogram
 plot_latency_histogram(set$latency.histogram)
 ```
 
+## VMProfile
+
+VMProfile data records code profiler samples. One sample is taken each microsecond and each sample is counted in a bin keyed by both the class of the app that is currently running and the virtual machine state.
+
+```{r echo=FALSE}
+plot_vmprofile(set$vmprofile)
+```
+
+States:
+
+- `asm` when the JIT is assembling machine code.
+- `c` when running a Lua-C API call (typically into the LuaJIT runtime system.)
+- `exit` when a trace exit handler is running.
+- `foreign` when running machine code not assembled by the JIT (typically via FFI.)
+- `gc` when garbage collecting.
+- `interp` when interpreting Lua bytecodes.
+- `head` when running JIT machine code that is not part of a trace loop.
+- `loop` when running JIT machine code that is part of a trace loop.
+- `record` when the JIT is recording a bytecode trace.
+
+
+## Timeline
+
+### Breaths efficiency
+
+```{r echo=FALSE, message=FALSE}
+breath_efficiency(set$breaths)
+```
+
+### Callback efficiency
+
+```{r echo=FALSE, message=FALSE}
+callback_efficiency(set$callbacks)
+```
