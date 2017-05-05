@@ -223,13 +223,4 @@ breath_efficiency <- function(br, cutoff=5000) {
     expand_limits(x=0, y=0)
 }
 
-callback_efficiency <- function(cb) {
-  d <- cb %>%
-        mutate(packets = pmax(inpackets, outpackets)) %>%
-        filter(packets>0)
-  ggplot(d, aes(y = pmin(1000, cycles/packets), x = packets)) +
-    geom_point(color="blue", alpha=0.25, shape=1) +
-    geom_smooth(se=F, weight=1, alpha=0.1) +
-    facet_wrap(~ event)
-}
 
