@@ -1,7 +1,5 @@
 # vmprofiler.R: Process LuaJIT/Snabb VMProfile logs
 
-options(warn=-1)
-
 library(dplyr)
 library(bit64)
 library(tibble)
@@ -42,6 +40,7 @@ read_file <- function(filename) {
   # XXX check magic and version
   seek(f, 8)
   tmp <- readBin(f, "double", n=length(states)+4097*4, size=8, endian="little")
+  close(f)
   class(tmp) <- "integer64"    # cast to true type: int64
   samples <- as.numeric(tmp)   # convert to numeric for R
   tibble(profile = profile, where = columns, num = samples) %>% filter(num>0)
