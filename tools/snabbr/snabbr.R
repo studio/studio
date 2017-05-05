@@ -49,3 +49,51 @@ plot_latency_histogram <- function (data) {
     annotation_logticks(sides="bl")
 }
 
+# ------------------------------------------------------------
+# VMProfile
+# ------------------------------------------------------------
+
+plot_vmprofile <- function (data) {
+  d <- data %>%
+    group_by(group, process, profile, what = str_match(where, "^[^.]*")) %>%
+    dplyr::summarize(num = sum(num)) %>%
+    ungroup() %>%
+    group_by(process, profile) %>%
+    dplyr::mutate(percent = 100*num/sum(num))
+  ggplot(d, aes(x = what, y = percent, color = group)) +
+    geom_boxplot() +
+    facet_wrap(~ profile)
+}
+
+# ------------------------------------------------------------
+# Timeline
+# ------------------------------------------------------------
+
+breath_efficiency <- function(br, cutoff=5000) {
+  nonzero <- filter(br, packets>0)
+  d <- nonzero %>% filter(cycles/packets <= cutoff)
+  pct <- (nrow(nonzero) - nrow(d)) / nrow(nonzero)
+  ggplot(d, aes(y = cycles / packets, x = packets)) +
+    geom_point(color="blue", alpha=0.25, shape=1) +
+    geom_smooth(se=F, weight=1, alpha=0.1) +
+    labs(title = "Engine breath efficiency",
+         subtitle = paste("Processing cost in cycles per packet ",
+                          "(ommitting ", scales::percent(pct), " outliers above ", scales::comma(cutoff), " cycles/packet cutoff)",
+                          sep=""),
+         y = "cycles/packet",
+         x = "packets processed in engine breath (burst size)") +
+    expand_limits(x=1, y=1)
+}
+
+callback_efficiency <- function(cb) {
+  d <- cb %>%
+    transform(class = str_match(event, "class=[^ ]*")) %>%
+    transform(packets = pmax(inpackets, outpackets)) %>%
+    filter(packets>0)
+  ggplot(d, aes(y = pmin(1000, cycles/packets), x = packets, color = group)) +
+    geom_point(alpha=0.25, shape=1) +
+    geom_smooth(se=F, weight=1, alpha=0.1) +
+    facet_wrap(~ class) +
+    theme(aspect.ratio = 1) +
+    expand_limits(x = 0)
+}
