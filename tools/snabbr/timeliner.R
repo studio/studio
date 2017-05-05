@@ -219,7 +219,8 @@ breath_efficiency <- function(br, cutoff=5000) {
                           "(ommitting ", scales::percent(pct), " outliers above ", scales::comma(cutoff), " cycles/packet cutoff)",
                           sep=""),
          y = "cycles/packet",
-         x = "packets processed in engine breath (burst size)")
+         x = "packets processed in engine breath (burst size)") +
+    expand_limits(x=0, y=0)
 }
 
 callback_efficiency <- function(cb) {
