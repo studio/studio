@@ -1,5 +1,5 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i bash -p getopt
+#! nix-shell -i bash -p nix
 
 set -e
 
@@ -60,7 +60,7 @@ case "$subcommand" in
         nixexpr=$tmpdir/process-report.nix
  
         cat > $nixexpr <<EOF
-with import $(pwd)/../nix/import.nix {};
+with import $studio/nix/import.nix {};
 snabbProcessReport
   (snabbProcessSet [
 EOF
