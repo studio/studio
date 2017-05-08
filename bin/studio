@@ -16,7 +16,19 @@ Usage:
 Subcommands:
 
     snabb gui                  Open the graphical user interface.
-    snabb process              Analyze a Snabb timeline log file.
+    snabb processes            Analyze a set of Snabb processes.
+
+snabb processes arguments:
+
+    DIRECTORY                  Snabb process state directory to analyze.
+                               Many directories can be specified.
+    -g, --group GROUP          Group name for the following Snabb processes.
+                               Use to assign Snabb processes to groups.
+
+    -o, --output PATH          Create output (symlink to directory) at PATH.
+    -v, --verbose              Print verbose trace information.
+    -n, --nix ARGS             Extra arguments passed to nix-build.
+    -j, --jobs NUM             Execute NUM build jobs in parallel.
 
 Timeline options:
 
@@ -27,6 +39,8 @@ EOF
 }
 
 [ "$#" == 0 ] && usage
+[ "$1" == "snabb" ] || usage
+shift 1
 
 error() {
     echo "error: $*" >&2
@@ -41,43 +55,44 @@ case "$subcommand" in
     gui)
         gui
         ;;
-    import)
-        info=""
-        while [ "$#" -gt 0 ]; do
-            case "$1" in
-                -i|--info)
-                    info="$2"
-                    shift 2
-                    ;;
-                *)
-                    nix-build $studio/nix/import-product.nix \
-                              --arg info $(readlink -f "$info") \
-                              --arg data $(readlink -f "$1") \
-                              --no-out-link
-                    shift 1
-                    ;;
-            esac
-        done
-        ;;
-    process)
+    processes)
         tmpdir=$(mktemp -d)
         nixexpr=$tmpdir/process-report.nix
  
         cat > $nixexpr <<EOF
 with import $(pwd)/../nix/import.nix {};
-
 snabbProcessReport
   (snabbProcessSet [
 EOF
+        verbose="no"
         group="other"
+        output="./result"
         while [ "$#" -gt 0 ]; do
             case "$1" in
+                -n|--nix)
+                    nix=$2
+                    shift 2
+                    ;;
+                -j|--jobs)
+                    parallel="-j $2"
+                    shift 2
+                    ;;
+                -o|--output)
+                    output="$2"
+                    shift 2
+                    ;;
+                -v|--verbose)
+                    verbose="yes"
+                    shift 1
+                    ;;
                 -g|--group)
                     group=$2
                     shift 2
                     ;;
                 *)
-                    path=$1
+                    path=$(readlink -f $1)
+                    checkfile=$path/engine/latency.histogram
+                    [ -f "$checkfile" ] || error "cannot read $checkfile"
                     cat >> $nixexpr <<EOF
     (snabbProcessGroup "$group" [
       (snabbProcess (snabbProcessTarball $path)) ])
@@ -89,9 +104,14 @@ EOF
         cat >> $nixexpr <<EOF
   ])
 EOF
-        echo "building:"
-        cat $nixexpr
-        nix-build $nixexpr
+        if [ "$verbose" == "yes" ]; then
+            echo "nix expression:" >&2
+            cat $nixexpr | sed 's/^/  /g' >&2
+        fi
+        storepath=$(nix-build $nix $parallel -o $output $nixexpr)
+        if [ $? == 0 ]; then
+            echo "created $output -> $storepath"
+        fi
         rm -rf "$tmpdir"
         ;;
     *)
