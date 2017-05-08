@@ -1,59 +1,51 @@
-Studio is an extensible debugger intended for great applications that deserve their own tooling. It's built on Nix and Pharo. Development for [Snabb](http://snabb.co/) use cases started in January 2017!
+# Studio
 
-## Workflow
+Studio is an extensible software diagnostics framework. It is for
+creating and sharing debugging, benchmarking, and profiling tools for
+applications.
 
-The Studio workflow is in three parts: collect data from your application, process it in infinitely many weird and wonderful ways, and present it using a unified graphical UI.
+Studio aims to make simple things easy and hard things possible.
+Simple could be to make an A/B comparison benchmark to detect and
+understand a performance regression introduced in a new software
+version. Hard could be to account for differences in performance
+between a test lab and a production environment.
 
-Collect primary data from your application:
-- Executable files containing debug information.
-- Raw process snapshots such as coredumps.
-- Logs of all shapes and sizes (text, binary, etc.)
-- Profiler data (perf recordings, PEBS buffers, coverage reports, etc.)
-- Step-by-step evaluation recordings for replay.
-- Other specialized information that you make available.
+Studio is a vehicle for applying your own tools and expertise in a
+systematic, automated, and reproducible way.
 
-Create and store intermediate artifacts using [Nix](http://www.nixos.org/):
-- Convert from specialized formats (e.g. coredump/DWARF/PCAP) to generic ones (e.g. CSV/JSON/XML.)
-- Summarize information with statistics, comparisons, validity tests, etc.
-- Use every tool you want: awk, Python, R, GDB, Wireshark, QEMU, etc.
-- Support multiple versions of each tool including custom patches.
-- Transfer data between machines while preserving immutable identifies.
+## Design
 
-Present information using the [Pharo Glamorous Toolkit](http://gtoolkit.org/):
-- Inspect the low-level (C heap), mid-level (programming langauge runtime), and high-level (application) objects.
-- Click through related objects like source code, byte code, JIT machine code, and profiler reports.
-- Search all intermediate information using the Spotter.
-- Write code interactively to access the store.
+Studio is built on three layers of software:
+
+The **frontend** presents a unifying graphical user interface. The
+frontend is written in [Pharo](http://pharo.org/) using the "moldable
+tools" approach with [The Glamorous Toolkit](http://gtoolkit.org/).
+(There is also a basic unix shell frontend.)
+
+The **backend** converts raw diagnostic data (logs, core dumps,
+profiler dumps, etc) into understandable information (graphs, tables,
+reports). The backend uses [Nix](http://nixos.org/nix/) for structured
+step-by-step processing.
+
+The **tools** implement individual processing steps for the backend.
+Tools can be written in any programming language. Some tools are
+written specifically for Studio, for example to produce information in
+a special format for the frontend. Other tools are taken off the shelf
+e.g. objdump to disassemble machine code, wireshark to decode network
+traffic, `perf` to analyze performance reports, and so on.
+
+## Status
+
+Studio is currently (May 2017) in an early stage of development. The
+initial backend and tools are there. There is a command-line interface
+(`bin/studio`) but not yet the graphical frontend.
 
 ## Background
 
-Studio is initially being developed for Snabb hackers. Snapshots with
-offline analysis makes sense because we need to examine production
-systems that cannot pause for more than a millisecond and are not
-accessible to developers. Nix makes sense to store primary data immutably, 
-cache all intermediate representations, backup and transfer easily, farm out
-expensive data production & processing to a distributed cluster, and access
-diverse messy dependencies in a disciplined way. Pharo makes sense because
-the Glamorous Toolkit's "moldable" style is designed for creating
-user-friendly application-aware software development environments.
-
-Studio will allow us to "go nuts" on experimenting with fancy
-development tools while keeping our production software
-minimalist. The software we deploy only has to produce data somewhere -
-even simply inside its own process heap in an internal format - and
-Studio can do unlimited decoding, analysis, and visualization.
-This separation of concerns should be liberating.
-
-## Related work
-
-- [Intel VTune](https://software.intel.com/en-us/intel-vtune-amplifier-xe) is a proprietary micro-optimization tool. Studio aims to cover these use cases as open source.
-- [gdb](https://www.sourceware.org/gdb/) is a powerful debugger that can operate on both running programs and offline core dumps. Studio aims to be more application-aware and easier to use for casual programmers.
-- [rr](https://github.com/mozilla/rr) is a back-in-time replay extension for gdb. (Genius idea!) Studio aims to support applications like Snabb that perform many gigabytes per second of I/O and DMA.
-- [ddd](https://www.gnu.org/software/ddd/) is a graphical front-end to GDB and related debuggers. Studio is another take on this approach with emphasis on application-specific extension.
-- Lisp environments like SLIME and LispWorks provide an interactive software development workflow. Studio aims to provide similar visibility of the process heap but with emphasis on offline execution. (Tangential idea: a REPL that records a coredump after each command and lets Studio discover and present the differences.)
-- Popular IDEs like Emacs, Atom, Eclipse, IntelliJ, Visual Studio are mostly for writing and maintaining source code. Studio is a mostly complementary tool for analysing runtime behavior.
-
-## History
-
-Studio was started in 2017 by Luke Gorrie as a unified framework for collecting Snabb development tools. Luke previously started the [SLIME](https://github.com/slime/slime) project for Common Lisp and the [Distel](https://github.com/massemanet/distel) project for Erlang.
+Studio was originally created to support [Snabb](http://snabb.co/)
+development. Snabb is a performance-sensitive application that is
+developed by many groups in a distributed fashion (similar to the
+Linux kernel.) Studio is intended to speed up our benchmarking,
+optimization, and troubleshooting activities by automating and sharing
+our workflows.
 
