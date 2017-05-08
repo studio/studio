@@ -26,7 +26,7 @@ let buildInputs = with rPackages;
   summary = shmTarball: runCommand "timeline-summary" { inherit buildInputs; } ''
       mkdir $out
       tar xf ${shmTarball}
-      Rscript - <<EOF
+      (Rscript - &>log.txt || cat log.txt) <<EOF
         source("${./timeliner.R}")
         summarize_timeline("engine/timeline", "$out")
       EOF
@@ -34,7 +34,7 @@ let buildInputs = with rPackages;
   # summaryData: Output from the summary derivation above.
   visualize = summaryData: runCommand "timeline-visualization" { inherit buildInputs; } ''
     mkdir $out
-    Rscript - <<EOF
+    (Rscript - &>log.txt || cat log.txt) <<EOF
       source("${./timeliner.R}")
       plot_timeline_summary("${summaryData}", "$out")
     '';
@@ -44,9 +44,8 @@ let buildInputs = with rPackages;
         mkdir $out
         ln -s $processSet data
         cp ${./.}/*.R .
-        echo $processSet
-        ls -l
-        Rscript - <<EOF
+        (Rscript &>log.txt - || cat log.txt) <<EOF
+        options(warn = -1)
         library(rmarkdown); 
         source('${./vmprofiler.R}')
         source('${./latencyr.R}')
