@@ -1,7 +1,10 @@
 ---
-title: "Snabb process analysis"
+title: "Snabb processes analysis"
 output:
-  html_notebook:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
     fig_width: 8
     fig_height: 6
 ---
