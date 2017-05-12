@@ -21,16 +21,10 @@ set <- read_process_set("data")
 
 ## Breaths efficiency
 
-### Graphic
+## Graphic
 
 ```{r echo=FALSE, message=FALSE}
 breath_efficiency(set$breaths)
-```
-
-### Numeric
-
-```{r echo=FALSE, message=FALSE}
-breath_efficiency_table(set$breaths)
 ```
 
 ## Callback efficiency

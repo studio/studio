@@ -17,7 +17,7 @@ with pkgs; with stdenv; with rPackages;
 
 
 let buildInputs = with rPackages;
-  [ R dplyr readr ggplot2 bit64 mgcv yaml purrr plyr stringr tibble
+  [ R dplyr readr ggplot2 bit64 mgcv yaml purrr plyr stringr tibble tidyr hexbin
     rmarkdown pandoc which
     strace ]; in
 

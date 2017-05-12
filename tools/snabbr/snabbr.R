@@ -2,6 +2,7 @@
 
 library(plyr)
 library(dplyr)
+library(tidyr)
 library(yaml)
 library(ggplot2)
 
