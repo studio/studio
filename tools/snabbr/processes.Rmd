@@ -3,14 +3,17 @@ title: "Snabb processes analysis"
 output:
   html_document:
     toc: true
-    toc_float: true
+    toc_float: false
     toc_depth: 3
     fig_width: 8
     fig_height: 6
 ---
 
-```{r include=FALSE,debug=TRUE}
-library(knitr)
+```{r include=FALSE}
+source("vmprofiler.R")
+source("latencyr.R")
+source("snabbr.R")
+
 set <- read_process_set("data")
 ```
 
@@ -24,7 +27,7 @@ plot_latency_histogram(set$latency.histogram)
 
 ## VMProfile
 
-VMProfile data records code profiler samples. One sample is taken each microsecond and each sample is counted in a bin keyed by both the class of the app that is currently running and the virtual machine state.
+VMProfile data records code profiler samples. One sample is taken each microsecond and each sample is counted in a bin keyed by both the class of the app that is currently running and the virtual machine state. The apps are presented here separately.
 
 ```{r echo=FALSE}
 plot_vmprofile(set$vmprofile)
@@ -55,4 +58,8 @@ breath_efficiency(set$breaths)
 
 ```{r echo=FALSE, message=FALSE}
 callback_efficiency(set$callbacks)
+```
+
+```{r echo=FALSE, message=FALSE}
+callback_bit_efficiency(set$callbacks)
 ```

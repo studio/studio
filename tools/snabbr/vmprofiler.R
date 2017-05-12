@@ -57,7 +57,7 @@ analyze_profile <- function(data) {
     group_by(profile) %>%
     summarize(num = sum(num)) %>%
     ungroup() %>%
-    transmute(profile = profile, percent = round(100*num/sum(num),1)) %>%
+    transmute(profile = profile, percent = round(100*num/sum(num))) %>%
     arrange(-percent) %>%
     as.data.frame()
 }
