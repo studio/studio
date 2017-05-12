@@ -17,6 +17,34 @@ source("snabbr.R")
 set <- read_process_set("data")
 ```
 
+# Timeline
+
+## Breaths efficiency
+
+### Graphic
+
+```{r echo=FALSE, message=FALSE}
+breath_efficiency(set$breaths)
+```
+
+### Numeric
+
+```{r echo=FALSE, message=FALSE}
+breath_efficiency_table(set$breaths)
+```
+
+## Callback efficiency
+
+```{r echo=FALSE, message=FALSE}
+callback_efficiency(set$callbacks)
+```
+
+## Packets per breath
+
+```{r echo=FALSE, message=FALSE}
+breath_size(set$breaths)
+```
+
 ## Latency
 
 Latency histogram data records the duration of each breath that the engine takes. Every breath is counted into one of ~500 bins corresponding to durations from one microsecond up to one second.
@@ -46,20 +74,3 @@ States:
 - `record` when the JIT is recording a bytecode trace.
 
 
-## Timeline
-
-### Breaths efficiency
-
-```{r echo=FALSE, message=FALSE}
-breath_efficiency(set$breaths)
-```
-
-### Callback efficiency
-
-```{r echo=FALSE, message=FALSE}
-callback_efficiency(set$callbacks)
-```
-
-```{r echo=FALSE, message=FALSE}
-callback_bit_efficiency(set$callbacks)
-```

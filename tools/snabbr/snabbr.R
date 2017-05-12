@@ -1,6 +1,7 @@
 # snabbr.R: Analyze Snabb process state (timeline, latency histogram, etc)
 
 library(plyr)
+library(dplyr)
 library(yaml)
 library(ggplot2)
 
@@ -135,19 +136,30 @@ callback_efficiency_table <- function(cb) {
        cycles_per_bit    = spread(select(d, -cycles_per_packet), group, cycles_per_bit))
 }
 
-callback_efficiency <- function(cb) {
+callback_efficiency <- function(cb, cutoff=500) {
   d <- cb %>%
     transform(class = str_match(event, "class=[^ ]*")) %>%
-    transform(packets = pmax(inpackets, outpackets)) %>%
+    transform(packets = pmax(inpackets, outpackets),
+              bytes = pmax(inbytes, outbytes)) %>%
     filter(packets>0)
-  ggplot(d, aes(y = pmin(10000, cycles/packets), x = packets, color = group)) +
-    geom_point(alpha=0.25, shape=1) +
-    geom_smooth(se=F, weight=1, alpha=0.1) +
+  ggplot(d, aes(y = 1000 * cycles / (bytes * 8),
+                x = bytes / packets,
+                fill = group)) +
+    stat_binhex(aes(alpha = ..density..),
+                bins = 32, show.legend=F) +
+    geom_smooth(aes(color = group),
+                method = 'lm',
+                formula = y ~ exp(-x),
+                se=F) +
+    scale_x_log10(limits = c(64, 10000),
+                  breaks = c(64, 128, 256, 512, 1024, 2048, 4096, 8192),
+                  minor_breaks = c(96, 192, 384, 768, 1590, 3128, 6192)) +
+    scale_y_continuous(limits = c(10, cutoff+1), breaks = seq(0, 1000, by=100), labels = scales::comma) +
     facet_wrap(~ class) +
     theme(aspect.ratio = 1) +
-    scale_x_log10(limits = c(1, 10000)) +
-    scale_y_log10(labels = scales::comma) +
-    expand_limits(y = 0.01)
+    labs(title = "Engine breath efficiency",
+         y = "cpu cycles per kilobit of traffic",
+         x = "mean bytes per packet in breath (log scale)")
 }
 
 callback_bit_efficiency <- function(cb) {
@@ -166,3 +178,17 @@ callback_bit_efficiency <- function(cb) {
     scale_y_log10(labels = scales::comma) +
     expand_limits(y = 0.01)
 }
+
+breath_size <- function(br) {
+  active <- br %>%
+    filter(lag(total_packets, 3) != total_packets)
+  ggplot(active, aes(x = packets)) +
+    stat_ecdf(aes(color = group)) +
+    theme(aspect.ratio = 1) +
+    scale_y_continuous(labels = scales::percent) +
+    labs(title = "Number of packets per breath",
+         subtitle = "Excludes idle periods.",
+         y = "percentage",
+         x = "packets processed in breath")
+}
+
