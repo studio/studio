@@ -17,6 +17,7 @@ Subcommands:
 
     snabb gui                  Open the graphical user interface.
     snabb processes            Analyze a set of Snabb processes.
+    snabb rstudio              Start RStudio IDE with Snabb modules.
 
 snabb processes arguments:
 
@@ -54,6 +55,9 @@ case "$subcommand" in
         ;;
     gui)
         gui
+        ;;
+    rstudio)
+        nix-shell -j 10 $studio/tools/snabbr -A rstudio --run rstudio
         ;;
     processes)
         tmpdir=$(mktemp -d)

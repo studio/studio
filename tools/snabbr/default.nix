@@ -56,5 +56,18 @@ let buildInputs = with rPackages;
         EOF
       '';
 
+  rstudio =
+    let Rprofile = writeText "Rprofile" ''
+      source('${./vmprofiler.R}')
+      source('${./latencyr.R}')
+      source('${./timeliner.R}')
+      source('${./snabbr.R}')
+      message("Loaded snabbr libraries.")
+    ''; in
+    runCommand "rstudio" { R_PROFILE_USER = Rprofile;
+                           buildInputs = buildInputs ++ [ rstudio ]; } ''
+      echo "This derivation only collects dependencies together."
+      echo "Please use with nix-shell and run 'rstudio' manually."
+    '';
 }
 
