@@ -1,6 +1,5 @@
 # snabbr.R: Analyze Snabb process state (timeline, latency histogram, etc)
 
-library(plyr)
 library(dplyr)
 library(tidyr)
 library(yaml)
@@ -31,7 +30,7 @@ read_group <- function (dir) {
 read_process <- function (dir) {
   process <- str_match(dir, "/([:alnum:]{3})[:alnum:]*-studio-product-snabb-process$")[2]
   data <- list(latency.histogram = read_latency_histogram(file.path(dir, "summary", "engine", "latency.histogram")),
-               vmprofile = read_files(Sys.glob(file.path(dir, "summary", "engine", "vmprofile", "*"))),
+               vmprofile = vmprofile.read_files(Sys.glob(file.path(dir, "summary", "engine", "vmprofile", "*"))),
                callbacks = read_rds(file.path(dir, "summary", "timeline", "callbacks.rds.xz")),
                breaths = read_rds(file.path(dir, "summary", "timeline", "breaths.rds.xz")))
   lapply(data, function(x) { x$process <- process; x })
