@@ -44,7 +44,7 @@ let buildInputs = with rPackages;
         mkdir $out
         ln -s $processSet data
         cp ${./.}/*.R .
-        (Rscript &>log.txt - || cat log.txt) <<EOF
+        (Rscript &>log.txt - || (cat log.txt ; false)) <<EOF
         options(warn = -1)
         library(rmarkdown); 
         source('${./vmprofiler.R}')
