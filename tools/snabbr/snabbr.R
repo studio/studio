@@ -1,5 +1,6 @@
 # snabbr.R: Analyze Snabb process state (timeline, latency histogram, etc)
 
+library(plyr)
 library(dplyr)
 library(tidyr)
 library(yaml)
@@ -61,10 +62,10 @@ plot_latency_histogram <- function (data) {
 plot_vmprofile <- function (data) {
   d <- data %>%
     group_by(group, process, profile, what = str_match(where, "^[^.]*")) %>%
-    dplyr::summarize(num = sum(num)) %>%
+    dplyr::summarize(samples = sum(samples)) %>%
     ungroup() %>%
     group_by(process, profile) %>%
-    dplyr::mutate(percent = 100*num/sum(num))
+    dplyr::mutate(percent = 100*samples/sum(samples))
   ggplot(d, aes(x = what, y = percent, color = group)) +
     geom_boxplot() +
     theme(axis.text.x = element_text(angle = 45, hjust = 0.9)) +
