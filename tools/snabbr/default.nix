@@ -70,5 +70,14 @@ let buildInputs = with rPackages;
       echo "This derivation only collects dependencies together."
       echo "Please use with nix-shell and run 'rstudio' manually."
     '';
+
+  vmprofile = process:
+    runCommand "snabb-process-vmprofile" { inherit process buildInputs; } ''
+      mkdir $out
+      (Rscript &>log.txt - || (cat log.txt ; false)) <<EOF
+      source('${./vmprofiler.R}')
+      vmprofile.summarize("$process/engine/vmprofile", "$out")
+      EOF
+    '';
 }
 

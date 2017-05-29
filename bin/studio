@@ -15,9 +15,9 @@ Usage:
 
 Subcommands:
 
-    snabb gui                  Open the graphical user interface.
     snabb processes            Analyze a set of Snabb processes.
     snabb rstudio              Start RStudio IDE with Snabb modules.
+    snabb vmprofile            Analyze "VMProfile" sampling profiler data.
 
 snabb processes arguments:
 
@@ -31,9 +31,9 @@ snabb processes arguments:
     -n, --nix ARGS             Extra arguments passed to nix-build.
     -j, --jobs NUM             Execute NUM build jobs in parallel.
 
-Timeline options:
+snabb vmprofile arguments:
 
-    -i, --input SHMDIR         Select the shm folder to operate on.
+    DIRECTORY                  Snabb process state directory to analyze.
 
 EOF
     exit 1
@@ -58,6 +58,25 @@ case "$subcommand" in
         ;;
     rstudio)
         nix-shell -j 10 $studio/tools/snabbr -A rstudio --run rstudio
+        ;;
+    vmprofile)
+        tmpdir=$(mktemp -d)
+        nixexpr=$tmpdir/vmprofile-analysis.nix
+        [ "$#" == 1 ] || usage
+        [ -d "$1/engine/vmprofile" ] || error "can't open directory $1/engine/vmprofile"
+        path=$(readlink -f "$1")
+        output="./result"
+        cat > $nixexpr <<EOF
+with import $studio/nix/import.nix {};
+snabbVMProfileAnalysis $path
+EOF
+        storepath=$(nix-build $nixexpr)
+        status=$?
+        if [ $status == 0 ]; then
+            echo "created $output -> $storepath"
+        fi
+        rm -rf $tmpdir
+        exit $status
         ;;
     processes)
         tmpdir=$(mktemp -d)
@@ -113,10 +132,12 @@ EOF
             cat $nixexpr | sed 's/^/  /g' >&2
         fi
         storepath=$(nix-build $nix $parallel -o $output $nixexpr)
-        if [ $? == 0 ]; then
+        status=$?
+        if [ $status == 0 ]; then
             echo "created $output -> $storepath"
         fi
         rm -rf "$tmpdir"
+        exit $status
         ;;
     *)
         echo "unrecognized subcommand: $subcommand"
