@@ -55,5 +55,8 @@ let snabbr = import ../tools/snabbr {}; in
 
   snabbProcessReport = processSet:
     snabbr.report processSet;
+
+  snabbVMProfileAnalysis = process:
+    snabbr.vmprofile process;
 }
 

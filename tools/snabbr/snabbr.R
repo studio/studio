@@ -31,7 +31,7 @@ read_group <- function (dir) {
 read_process <- function (dir) {
   process <- str_match(dir, "/([:alnum:]{3})[:alnum:]*-studio-product-snabb-process$")[2]
   data <- list(latency.histogram = read_latency_histogram(file.path(dir, "summary", "engine", "latency.histogram")),
-               vmprofile = read_files(Sys.glob(file.path(dir, "summary", "engine", "vmprofile", "*"))),
+               vmprofile = vmprofile.read_files(Sys.glob(file.path(dir, "summary", "engine", "vmprofile", "*"))),
                callbacks = read_rds(file.path(dir, "summary", "timeline", "callbacks.rds.xz")),
                breaths = read_rds(file.path(dir, "summary", "timeline", "breaths.rds.xz")))
   lapply(data, function(x) { x$process <- process; x })
@@ -62,10 +62,10 @@ plot_latency_histogram <- function (data) {
 plot_vmprofile <- function (data) {
   d <- data %>%
     group_by(group, process, profile, what = str_match(where, "^[^.]*")) %>%
-    dplyr::summarize(num = sum(num)) %>%
+    dplyr::summarize(samples = sum(samples)) %>%
     ungroup() %>%
     group_by(process, profile) %>%
-    dplyr::mutate(percent = 100*num/sum(num))
+    dplyr::mutate(percent = 100*samples/sum(samples))
   ggplot(d, aes(x = what, y = percent, color = group)) +
     geom_boxplot() +
     theme(axis.text.x = element_text(angle = 45, hjust = 0.9)) +

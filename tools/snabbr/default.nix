@@ -44,7 +44,7 @@ let buildInputs = with rPackages;
         mkdir $out
         ln -s $processSet data
         cp ${./.}/*.R .
-        (Rscript &>log.txt - || cat log.txt) <<EOF
+        (Rscript &>log.txt - || (cat log.txt ; false)) <<EOF
         options(warn = -1)
         library(rmarkdown); 
         source('${./vmprofiler.R}')
@@ -58,6 +58,7 @@ let buildInputs = with rPackages;
 
   rstudio =
     let Rprofile = writeText "Rprofile" ''
+      library(stats) # https://stackoverflow.com/questions/26935095/r-dplyr-filter-not-masking-base-filter
       source('${./vmprofiler.R}')
       source('${./latencyr.R}')
       source('${./timeliner.R}')
@@ -68,6 +69,15 @@ let buildInputs = with rPackages;
                            buildInputs = buildInputs ++ [ rstudio ]; } ''
       echo "This derivation only collects dependencies together."
       echo "Please use with nix-shell and run 'rstudio' manually."
+    '';
+
+  vmprofile = process:
+    runCommand "snabb-process-vmprofile" { inherit process buildInputs; } ''
+      mkdir $out
+      (Rscript &>log.txt - || (cat log.txt ; false)) <<EOF
+      source('${./vmprofiler.R}')
+      vmprofile.summarize("$process/engine/vmprofile", "$out")
+      EOF
     '';
 }
 
