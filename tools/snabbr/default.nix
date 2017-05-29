@@ -58,6 +58,7 @@ let buildInputs = with rPackages;
 
   rstudio =
     let Rprofile = writeText "Rprofile" ''
+      library(stats) # https://stackoverflow.com/questions/26935095/r-dplyr-filter-not-masking-base-filter
       source('${./vmprofiler.R}')
       source('${./latencyr.R}')
       source('${./timeliner.R}')
