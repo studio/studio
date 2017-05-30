@@ -39,6 +39,29 @@ EOF
     exit 1
 }
 
+#
+# Check software and hardware environment.
+#
+
+[ $(uname -s) == "Linux" ]  || (echo "error: 'uname -s' is not Linux";  exit 1)
+[ $(uname -m) == "x86_64" ] || (echo "error: 'uname -m' is not x86_64"; exit 1)
+
+if ! type nix-build &> /dev/null; then
+    cat <<EOF
+command not found: nix-build
+
+Please install the nix package manager:
+  curl https://nix.org/nix/install | sh
+
+See https://nixos.org/nix/ for more information.
+EOF
+    exit 1
+fi
+
+#
+# Check main command
+#
+
 [ "$#" == 0 ] && usage
 [ "$1" == "snabb" ] || usage
 shift 1
