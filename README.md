@@ -10,6 +10,9 @@ involved if you also have a project that needs custom tooling.
 
 ## Installation
 
+You can run Studio on a Linux/x86-64 machine by running commands such
+as these:
+
 ```shell
 # Install the Nix package manager
 $ curl https://nixos.org/nix/install | sh
@@ -22,11 +25,11 @@ $ studio/bin/studio --help
 ```
 
 Studio will automatically download and build its software dependencies
-as they are needed using [Nix](http://nixos.org/nix/). This means that
-you will see a lot of activity the first time you run a given command,
-so please be patient. The downloads will be cached for future use, and
-Nix will isolate all of the software in the `/nix/store/` directory to
-prevent conflicts with your other applications.
+the first time they are needed using [Nix](http://nixos.org/nix/).
+This means that you will see a lot of activity the first time you run
+a given command, so please be patient. The downloads will be cached
+for future use and Nix will neatly isolate all of the downloaded
+software in the `/nix/store/` directory.
 
 ## Design
 
@@ -53,7 +56,7 @@ traffic, `perf` to analyze performance reports, and so on.
 
 Studio is new and raw. Here is what the initial commands look like:
 
-```shell
+```
 $ studio --help
 Studio: the extensible software diagnostics suite
 
@@ -77,7 +80,8 @@ Common options:
                                Defaults to 8 or .
     -n, --nix ARGS             Extra arguments for nix-build.
                                Defaults to .
-
+```
+```
 $ studio snabb --help
 Subcommands for 'studio snabb':
 
@@ -99,7 +103,8 @@ Arguments:
                                Use to assign Snabb processes to groups.
 
     -o, --output PATH          Create output (symlink to directory) at PATH.
-
+```
+```
 $ studio snabb vmprofile --help
 Usage:
 
@@ -110,7 +115,8 @@ Arguments:
     DIRECTORY                  Snabb process state directory to analyze.
                                Exactly one directory must be provided.
     -o, --output PATH          Create output (symlink to directory) at PATH.
-
+```
+```
 $ studio rstudio --help
 Usage:
 
