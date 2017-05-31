@@ -35,10 +35,11 @@ software in the `/nix/store/` directory.
 
 Studio is built on three layers of software:
 
-The **frontend** presents a unifying graphical user interface. The
-frontend is based on [Pharo](http://pharo.org/) using the "moldable
-tools" approach with [The Glamorous Toolkit](http://gtoolkit.org/).
-(There is also a basic unix shell frontend.)
+The **frontend** (not yet implemented) presents a unifying graphical
+user interface. The frontend is based on [Pharo](http://pharo.org/)
+using the "moldable tools" approach
+with [The Glamorous Toolkit](http://gtoolkit.org/). (There is also a
+basic unix shell frontend.)
 
 The **backend** converts raw diagnostic data (logs, core dumps,
 profiler dumps, etc) into understandable information (graphs, tables,
