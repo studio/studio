@@ -1,0 +1,20 @@
+{
+	"instance" : {
+		"development:" : "LukeGorrie 7/5/2017 10:24",
+		"baseline01:" : "LukeGorrie 7/5/2017 10:38",
+		"project" : "LukeGorrie 7/5/2017 08:17",
+		"customProjectAttributes" : "LukeGorrie 7/5/2017 08:17"
+	},
+	"class" : {
+		"load" : "LukeGorrie 7/5/2017 08:17",
+		"baseConfigurationClassIfAbsent:" : "LukeGorrie 7/5/2017 08:17",
+		"DevelopmentSupport" : "LukeGorrie 7/5/2017 08:17",
+		"ensureMetacello" : "LukeGorrie 7/5/2017 08:17",
+		"loadDevelopment" : "LukeGorrie 7/5/2017 08:17",
+		"isMetacelloConfig" : "LukeGorrie 7/5/2017 08:17",
+		"ensureMetacelloBaseConfiguration" : "LukeGorrie 7/5/2017 08:17",
+		"loadBleedingEdge" : "LukeGorrie 7/5/2017 08:17",
+		"validate" : "LukeGorrie 7/5/2017 08:17",
+		"project" : "LukeGorrie 7/5/2017 08:17"
+	}
+}
