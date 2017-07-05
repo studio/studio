@@ -1,0 +1,3 @@
+testing
+hasTrace
+	^false.

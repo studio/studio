@@ -1,0 +1,13 @@
+{
+	"instance" : {
+		"dwarfTypeOf:via:" : "LukeGorrie 6/13/2017 11:51",
+		"typeNamed:" : "LukeGorrie 6/12/2017 12:01",
+		"loadFromFileNamed:" : "LukeGorrie 6/13/2017 07:57",
+		"valueToName:inEnumerationWith:" : "LukeGorrie 6/16/2017 09:00",
+		"resolveConstant:" : "LukeGorrie 6/14/2017 11:16",
+		"enumerationTypeWith:" : "LukeGorrie 6/16/2017 09:11"
+	},
+	"class" : {
+		"loadFromFileNamed:" : "LukeGorrie 6/9/2017 09:39"
+	}
+}

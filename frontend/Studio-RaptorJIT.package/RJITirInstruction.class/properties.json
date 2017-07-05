@@ -1,0 +1,23 @@
+{
+	"commentStamp" : "",
+	"super" : "Object",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"type",
+		"opcode",
+		"irIns",
+		"register",
+		"stackSlot",
+		"op1",
+		"op2",
+		"op12",
+		"op1ins",
+		"op2ins",
+		"dwarf"
+	],
+	"name" : "RJITirInstruction",
+	"type" : "normal"
+}

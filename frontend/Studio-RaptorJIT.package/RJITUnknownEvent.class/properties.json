@@ -1,0 +1,13 @@
+{
+	"commentStamp" : "",
+	"super" : "RJITEvent",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"dict"
+	],
+	"name" : "RJITUnknownEvent",
+	"type" : "normal"
+}

@@ -1,0 +1,3 @@
+printing
+typename
+	^self subclassResponsibility.

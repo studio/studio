@@ -1,0 +1,3 @@
+printing
+hasChildren: value
+	^false.

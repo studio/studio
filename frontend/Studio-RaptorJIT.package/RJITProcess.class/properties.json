@@ -1,0 +1,15 @@
+{
+	"commentStamp" : "",
+	"super" : "Object",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"dwarf",
+		"auditLog",
+		"vmprofiles"
+	],
+	"name" : "RJITProcess",
+	"type" : "normal"
+}

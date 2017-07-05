@@ -1,0 +1,14 @@
+{
+	"instance" : {
+		"from:withExistingTraces:" : "LukeGorrie 6/18/2017 03:13",
+		"loop" : "LukeGorrie 6/17/2017 13:35",
+		"irInstructions" : "LukeGorrie 6/17/2017 09:54",
+		"roassal" : "LukeGorrie 6/17/2017 09:02",
+		"loopInstructions" : "LukeGorrie 6/16/2017 12:17",
+		"root" : "LukeGorrie 6/17/2017 09:47",
+		"headInstructions" : "LukeGorrie 6/16/2017 12:16",
+		"traceno" : "LukeGorrie 6/17/2017 09:39",
+		"hasLoop" : "LukeGorrie 6/16/2017 12:14"
+	},
+	"class" : { }
+}

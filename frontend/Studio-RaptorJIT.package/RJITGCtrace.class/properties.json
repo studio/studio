@@ -1,0 +1,18 @@
+{
+	"commentStamp" : "",
+	"super" : "Object",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"dwarf",
+		"gctrace",
+		"irConstants",
+		"irInstructions",
+		"traceno",
+		"root"
+	],
+	"name" : "RJITGCtrace",
+	"type" : "normal"
+}
