@@ -1,0 +1,3 @@
+initializing
+irInstructions
+	^irInstructions.

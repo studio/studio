@@ -1,0 +1,18 @@
+{
+	"instance" : {
+		"traces" : "LukeGorrie 6/17/2017 09:38",
+		"dwarf" : "LukeGorrie 6/12/2017 11:59",
+		"visualize" : "LukeGorrie 6/17/2017 13:07",
+		"dwarf:" : "LukeGorrie 6/12/2017 10:52",
+		"makeEventFrom:" : "LukeGorrie 6/12/2017 10:52",
+		"addRecord:" : "LukeGorrie 6/12/2017 08:38",
+		"visualizeMondrianWithProfile:" : "LukeGorrie 6/21/2017 16:33",
+		"addEvent:" : "LukeGorrie 6/12/2017 09:50",
+		"loadFromFileNamed:" : "LukeGorrie 6/12/2017 12:12",
+		"visualizeMondrian" : "LukeGorrie 6/18/2017 04:11",
+		"addMemory:" : "LukeGorrie 6/12/2017 12:35"
+	},
+	"class" : {
+		"loadFromFileNamed:withDWARF:" : "LukeGorrie 6/12/2017 10:52"
+	}
+}

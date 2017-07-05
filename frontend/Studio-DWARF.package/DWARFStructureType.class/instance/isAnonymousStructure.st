@@ -1,0 +1,3 @@
+initialization
+isAnonymousStructure
+	^ name = nil.

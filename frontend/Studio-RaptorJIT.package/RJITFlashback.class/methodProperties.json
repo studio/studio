@@ -1,0 +1,22 @@
+{
+	"instance" : {
+		"decodeType:at:" : "LukeGorrie 6/13/2017 14:56",
+		"data" : "LukeGorrie 6/12/2017 12:16",
+		"auditLog:" : "LukeGorrie 6/12/2017 11:44",
+		"address:" : "LukeGorrie 6/12/2017 12:16",
+		"hint" : "LukeGorrie 6/12/2017 09:30",
+		"data:" : "LukeGorrie 6/12/2017 09:30",
+		"bytesAt:size:" : "LukeGorrie 6/12/2017 13:45",
+		"byteAt:" : "LukeGorrie 6/12/2017 12:24",
+		"hint:" : "LukeGorrie 6/12/2017 12:16",
+		"irInstructionAt:" : "LukeGorrie 6/15/2017 08:45",
+		"initialize" : "LukeGorrie 6/12/2017 10:52",
+		"auditLog" : "LukeGorrie 6/12/2017 11:44",
+		"address" : "LukeGorrie 6/12/2017 09:28",
+		"decodeTypeNamed:at:" : "LukeGorrie 6/13/2017 14:57",
+		"previous" : "LukeGorrie 6/12/2017 09:30",
+		"previous:" : "LukeGorrie 6/12/2017 12:15",
+		"includesAddress:byteSize:" : "LukeGorrie 6/13/2017 14:42"
+	},
+	"class" : { }
+}

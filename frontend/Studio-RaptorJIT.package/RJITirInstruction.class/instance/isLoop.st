@@ -1,0 +1,3 @@
+testing
+isLoop
+	^ opcode = #loop.

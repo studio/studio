@@ -1,0 +1,30 @@
+{
+	"instance" : {
+		"roassalElement" : "LukeGorrie 6/16/2017 11:46",
+		"roassalColor" : "LukeGorrie 6/17/2017 13:30",
+		"isTypeConversion" : "LukeGorrie 6/16/2017 10:53",
+		"isBitOp" : "LukeGorrie 6/17/2017 12:39",
+		"resolveIR:in:" : "LukeGorrie 6/18/2017 03:19",
+		"irIns:" : "LukeGorrie 6/18/2017 02:56",
+		"link:" : "LukeGorrie 6/18/2017 02:49",
+		"isLoad" : "LukeGorrie 6/17/2017 12:41",
+		"isStore" : "LukeGorrie 6/17/2017 12:42",
+		"isConstant" : "LukeGorrie 6/17/2017 12:40",
+		"isMisc" : "LukeGorrie 6/17/2017 12:41",
+		"isGuardedAssertion" : "LukeGorrie 6/17/2017 12:40",
+		"isAllocation" : "LukeGorrie 6/17/2017 12:38",
+		"isLoop" : "LukeGorrie 6/16/2017 12:28",
+		"opcode" : "LukeGorrie 6/17/2017 09:02",
+		"isLoadStore" : "LukeGorrie 6/16/2017 10:47",
+		"isCall" : "LukeGorrie 6/17/2017 12:40",
+		"op1ins" : "LukeGorrie 6/18/2017 03:15",
+		"op2ins" : "LukeGorrie 6/18/2017 03:15",
+		"isMemoryReference" : "LukeGorrie 6/17/2017 12:41",
+		"isBarrier" : "LukeGorrie 6/17/2017 12:39",
+		"roassalShape" : "LukeGorrie 6/16/2017 10:18",
+		"isArithmetic" : "LukeGorrie 6/17/2017 12:37",
+		"printOn:" : "LukeGorrie 6/16/2017 09:37",
+		"stackSlot" : "LukeGorrie 6/21/2017 03:58"
+	},
+	"class" : { }
+}

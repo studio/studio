@@ -1,0 +1,3 @@
+initialization
+typename
+   ^'void'

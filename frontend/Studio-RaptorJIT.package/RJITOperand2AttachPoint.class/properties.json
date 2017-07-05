@@ -1,0 +1,11 @@
+{
+	"commentStamp" : "",
+	"super" : "RTHorizontalAttachPoint",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [ ],
+	"name" : "RJITOperand2AttachPoint",
+	"type" : "normal"
+}

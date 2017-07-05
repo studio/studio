@@ -1,0 +1,3 @@
+accessing
+byteSize
+	^type byteSize.

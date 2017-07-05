@@ -1,0 +1,13 @@
+{
+	"commentStamp" : "",
+	"super" : "RJITEvent",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"gctrace"
+	],
+	"name" : "RJITTraceStopEvent",
+	"type" : "normal"
+}

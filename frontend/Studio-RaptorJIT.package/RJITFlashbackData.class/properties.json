@@ -1,0 +1,16 @@
+{
+	"commentStamp" : "",
+	"super" : "ByteArray",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [
+		"GCMallocedAliens",
+		"LoadedLibraries",
+		"ProcessIoEvents",
+		"WordSize"
+	],
+	"instvars" : [ ],
+	"name" : "RJITFlashbackData",
+	"type" : "bytes"
+}

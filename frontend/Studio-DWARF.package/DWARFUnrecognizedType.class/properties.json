@@ -1,0 +1,13 @@
+{
+	"commentStamp" : "",
+	"super" : "DWARFType",
+	"category" : "Studio-DWARF",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"definition"
+	],
+	"name" : "DWARFUnrecognizedType",
+	"type" : "normal"
+}

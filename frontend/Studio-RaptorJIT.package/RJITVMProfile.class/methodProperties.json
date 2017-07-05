@@ -1,0 +1,13 @@
+{
+	"instance" : {
+		"traceAll:" : "LukeGorrie 6/19/2017 10:12",
+		"traceLoop:" : "LukeGorrie 6/19/2017 10:11",
+		"traceFFI:" : "LukeGorrie 6/19/2017 10:11",
+		"loadFromFileNamed:" : "LukeGorrie 6/19/2017 10:07",
+		"traceGC:" : "LukeGorrie 6/19/2017 10:11",
+		"traceHead:" : "LukeGorrie 6/19/2017 09:58"
+	},
+	"class" : {
+		"loadFromFileNamed:" : "LukeGorrie 6/19/2017 09:40"
+	}
+}

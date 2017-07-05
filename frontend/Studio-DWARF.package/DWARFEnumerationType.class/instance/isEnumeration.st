@@ -1,0 +1,3 @@
+initialization
+isEnumeration
+	^true
