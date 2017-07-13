@@ -1,0 +1,63 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p bash nix parallel
+
+set -e
+
+here=$(dirname $(readlink -f $0))
+studio=$(readlink -f $here/../..)
+
+usage() {
+    cat >&2 <<EOF
+Usage: $(basename $0) [-o DIR] <what>
+
+The inspector uses the Studio backend to "do what I mean" with a file,
+directory, or URL. It applies every available analysis, expecting most
+of them to fail due to wrong input type, and keeps any that succeed.
+EOF
+}
+
+if [ $# == 3 -a $1 == "-o" ]; then
+    output="$2"
+    what="$3"
+elif [ $# == 1 ]; then
+    output="."
+    what="$1"
+else
+    usage
+fi
+    
+output=$(readlink -f "$output")
+if [ -e "$what" ]; then
+    what=$(readlink -f "$what") # canonicalize file/directory
+elif (echo "$what" | grep -q "^[a-z]*://"); then
+    what=$(nix-build -E "fetchTarball \"$what\"" || \
+           nix-build -E "builtin.fetchurl \"$what\"")
+fi
+
+echo "input: $what" >&2
+
+# First run nix build and persevere through failures.
+echo "running builds.." >&2
+nix-build -Q -j 10 --keep-going \
+          $studio/backend/inspector --arg what "$what" \
+          2>&1 | grep building 1>&2
+
+echo "collecting results.." >&2
+
+# Now pick up the builds that succeeded.
+modules=0
+outputs=0
+derivations=$(nix-instantiate --quiet $studio/backend/inspector --arg what "$what" 2>/dev/null)
+for drv in $derivations; do
+    modules=$[$modules + 1]
+    output=$(nix-store -q --outputs "$drv" | head -1)
+    if nix-store --query --deriver $output &>/dev/null; then
+        shortname=$(basename $output | sed -e 's/^[^-]*-//')
+        nix-store --add-root "$shortname" --indirect -r "$drv" >/dev/null
+        outputs=$[$outputs + 1]
+        echo $shortname
+    fi
+done
+
+echo "($outputs/$modules inspector modules succeeded)" >&2
+
