@@ -30,8 +30,7 @@ output=$(readlink -f "$output")
 if [ -e "$what" ]; then
     what=$(readlink -f "$what") # canonicalize file/directory
 elif (echo "$what" | grep -q "^[a-z]*://"); then
-    what=$(nix-build -E "fetchTarball \"$what\"" || \
-           nix-build -E "builtin.fetchurl \"$what\"")
+    what=$(nix-prefetch-url --print-path --unpack "$what" | tail -1)
 fi
 
 echo "input: $what" >&2
