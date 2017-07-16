@@ -11,21 +11,28 @@ baseline01: spec
 			package: 'Studio-extensions' with: [
 				spec requires: #('Roassal2') ];
 			package: 'Studio-Nix' with: [
-				spec requires: #('Studio-extensions' 'NeoJSON') ];
+				spec requires: #('Studio-extensions' 'NeoJSON' 'CommandShell') ];
 			package: 'Studio-DWARF' with: [
 				spec requires: #('Studio-extensions' 'NeoJSON') ];
 			package: 'Studio-RaptorJIT' with: [
-				spec requires: #('Studio-extensions' 'Studio-DWARF' 'Roassal2') ].
+				spec requires: #('Studio-extensions' 'Studio-DWARF' 'Roassal2' 'MessagePack') ].
 
 		spec project: 'NeoJSON' with: [
-				spec
-					className: #ConfigurationOfNeoJSON;
-					versionString: #'stable';
-					repository: 'http://smalltalkhub.com/mc/Pharo/MetaRepoForPharo40/main/' ].
+			spec
+				className: #ConfigurationOfNeoJSON;
+				versionString: #'stable';
+				repository: 'http://smalltalkhub.com/mc/Pharo/MetaRepoForPharo40/main/' ].
 			
 		spec project: 'Roassal2' with: [
-				spec
-					versionString: #'stable';
-					className: #ConfigurationOfRoassal2;
-					repository: 'http://www.smalltalkhub.com/mc/ObjectProfile/Roassal2/main' ].
-		]
+			spec
+				versionString: #'stable';
+				className: #ConfigurationOfRoassal2;
+				repository: 'http://www.smalltalkhub.com/mc/ObjectProfile/Roassal2/main' ].
+		spec project: 'CommandShell' with: [ 
+			spec
+				squeaksource: 'CommandShell';
+				package: 'CommandShell-piping' ].
+		spec project: 'MessagePack' with: [ 
+			spec
+				smalltalkhubUser: 'MasashiUmezawa' project: 'MessagePack' ].
+		].
