@@ -28,11 +28,16 @@ baseline01: spec
 				versionString: #'stable';
 				className: #ConfigurationOfRoassal2;
 				repository: 'http://www.smalltalkhub.com/mc/ObjectProfile/Roassal2/main' ].
+
 		spec project: 'CommandShell' with: [ 
 			spec
-				squeaksource: 'CommandShell';
-				package: 'CommandShell-piping' ].
+				versionString: #'stable';
+				className: #ConfigurationOfCommandShell;
+				repository: 'http://www.squeaksource.com/CommandShell' ].
+
 		spec project: 'MessagePack' with: [ 
 			spec
-				smalltalkhubUser: 'MasashiUmezawa' project: 'MessagePack' ].
+				versionString: #'stable';
+				className: #ConfigurationOfMessagePack;
+				repository: 'http://smalltalkhub.com/mc/MasashiUmezawa/MessagePack/main'. ].
 		].
