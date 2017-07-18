@@ -22,11 +22,12 @@ let
   # Built on Inria CI (Jenkins) with Metacello to install Studio.
   baseImage = fetchImageZip rec {
     name = "studio-${version}";
-    version = "10";
-    url = https://ci.inria.fr/pharo-contribution/job/Studio/default/15/artifact/Studio.zip;
+    version = "15";
+    url = "https://ci.inria.fr/pharo-contribution/job/Studio/default/${version}/artifact/Studio.zip";
     sha256 = "0mpc1rs073dyr3j9q3r1mgyl0vwnn1wmzh57fkxdpf3s5d3300fv";
   };
 
+  # Script to update and customize the image for Studio.
   loadSmalltalkScript = writeScript "studio-load-smalltalk-script.st" ''
     | repo window |
 
