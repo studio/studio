@@ -27,6 +27,25 @@ let
     sha256 = "0mpc1rs073dyr3j9q3r1mgyl0vwnn1wmzh57fkxdpf3s5d3300fv";
   };
 
+  loadSmalltalkScript = writeScript "studio-load-smalltalk-script.st" ''
+    | repo window |
+
+    "Force reload of all Studio packages from local sources."
+    repo := MCFileTreeRepository new directory: '${../../../frontend}' asFileReference.
+    repo allFileNames do: [ :file |
+        Transcript show: 'Loading: ', file; cr.
+        (repo versionFromFileNamed: file) load.
+      ].
+
+    "Setup desktop"
+    Pharo3Theme beCurrent. "light theme"
+    World closeAllWindowsDiscardingChanges.
+    (GTInspector openOn: #WelcomeToStudio) openFullscreen.
+
+    "Save image"
+    Smalltalk saveAs: 'new'.
+  '';
+
   # Studio image that includes the exact code in this source tree.
   # Built by refreshing the base image.
   studioImage = runCommand "studio-image"
@@ -36,15 +55,14 @@ let
       cp ${baseImage}/* .
       chmod +w pharo.image
       chmod +w pharo.changes
-      substituteAll ${./loadStudio.st} ./loadStudio.st
-      pharo --nodisplay pharo.image st --quit ./loadStudio.st
+      pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript}
       mkdir $out
       cp new.image $out/pharo.image
       cp new.changes $out/pharo.changes
     '';
 
   # Script to start the Studio image with the Pharo VM.
-  studioScript = writeScript "studio-ui" ''
+  studioScript = writeScript "studio-gui" ''
     #!${stdenv.shell}
     cp ${studioImage}/pharo.image pharo.image
     cp ${studioImage}/pharo.changes pharo.changes
@@ -66,7 +84,7 @@ let
   '';
 
   # Script to run everything in VNC.
-  vncScript = writeScriptBin "studio-vnc" ''
+  vncScript = writeScriptBin "studio-gui-vnc" ''
     #!${stdenv.shell}
     if [ $# == 0 ]; then
       display=1
@@ -82,5 +100,10 @@ let
   '';
 in
   
-vncScript
+{
+  studio-gui = studioScript;
+  studio-gui-vnc = vncScript;
+  studio-base-image = baseImage;
+  studio-image = studioImage;
+}
 

@@ -10,6 +10,9 @@ stdenv.mkDerivation rec {
     rev = revision;
     sha256 = "0dkiy5fq1xn2n93cwf767xz24c01ic0wfw94jk9nvn7pmcfj7m62";
   };
+  patches = [
+    ./0001-sqUnixHeartbeat.c-Remove-warning-about-thread-priori.patch
+  ];
   # This metadata will be compiled into the VM and introspectable
   # from Smalltalk. This has been manually extracted from 'git log'.
   #
