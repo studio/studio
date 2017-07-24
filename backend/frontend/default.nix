@@ -22,7 +22,7 @@ let
   # Built on Inria CI (Jenkins) with Metacello to install Studio.
   baseImage = fetchImageZip rec {
     name = "studio-${version}";
-    version = "15";
+    version = "17";
     url = "https://ci.inria.fr/pharo-contribution/job/Studio/default/${version}/artifact/Studio.zip";
     sha256 = "0mpc1rs073dyr3j9q3r1mgyl0vwnn1wmzh57fkxdpf3s5d3300fv";
   };
