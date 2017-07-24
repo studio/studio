@@ -20,7 +20,7 @@ stdenv.mkDerivation rec {
   # opensmalltalk-vm/.git_filters/RevDateURL.smudge but that script
   # is too impure to run from nix.
   revision = "6a63f68a3dd4deb7c17dd2c7ac6e4dd4b0b6d937";
-  source-date = "Tue May 30 19:41:27 2017 -0700";
+  source-date = "Tue May 30 19:41:27 2017 -0700.1";
   source-url  = "https://github.com/pharo-project/pharo-vm";
 
   # Shared data (for the sources file)
