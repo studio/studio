@@ -32,7 +32,7 @@ let
     | repo window |
 
     "Force reload of all Studio packages from local sources."
-    repo := MCFileTreeRepository new directory: '${../../../frontend}' asFileReference.
+    repo := MCFileTreeRepository new directory: '${../../frontend}' asFileReference.
     repo allFileNames do: [ :file |
         Transcript show: 'Loading: ', file; cr.
         (repo versionFromFileNamed: file) load.
@@ -50,8 +50,7 @@ let
   # Studio image that includes the exact code in this source tree.
   # Built by refreshing the base image.
   studioImage = runCommand "studio-image"
-    { nativeBuildInputs = [ pharo ];
-      frontendSrc = ../../../frontend; }
+    { nativeBuildInputs = [ pharo ]; }
     ''
       cp ${baseImage}/* .
       chmod +w pharo.image
