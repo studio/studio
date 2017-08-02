@@ -41,7 +41,7 @@ let
     "Setup desktop"
     Pharo3Theme beCurrent. "light theme"
     World closeAllWindowsDiscardingChanges.
-    (GTInspector openOn: #WelcomeToStudio) openFullscreen.
+    StudioInspector open openFullscreen.
 
     "Save image"
     Smalltalk saveAs: 'new'.
