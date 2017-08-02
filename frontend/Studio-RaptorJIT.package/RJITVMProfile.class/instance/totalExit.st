@@ -1,0 +1,3 @@
+initialization
+totalExit
+	^ exit
