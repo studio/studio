@@ -7,7 +7,5 @@ open
 			composite text
 				title: 'Nix expression';
 				populate: #selection iconName: #glamorousGo on: $G entitled: 'Build' with: [ :editor | inspector go: editor text. ] ].
-	inspector openOn: 'with import <nixpkgs> {};
-with studio;
-
+	inspector openOn: 'with import <studio>;
 '.
