@@ -9,36 +9,82 @@
 
 { pkgs ? import ../../nix/pkgs.nix {} }:
 
-with pkgs; with stdenv;
+with pkgs; with builtins; with stdenv;
 
-let
+rec {
   raptorjit = llvmPackages_4.stdenv.mkDerivation {
     name = "raptorjit-auditlog";
     nativeBuildInputs = [ gcc luajit ];
     src = fetchFromGitHub {
-      owner = "raptorjit";
+      owner = "lukego";
       repo = "raptorjit";
-      rev = "89407be06213d8e0d43133c014e5c6607b66bd8d";
-      sha256 = "1a3y7079kbwqv0x6zjz2jq5fbpv7qfcfq70kz9p11cy12pj0dpg9";
+      rev = "48be21833bb1a1897b764dd38ab30f0c18a5fbae";
+      sha256 = "1gl88paqi8zxgkkz9kfcbw44v03zjql8r2mk8045fh1ldxpcjhj5";
     };
     installPhase = ''
-      install -D src/luajit $out/bin/raptorjit
+      install -D src/raptorjit $out/bin/raptorjit
       install -D src/lj_dwarf.dwo $out/lib/raptorjit.dwo
     '';
     enableParallelBuilding = true;  # Do 'make -j'
+    dontStrip = true;
   };
-in
-
-rec {
   evalFile = luaSourceFile:
-    runCommand "raptorjit-eval" { nativeBuildInputs = [ raptorjit ]; } ''
+    runCommand "raptorjit-eval"
+      {
+        nativeBuildInputs = [ raptorjit ];
+        dontStrip = true;
+      }
+      ''
+        mkdir $out
+        raptorjit ${luaSourceFile} 2>&1 | tee $out/output.txt
+        cp ${raptorjit}/lib/raptorjit.dwo $out/
+        if [ -f audit.log ]; then
+          cp audit.log $out/
+        fi
+      '';
+  evalTarball = url:
+    runCommand "raptorjit-eval-tarball"
+    {
+      src = fetchTarball url;
+      nativeBuildInputs = [ raptorjit ];
+      dontStrip = true;
+    }
+    ''
+      set -x
       mkdir $out
-      raptorjit ${luaSourceFile} 2>&1 | tee $out/output.txt
+      find $src
+      cp -r $src/* .
+      raptorjit *.lua 2>&1 | tee $out/output.txt
+      mkdir -p $out/vmprofile
       cp ${raptorjit}/lib/raptorjit.dwo $out/
-      if [ -f audit.log ]; then
-        cp audit.log $out/
-      fi
+      find . -name '*.vmprofile' -exec cp {} $out/vmprofile \;
+        if [ -f audit.log ]; then
+          cp audit.log $out/
+        fi
     '';
   evalString = luaSource:
     evalFile (writeScript "eval-source.lua" luaSource);
+  inspect = jit:
+    runCommand "inspect" {
+        inherit jit;
+        dwarfjson = dwarfish.elf2json (toPath "${jit}/raptorjit.dwo");
+      }
+      ''
+        mkdir -p $out/.studio
+        cat > $out/.studio/product-info.yaml <<EOF
+        type: raptorjit
+        EOF
+        cp -r $jit/* $out/
+        cp $dwarfjson $out/raptorjit-dwarf.json
+      '';
+  run = luaSource:
+    rec {
+      raw = evalString luaSource;
+      product = inspect raw;
+    };
+  runTarball = url:
+    rec {
+      raw = evalTarball url;
+      product = inspect raw;
+    };
 }
