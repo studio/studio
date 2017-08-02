@@ -11,7 +11,12 @@
 		"irConstants",
 		"irInstructions",
 		"traceno",
-		"root"
+		"root",
+		"parent",
+		"exitno",
+		"link",
+		"linktype",
+		"start"
 	],
 	"name" : "RJITGCtrace",
 	"type" : "normal"

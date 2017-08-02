@@ -17,7 +17,9 @@
 		"traceLoop",
 		"traceGC",
 		"traceFFI",
-		"totalSamples"
+		"totalSamples",
+		"name",
+		"process"
 	],
 	"name" : "RJITVMProfile",
 	"type" : "normal"

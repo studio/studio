@@ -1,13 +1,31 @@
 {
 	"instance" : {
-		"traceAll:" : "LukeGorrie 6/19/2017 10:12",
-		"traceLoop:" : "LukeGorrie 6/19/2017 10:11",
-		"traceFFI:" : "LukeGorrie 6/19/2017 10:11",
-		"loadFromFileNamed:" : "LukeGorrie 6/19/2017 10:07",
+		"totalRecording" : "LukeGorrie 8/1/2017 09:54",
+		"process" : "LukeGorrie 8/1/2017 16:16",
+		"name" : "LukeGorrie 8/1/2017 10:12",
+		"totalTraceLoop" : "LukeGorrie 8/1/2017 10:20",
+		"process:" : "LukeGorrie 8/1/2017 16:16",
+		"totalTraceGC" : "LukeGorrie 8/1/2017 10:20",
+		"totalC" : "LukeGorrie 8/1/2017 09:54",
+		"totalOptimize" : "LukeGorrie 8/1/2017 09:54",
+		"totalSamples" : "LukeGorrie 8/1/2017 09:54",
+		"totalTraceFFI" : "LukeGorrie 8/1/2017 10:20",
 		"traceGC:" : "LukeGorrie 6/19/2017 10:11",
-		"traceHead:" : "LukeGorrie 6/19/2017 09:58"
+		"traceLoop:" : "LukeGorrie 6/19/2017 10:11",
+		"name:" : "LukeGorrie 8/1/2017 11:36",
+		"totalInterpreter" : "LukeGorrie 8/1/2017 15:47",
+		"gtInspectorHotTracesIn:" : "LukeGorrie 8/2/2017 07:49",
+		"loadFromFileNamed:" : "LukeGorrie 6/19/2017 10:07",
+		"traceFFI:" : "LukeGorrie 6/19/2017 10:11",
+		"traceAll:" : "LukeGorrie 6/19/2017 10:12",
+		"totalTraceHead" : "LukeGorrie 8/1/2017 10:20",
+		"totals" : "LukeGorrie 7/31/2017 17:29",
+		"traceHead:" : "LukeGorrie 6/19/2017 09:58",
+		"totalExit" : "LukeGorrie 8/1/2017 09:54",
+		"totalGC" : "LukeGorrie 8/1/2017 11:52",
+		"totalAssemble" : "LukeGorrie 8/1/2017 09:54"
 	},
 	"class" : {
-		"loadFromFileNamed:" : "LukeGorrie 6/19/2017 09:40"
+		"loadFromFileNamed:name:process:" : "LukeGorrie 8/1/2017 16:17"
 	}
 }

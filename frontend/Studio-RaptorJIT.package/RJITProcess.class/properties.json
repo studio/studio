@@ -8,7 +8,8 @@
 	"instvars" : [
 		"dwarf",
 		"auditLog",
-		"vmprofiles"
+		"vmprofiles",
+		"path"
 	],
 	"name" : "RJITProcess",
 	"type" : "normal"
