@@ -41,6 +41,11 @@ rec {
         if [ -f audit.log ]; then
           cp audit.log $out/
         fi
+        mkdir $out/vmprofile
+        find . -name '*.vmprofile' -exec cp {} $out/vmprofile \;
+          if [ -f audit.log ]; then
+            cp audit.log $out/
+          fi
       '';
   evalTarball = url:
     runCommand "raptorjit-eval-tarball"
