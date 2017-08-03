@@ -76,17 +76,20 @@ $ nix-env -i studio-gui-vnc -f https://github.com/studio/studio/archive/master.t
 Running:
 
 ```
-$ studio-gui-vnc [vncserver--args...]
+$ studio-gui-vnc [extra-vncserver-args...]
 ```
+
+where `[extra-vncserver-args...]` are additional arguments to the
+`tigervnc` vncserver.
 
 ##### VNC Remote Access Tips
 
-- The recommended VNC client is `tigervnc`. On MacOS with Homebrew you can install this with `brew cask install tigervnc-viewer`.
-- Studio uses the `tigervnc` VNC server. The default behavior is to choose an available display number (specify with `:NUM` argument) and to run in the background (suppress with `-fg` argument).
+- The recommended VNC client is `tigervnc`. This particularly supports resizing the desktop to suit the client window size. On MacOS with Homebrew you can install tigervnc with `brew cask install tigervnc-viewer`.
 - Using SSH:
     - Start a long-lived Studio session: `ssh <server> studio-gui-vnc`.
     - Setup SSH port forwarding to (e.g.) display 7: `ssh -L 5907:localhost:5907 <server>`.
     - Connect with VNC client to (e.g.) display 7 over SSH forwarded port: `vncviewer localhost:7`.
+- See how the VNC setup is put together in [`backend/frontend/default.nix`](backend/frontend/default.nix).
 
 ## Design
 
