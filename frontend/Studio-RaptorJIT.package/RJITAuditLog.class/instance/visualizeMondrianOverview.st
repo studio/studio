@@ -16,5 +16,5 @@ visualizeMondrianOverview
 		b nodes: group value.
 		b layout dominanceTree.
 		b edges connectFrom: #parent. ].
-	b groups size >= 3 ifTrue: [ b layout packed ] ifFalse: [ b layout force ].
+	groups size >= 3 ifTrue: [ b layout packed ] ifFalse: [ b layout force ].
 	^ b build.
