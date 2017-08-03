@@ -18,6 +18,16 @@ Studio is very new. The first applications being supported are
 [Snabb](https://github.com/snabbco/snabb). There is room for hundreds
 more!
 
+## Design
+
+Studio is composed of two halves:
+
+The **frontend** provides a graphical user interface based on
+[Pharo](http://pharo.org/) using the "[moldable tools](http://scg.unibe.ch/news/2016-10-02_23-15-02Chis16d)" approach of the
+[Glamorous Toolkit](http://gtoolkit.org/).
+
+The **backend** produces data for the frontend using the flexibility of [Nix](http://nixos.org/nix/) to make use of practically any software in the universe.
+
 ## Status
 
 Studio is currently suitable for extreme-early-adopters who are
@@ -91,21 +101,35 @@ where `[extra-vncserver-args...]` are additional arguments to the
     - Connect with VNC client to (e.g.) display 7 over SSH forwarded port: `vncviewer localhost:7`.
 - See how the VNC setup is put together in [`backend/frontend/default.nix`](backend/frontend/default.nix).
 
-## Design
-
-Studio is composed of two halves:
-
-The **frontend** provides a graphical user interface based on
-[Pharo](http://pharo.org/) using the "[moldable tools](http://scg.unibe.ch/news/2016-10-02_23-15-02Chis16d)" approach of the
-[Glamorous Toolkit](http://gtoolkit.org/).
-
-The **backend** produces data for the frontend using the flexibility of [Nix](http://nixos.org/nix/) to make use of practically any software in the universe.
-
 ### Using Studio
 
 Studio opens to an "Inspector" window where you can enter a Nix expression and then evaluate by pressing the green arrow.
 
 ![Nix expression](doc/images/Nix.png)
+
+Here are some samples that you can copy-and-paste for running RaptorJIT code in different ways:
+
+```nix
+with import <studio>;
+# One-liner using Nix "..." string syntax.
+raptorjit.run "for i = 1, 100 do end"
+```
+
+```nix
+with import <studio>;
+# Multi-liner using Nix ''...'' string syntax.
+raptorjit.run ''
+  for i = 1, 100 do
+    x = math.random()
+  end
+''
+```
+
+```nix
+with import <studio>;
+# Download a tarball and evaluate *.lua inside
+raptorjit.runTarball http://github.com/lukego/rj-vmprof-bench/archive/master.tar.gz
+```
 
 The result of your expression will be inspected in a new pane to the right:
 
