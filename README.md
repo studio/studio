@@ -1,131 +1,125 @@
 # Studio
 
-Studio is an extensible software diagnostics suite. It provides a
-framework for creating and sharing application-specific tools for
-debugging, benchmarking, profiling, and so on.
+Studio is a productive environment for working on your programs.
 
-Studio is a new project. We are using it to create specialized tools
-for [Snabb](https://github.com/snabbco/snabb). You are welcome to get
-involved if you also have a project that needs custom tooling.
+Think of Studio as the programmer's virtual counterpart to the artist
+studio; the mechanic workshop; a doctor surgery. It is a workspace
+that you can fill with the tools that help you do your work, where
+they will all be within easy reach when you want them.
 
-## Installation
+Studio is not a traditional software IDE. You don't write your source
+code in Studio. What you do is collect specialist tools for the kind
+of software you are working on. This could include profilers like
+Intel VTune, protocol analyzers like Wireshark, testers like Valgrind,
+and so on.
 
-You can run Studio on a Linux/x86-64 machine by running commands such
-as these:
-
-```shell
-# Install the Nix package manager
-$ curl https://nixos.org/nix/install | sh
-
-# Checkout Studio from the Git repository
-$ git clone https://github.com/studio/studio
-
-# Run Studio directly from the source tree
-$ studio/bin/studio --help
-```
-
-Studio will automatically download and build its software dependencies
-the first time they are needed using [Nix](http://nixos.org/nix/).
-This means that you will see a lot of activity the first time you run
-a given command, so please be patient. The downloads will be cached
-for future use and Nix will neatly isolate all of the downloaded
-software in the `/nix/store/` directory.
-
-## Design
-
-Studio is built on three layers of software:
-
-The **frontend** (not yet implemented) presents a unifying graphical
-user interface. The frontend is based on [Pharo](http://pharo.org/)
-using the "moldable tools" approach
-with [The Glamorous Toolkit](http://gtoolkit.org/). (There is also a
-basic unix shell frontend.)
-
-The **backend** converts raw diagnostic data (logs, core dumps,
-profiler dumps, etc) into understandable information (graphs, tables,
-reports). The backend uses [Nix](http://nixos.org/nix/) for structured
-step-by-step processing.
-
-The **tools** implement individual processing steps for the backend.
-Tools can be written in any programming language. Some tools are
-written specifically for Studio, for example to produce information in
-a special format for the frontend. Other tools are taken off the shelf
-e.g. objdump to disassemble machine code, wireshark to decode network
-traffic, `perf` to analyze performance reports, and so on.
+Studio is very new. The first applications being supported are
+[RaptorJIT](https://github.com/raptorjit/raptorjit) and
+[Snabb](https://github.com/snabbco/snabb). There is room for hundreds
+more!
 
 ## Status
 
-Studio is new and raw. Here is what the initial commands look like:
+Studio is currently suitable for extreme-early-adopters who are
+interested in experimenting with RaptorJIT code.
+
+## Installation
+
+Studio is a GUI application that runs on Linux/x86-64. The recommended
+deployment method is to run Studio on a server and access it using
+VNC. You can also run it locally on your development machine. (If want
+to run locally on a Mac then you can create a Linux VM using Docker or
+VirtualBox.)
+
+#### Prerequisite: Nix
+
+Studio is installed using the Nix package manager. So you need to
+install Nix before installing Studio.
 
 ```
-$ studio --help
-Studio: the extensible software diagnostics suite
-
-Usage:
-
-  studio [common-options] <command> ...
-
-Commands:
-
-    studio gui                 Studio GUI front-end (NYI).
-    studio snabb               Snabb diagnostic tools.
-    studio rstudio             RStudio IDE with relevant packages.
-
-For detailed command help:
-    studio <command> --help
-
-Common options:
-
-    -v, --verbose              Print verbose nix trace information.
-    -j, --jobs NUM             Execute NUM build jobs in parallel.
-                               Defaults to 8 or .
-    -n, --nix ARGS             Extra arguments for nix-build.
-                               Defaults to .
+$ curl https://nixos.org/nix/install | sh
 ```
+
+#### Installing for X11 GUI
+
+The command `studio-gui` runs the Studio GUI directly via X11. You
+need to have an X11 display server available. This is probably the
+right choice if you are installing on a machine that has a graphical
+desktop environment e.g. a Linux laptop or graphical VirtualBox VM.
+
+Installation:
+
 ```
-$ studio snabb --help
-Subcommands for 'studio snabb':
-
-    studio snabb processes     Analyze a set of Snabb processes.
-    studio snabb vmprofile     Analyze "VMProfile" data from one process.
-
-For detailed subcommand help:
-    studio snabb <subcommand> --help
-$ studio snabb processes --help
-Usage:
-
-    studio snabb processes [option|directory]*
-
-Arguments:
-
-    DIRECTORY                  Snabb process state directory to analyze.
-                               Many directories can be specified.
-    -g, --group GROUP          Group name for the following Snabb processes.
-                               Use to assign Snabb processes to groups.
-
-    -o, --output PATH          Create output (symlink to directory) at PATH.
+$ nix-env -i studio-gui -f https://github.com/studio/studio/archive/master.tar.gz
 ```
+
+Running:
+
 ```
-$ studio snabb vmprofile --help
-Usage:
-
-    studio snabb vmprofile [option]* <directory>
-
-Arguments:
-
-    DIRECTORY                  Snabb process state directory to analyze.
-                               Exactly one directory must be provided.
-    -o, --output PATH          Create output (symlink to directory) at PATH.
+$ studio-gui
 ```
+
+#### Installing for VNC GUI
+
+The command `studio-gui-vnc` runs the Studio GUI behind a VNC remote
+desktop server. You can connect to the GUI from another host using
+your VNC client of choice. This is probably the right choice if you
+are installing Studio on a server (bare metal or cloud VM) that you
+will access remotely.
+
+Installation:
+
 ```
-$ studio rstudio --help
-Usage:
-
-    studio rstudio
-
-Runs the RStudio IDE (https://www.rstudio.com/) with the packages
-relevant to Studio available in the appropriate version. 
-
-This provides an environment for writing R code that works as expected
-when deployed with Studio.
+$ nix-env -i studio-gui-vnc -f https://github.com/studio/studio/archive/master.tar.gz
 ```
+
+Running:
+
+```
+$ studio-gui-vnc [extra-vncserver-args...]
+```
+
+where `[extra-vncserver-args...]` are additional arguments to the
+`tigervnc` vncserver.
+
+##### VNC Remote Access Tips
+
+- The recommended VNC client is `tigervnc`. This particularly supports resizing the desktop to suit the client window size. On MacOS with Homebrew you can install tigervnc with `brew cask install tigervnc-viewer`.
+- Using SSH:
+    - Start a long-lived Studio session: `ssh <server> studio-gui-vnc`.
+    - Setup SSH port forwarding to (e.g.) display 7: `ssh -L 5907:localhost:5907 <server>`.
+    - Connect with VNC client to (e.g.) display 7 over SSH forwarded port: `vncviewer localhost:7`.
+- See how the VNC setup is put together in [`backend/frontend/default.nix`](backend/frontend/default.nix).
+
+## Design
+
+Studio is composed of two halves:
+
+The **frontend** provides a graphical user interface based on
+[Pharo](http://pharo.org/) using the "[moldable tools](http://scg.unibe.ch/news/2016-10-02_23-15-02Chis16d)" approach of the
+[Glamorous Toolkit](http://gtoolkit.org/).
+
+The **backend** produces data for the frontend using the flexibility of [Nix](http://nixos.org/nix/) to make use of practically any software in the universe.
+
+### Using Studio
+
+Studio opens to an "Inspector" window where you can enter a Nix expression and then evaluate by pressing the green arrow.
+
+![Nix expression](doc/images/Nix.png)
+
+The result of your expression will be inspected in a new pane to the right:
+
+![Trace Tree](doc/images/TraceTree.png)
+
+You can click on individual objects to open them in new Inspector panes:
+
+![VMProfiles](doc/images/VMProfiles.png)
+
+![HotTraces](doc/images/HotTraces.png)
+
+![IR Tree](doc/images/IRTree.png)
+
+and you can backtrack to previous panes, or resize the number of panes that are visible at one time, using the controls at the bottom:
+
+![Controls](doc/images/Controls.png)
+
