@@ -43,13 +43,13 @@ stdenv.mkDerivation rec {
   configureScript = "platforms/unix/config/configure";
   configureFlags = [ "--without-npsqueak"
                      "--with-vmversion=5.0"
-                     "--with-src=spur64src" ];
+                     "--with-src=spursrc" ];
   CFLAGS = "-DPharoVM -DIMMUTABILITY=1 -msse2 -D_GNU_SOURCE -DCOGMTVM=0 -g -O2 -DNDEBUG -DDEBUGVM=0";
   LDFLAGS = "-Wl,-z,now";
 
   # VM sources require some patching before build.
   prePatch = ''
-    patchShebangs build.linux64x64
+    patchShebangs build.linux32x86
     # Fix hard-coded path to /bin/rm in a script
     sed -i -e 's:/bin/rm:rm:' platforms/unix/config/mkmf
     # Fill in mandatory metadata about the VM source version
@@ -61,7 +61,7 @@ stdenv.mkDerivation rec {
 
   # Note: --with-vmcfg configure option is broken so copy plugin specs to ./
   preConfigure = ''
-    cp build.linux64x64/pharo.cog.spur/plugins.{ext,int} .
+    cp build.linux32x86/pharo.cog.spur/plugins.{ext,int} .
   '';
 
   # (No special build phase.)

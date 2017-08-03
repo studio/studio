@@ -1,6 +1,6 @@
 [
   (self: super: {
-    pharo = super.callPackage ./backend/pharo/vm {};
+    pharo = super.callPackage_i686 ./backend/pharo/vm {};
   })
   (self: super:
     with super.callPackage ./backend/frontend {};

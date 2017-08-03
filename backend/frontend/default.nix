@@ -22,9 +22,9 @@ let
   # Built on Inria CI (Jenkins) with Metacello to install Studio.
   baseImage = fetchImageZip rec {
     name = "studio-${version}";
-    version = "17";
+    version = "19";
     url = "https://ci.inria.fr/pharo-contribution/job/Studio/default/${version}/artifact/Studio.zip";
-    sha256 = "0mpc1rs073dyr3j9q3r1mgyl0vwnn1wmzh57fkxdpf3s5d3300fv";
+    sha256 = "19jhw0fnca4450a7iv51mzq91wixm5gllq7qwnw9r4yxhnkm3vak";
   };
 
   # Script to update and customize the image for Studio.
@@ -68,6 +68,7 @@ let
     cp ${studioImage}/pharo.changes pharo.changes
     chmod +w pharo.image
     chmod +w pharo.changes
+    export STUDIO_PATH=''${STUDIO_PATH:-${../..}}
     ${pharo}/bin/pharo pharo.image
   '';
 
