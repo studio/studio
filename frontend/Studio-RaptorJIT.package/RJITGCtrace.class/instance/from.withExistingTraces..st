@@ -1,4 +1,4 @@
-initializing
+instance creation
 from: aGCtrace withExistingTraces: traces
 	| flashback bias irAddress |
 	gctrace := DWARFValueProxy on: aGCtrace.
@@ -12,3 +12,8 @@ from: aGCtrace withExistingTraces: traces
 	irInstructions do: [ :ins | ins link: self. ].
 	traceno := gctrace traceno.
 	root := traces detect: [ :tr | tr traceno = gctrace root ] ifNone: [nil].
+	parent := traces detect: [  :tr | tr traceno = gctrace parent ] ifNone: [ nil ].
+	exitno := parent isNil ifTrue: [ nil ] ifFalse: [ gctrace exitno ].
+	link := traces detect: [ :tr | tr traceno = gctrace link ] ifNone: [ nil ].
+	linktype := (dwarf valueToName: gctrace linktype inEnumerationWith: 'LJ_TRLINK_NONE') asLinkTypeName.
+	start := gctrace startpc.

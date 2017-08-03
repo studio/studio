@@ -1,0 +1,16 @@
+{
+	"commentStamp" : "",
+	"super" : "Object",
+	"category" : "Studio-Nix",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"code",
+		"derivations",
+		"builds",
+		"outputs"
+	],
+	"name" : "NixBuild",
+	"type" : "normal"
+}

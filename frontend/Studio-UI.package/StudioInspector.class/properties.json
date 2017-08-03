@@ -1,0 +1,11 @@
+{
+	"commentStamp" : "",
+	"super" : "GTInspector",
+	"category" : "Studio-UI",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [ ],
+	"name" : "StudioInspector",
+	"type" : "normal"
+}

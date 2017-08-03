@@ -1,0 +1,3 @@
+initialization
+totalOptimize
+	^ opt

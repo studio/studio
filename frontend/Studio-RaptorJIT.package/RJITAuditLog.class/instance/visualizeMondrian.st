@@ -19,8 +19,8 @@ visualizeMondrian
 				b edges connectFrom: #op1ins.
 				b edges connectFrom: #op2ins.
 				b layout dominanceTree verticalGap: 3 ]. ].
-	b edges connectFrom: #root.
-	b layout horizontalTree.
+	b edges connectFrom: #parent.
+	b layout force.
 	m := b build.
 	m view @ RTZoomableBoxView.
 	^ m

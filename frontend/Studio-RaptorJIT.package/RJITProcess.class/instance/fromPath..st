@@ -1,5 +1,11 @@
 instance creation
-fromPath: path
-	self dwarf: (DWARF loadFromFileNamed: path, '/raptorjit-dwarfish.json').
-	self auditLog: (RJITAuditLog loadFromFileNamed: path, '/audit.log' withDWARF: self dwarf).
-	self vmProfile: (RJITVMProfile loadFromFileNamed: path, '/raptorjit.vmprofile') named: 'default'.
+fromPath: aPath
+	| dwarfPath auditPath |
+	path := aPath.
+	dwarfPath := path / 'raptorjit-dwarf.json'.
+	auditPath := path / 'audit.log'.
+	[ dwarfPath isFile and: auditPath isFile ] assert.
+	auditLog := RJITAuditLog loadFromFileNamed: auditPath pathString withDWARF: (DWARF loadFromFileNamed: dwarfPath pathString).
+	vmprofiles := OrderedCollection new.
+	(path / 'vmprofile') children do: [ :vmprofile |
+		vmprofiles add: (RJITVMProfile loadFromFileNamed: vmprofile pathString name: vmprofile basenameWithoutExtension process: self) ].

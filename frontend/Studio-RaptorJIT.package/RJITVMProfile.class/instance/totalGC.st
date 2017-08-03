@@ -1,0 +1,3 @@
+initialization
+totalGC
+	^ gc

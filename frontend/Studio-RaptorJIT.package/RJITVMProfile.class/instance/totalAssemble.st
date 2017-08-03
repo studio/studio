@@ -1,0 +1,3 @@
+initialization
+totalAssemble
+	^ asm

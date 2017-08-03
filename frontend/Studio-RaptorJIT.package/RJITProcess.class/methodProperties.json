@@ -1,11 +1,17 @@
 {
 	"instance" : {
-		"fromPath:" : "LukeGorrie 6/20/2017 11:50",
-		"dwarf:" : "LukeGorrie 6/20/2017 11:48",
+		"visualizeTraces:withProfile:" : "LukeGorrie 8/2/2017 10:41",
 		"auditLog:" : "LukeGorrie 6/20/2017 11:50",
 		"dwarf" : "LukeGorrie 6/20/2017 11:49",
-		"gtInspectorJITIn:" : "LukeGorrie 6/20/2017 15:45",
-		"vmProfile:named:" : "LukeGorrie 6/20/2017 11:51"
+		"gtInspectorVMProfilesIn:" : "LukeGorrie 8/1/2017 16:12",
+		"vmProfile:named:" : "LukeGorrie 6/20/2017 11:51",
+		"dwarf:" : "LukeGorrie 6/20/2017 11:48",
+		"gtInspectorJITIn:" : "LukeGorrie 7/31/2017 11:32",
+		"auditLog" : "LukeGorrie 8/2/2017 07:29",
+		"gtInspectorTraceTreeIn:" : "LukeGorrie 7/31/2017 11:27",
+		"vmprofiles" : "LukeGorrie 8/1/2017 09:54",
+		"fromPath:" : "LukeGorrie 8/1/2017 16:18",
+		"gtInspectorFilesIn:" : "LukeGorrie 7/31/2017 16:46"
 	},
 	"class" : { }
 }
