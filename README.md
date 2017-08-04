@@ -133,6 +133,8 @@ You can click on individual objects to open them in new Inspector panes:
 
 ![IR Tree](doc/images/IRTree.png)
 
+![DWARF](doc/images/DWARF.png)
+
 and you can backtrack to previous panes, or resize the number of panes that are visible at one time, using the controls at the bottom:
 
 ![Controls](doc/images/Controls.png)
