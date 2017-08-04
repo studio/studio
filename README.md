@@ -7,11 +7,12 @@ studio; the mechanic workshop; a doctor surgery. It is a workspace
 that you can fill with the tools that help you do your work, where
 they will all be within easy reach when you want them.
 
-Studio is not a traditional software IDE. You don't write your source
-code in Studio. What you do is collect specialist tools for the kind
-of software you are working on. This could include profilers like
-Intel VTune, protocol analyzers like Wireshark, testers like Valgrind,
-and so on.
+Unlike a traditional IDE, you don't write your source code in Studio.
+Instead you collect a suite of specialist tools that help you develop
+your own specific application. This could include profilers like Intel
+VTune, protocol analyzers like Wireshark, testers like Valgrind, and
+so on. You can either build these tools yourself or import existing
+ones, depending on the situation.
 
 Studio is very new. The first applications being supported are
 [RaptorJIT](https://github.com/raptorjit/raptorjit) and
@@ -35,70 +36,59 @@ interested in experimenting with RaptorJIT code.
 
 ## Installation
 
-Studio is a GUI application that runs on Linux/x86-64. The recommended
-deployment method is to run Studio on a server and access it using
-VNC. You can also run it locally on your development machine. (If want
-to run locally on a Mac then you can create a Linux VM using Docker or
-VirtualBox.)
+Studio is a GUI application that runs on Linux/x86-64. You can run
+Studio locally (X11 mode) or remotely (VNC mode.) The default
+installation supports both options "out of the box."
+
+macOS users are advised to use VNC mode with Studio running on a
+server, a cloud VM, a Docker container, a VirtualBox VM, etc.
 
 #### Prerequisite: Nix
 
-Studio is installed using the Nix package manager. So you need to
-install Nix before installing Studio.
+Studio is installed using the Nix package manager. You need
+to [install Nix](https://nixos.org/nix/) before installing Studio.
+
+Here is a one-liner for installing Nix:
 
 ```
 $ curl https://nixos.org/nix/install | sh
 ```
 
-#### Installing for X11 GUI
+#### Installing Studio
 
-The command `studio-gui` runs the Studio GUI directly via X11. You
-need to have an X11 display server available. This is probably the
-right choice if you are installing on a machine that has a graphical
-desktop environment e.g. a Linux laptop or graphical VirtualBox VM.
-
-Installation:
+You can install Studio directly from a source tarball. Here is the
+command to install the current master branch:
 
 ```
-$ nix-env -i studio-gui -f https://github.com/studio/studio/archive/master.tar.gz
+$ nix-env -iA studio -f https://github.com/studio/studio/archive/master.tar.gz
 ```
 
-Running:
+You can rerun this command at any time to install the latest release.
+If you want to install a different version, from a particular tag or
+branch of repository, then you only need to update the URL.
+
+## Running
+
+You can run the Studio GUI either locally (X11) or remotely (VNC.) The
+command `studio-x11` runs the GUI directly on your X server while the
+command `studio-vnc` creates a VNC desktop running Studio for remote
+access.
 
 ```
-$ studio-gui
+$ studio-x11
+$ studio-vnc [extra-vncserver-args...]
 ```
 
-#### Installing for VNC GUI
+The VNC server used is `tigervnc`.
 
-The command `studio-gui-vnc` runs the Studio GUI behind a VNC remote
-desktop server. You can connect to the GUI from another host using
-your VNC client of choice. This is probably the right choice if you
-are installing Studio on a server (bare metal or cloud VM) that you
-will access remotely.
+### VNC and SSH remote access tips
 
-Installation:
-
-```
-$ nix-env -i studio-gui-vnc -f https://github.com/studio/studio/archive/master.tar.gz
-```
-
-Running:
-
-```
-$ studio-gui-vnc [extra-vncserver-args...]
-```
-
-where `[extra-vncserver-args...]` are additional arguments to the
-`tigervnc` vncserver.
-
-##### VNC Remote Access Tips
-
-- The recommended VNC client is `tigervnc`. This particularly supports resizing the desktop to suit the client window size. On MacOS with Homebrew you can install tigervnc with `brew cask install tigervnc-viewer`.
+- The recommended VNC client is `tigervnc` which supports automatically resizing the desktop to suit the client window size. On macOS with Homebrew you can install tigervnc with `brew cask install tigervnc-viewer` and then run `vncviewer <server>[:display]`.
 - Using SSH:
-    - Start a long-lived Studio session: `ssh <server> studio-gui-vnc`.
+    - Start a long-lived Studio session: `ssh <server> studio-vnc [:display]`. If no display is specified then an available one is assigned automatically.
     - Setup SSH port forwarding to (e.g.) display 7: `ssh -L 5907:localhost:5907 <server>`.
     - Connect with VNC client to (e.g.) display 7 over SSH forwarded port: `vncviewer localhost:7`.
+    - Shut down a Studio sessions: `ssh <server> vncserver -kill <:display>`.
 - See how the VNC setup is put together in [`backend/frontend/default.nix`](backend/frontend/default.nix).
 
 ### Using Studio
