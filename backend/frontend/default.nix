@@ -64,8 +64,11 @@ let
     '';
 
   # Script to start the Studio image with the Pharo VM.
-  studio-x11 = writeScriptBin "studio-x11-${studio-version}"
-    ''
+  studio-x11 = writeTextFile {
+    name = "studio-x11-${studio-version}";
+    destination = "/bin/studio-x11";
+    executable = true;
+    text = ''
       #!${stdenv.shell}
       cp ${studio-image}/pharo.image pharo.image
       cp ${studio-image}/pharo.changes pharo.changes
@@ -74,6 +77,7 @@ let
       export STUDIO_PATH=''${STUDIO_PATH:-${../..}}
       ${pharo}/bin/pharo pharo.image
     '';
+  };
 
   # Configuration file to make ratpoison run Studio.
   ratpoisonConfig = writeScript "studio-ratpoison-config"
@@ -90,32 +94,25 @@ let
     '';
 
   # Script to run everything in VNC.
-  studio-vnc = writeScriptBin "studio-vnc-${studio-version}" ''
-    #!${stdenv.shell}
-    exec ${tigervnc}/bin/vncserver \
-      "$@" \
-      -name "Studio" \
-      -autokill \
-      -xstartup ${ratpoisonScript} \
-      -SecurityTypes None
-  '';
-
-  studio = runCommand "studio-${studio-version}"
-    {
-      meta = {
-        description = "A productive environment for working on your programs";
-      };
-    }
-    ''
-      mkdir -p $out/bin
-      ln -s ${studio-x11}/bin/studio-x11 $out/bin
-      ln -s ${studio-vnc}/bin/studio-vnc $out/bin
+  studio-vnc = writeTextFile {
+    name = "studio-vnc-${studio-version}";
+    destination = "/bin/studio-vnc";
+    executable = true;
+    text = ''
+      #!${stdenv.shell}
+      exec ${tigervnc}/bin/vncserver \
+        "$@" \
+        -name "Studio" \
+        -autokill \
+        -xstartup ${ratpoisonScript} \
+        -SecurityTypes None
     '';
+  };
 in
   
 {
   # main package collection for 'nix-env -i'
-  inherit studio;
+  studio = { inherit studio-x11 studio-vnc tigervnc; };
   # individual packages
   studio-gui = studio-x11;           # deprecated
   studio-gui-vnc = studio-vnc;       # deprecated
