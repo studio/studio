@@ -73,7 +73,7 @@ overridden.
 
 For example, let us define a builder that takes for input the URL of a packet capture in binary `pcap` file format and for output creates a product of type `xml/packet-capture/pdml`.
 
-```
+```nix
 # pdml api module
 pdml = {
   # inspect-url function
@@ -95,7 +95,7 @@ pdml = {
 
 This builder can be invoked in a script like this:
 
-```
+```nix
 pdml.inspect-url http://my.site/foo.pcap
 ```
 
@@ -114,7 +114,7 @@ straightforward with Nix.
 
 A presentation is an interactive user interface - a live Smalltalk object - that presents a product (or a component part of a product) to the user. The input to the presentation is a product stored on the local file system. The presentation code then adds new _view_ tabs to the inspector.
 
-```
+```smalltalk
 StudioPresentation subclass: #PDLPacketCapturePresentation
   instanceVariableNames: 'xml'
   classVariableNames: ''
@@ -126,10 +126,12 @@ PDLPacketCapturePresentation class >> supportsProductType: type
    ^ type = 'xml/packet-capture/pdl'.
 ```
 
-```
+```smalltalk
 PDLPacketCapturePresentation >> openOn: dir
    xml := XMLDomParser parseFileNamed: dir / 'packets.pdml'.
+```
 
+```smalltalk
 PDLPacketCapturePresentation >> gtInspectorPacketsIn: composite
    <gtInspectorPresentationOrder: 1>
    "Reuse the standard XML tree view."
