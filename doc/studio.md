@@ -148,7 +148,7 @@ pdml.inspect-url https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=
 
 which creates the product for our presenter to show as an XML tree:
 
-[XML PDL Tree browser](images/PDML.png)
+![XML PDL Tree browser](images/PDML.png)
 
 # Using Studio
 
