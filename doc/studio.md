@@ -121,7 +121,7 @@ StudioPresentation subclass: #PDLPacketCapturePresentation
   package: 'Studio-UI'
 ```
 
-```
+```smalltalk
 PDLPacketCapturePresentation class >> supportsProductType: type
    ^ type = 'xml/packet-capture/pdl'.
 ```
