@@ -231,6 +231,126 @@ Here is a Studio-over-SSH cheat sheet:
   <:display>`.
 
 ## Operating the Studio UI
+
+The Studio user interface is based on the [Miller
+columns](https://en.wikipedia.org/wiki/Miller_columns)
+paradigm. Specifically, Studio uses a Miller columns implementation
+called [GTInspector](http://gtoolkit.org/#playinspector). In this
+section we first illustrate Miller columns with a familiar example and
+then use this to explain the Studio interface.
+
+### Context: macOS Finder
+
+Let us illustrate the Miller column concept with a widely known example
+from the macOS Finder.
+
+![macOS Finder](images/Finder.png)
+
+The screenshot shows the "Columns" mode of the macOS Finder. We can
+deconstruct the picture this way:
+
+- One _window_ contains the user interface.
+- Four _panes_ are arranged left-to-right in columns.
+- Each pane _inspects_ one object.
+- Each pane permits one object to be _selected_ for display in the next
+  pane on the right.
+- The visual layout of each pane depends on the type of object it is
+  inspecting:
+    - The first pane inspects the set of possible starting points, a
+      list of "Favorites" and "Devices."
+    - The second and third panes each inspect directories. The layout
+      of these panes emphasize the mix of file types in each directory.
+    - The fourth pane inspects a text file. The layout stacks several
+      things: a glimpse of the file contents, the name of the file,
+      some relevant metadata, and an "Add tags..." user action.
+- Each of the first three panes has a _selection_. The selected
+  object is shown in the next pane to the right.
+
+### Studio UI
+
+Studio uses this same paradigm. The user inspects a directed graph of
+objects, these objects can be of infinitely many diverse types with
+their own distinct visual presentations, and when a new object is
+selected in a pane then it is inspected in the next pane immediately
+on the right.
+
+Here is a screenshot of the Studio UI:
+
+![Studio UI](StudioUI.png)
+
+We can deconstruct this in the same way. There are some key similarities:
+
+- One window contains the user interface.
+- Four panes are arranged in columns.
+- Each pane inspects one object.
+- Each pane allows an object to be selected for display in the pane to
+  the right.
+- The layout of each pane depends on the object it is inspecting:
+    - The first pane inspects a script (a Nix expression) to build
+      something for Studio to inspect. This is displayed as an
+      editable text area. The selected script downloads a tarball of
+      Lua source code and executes it with RaptorJIT.
+    - The second pane appeared after the script was executed and is
+      inspecting the internal data structures that the JIT produces
+      while executing the Lua code. We see a list of profiler data
+      sets and one of those is selected.
+    - The third pane appeared when the profile was selected and shows
+      a set of JIT traces (blocks of code) with their redness
+      indication how "hot" they are in the chosen profile (how much
+      time the CPU spent executing that code.)
+    - The fourth pane appeared when one of the traces was selected
+      with a mouse click and shows the Intermediate Representation
+      (IR) code for the trace. The individual instructions are shown
+      as boxes, and edges are drawn to show where the result of an
+      instruction above is used as an operand to an instruction below.
+
+#### Views
+
+In Studio each pane presents a tabbed set of named _views_. Each view
+presents the same object in a different way.
+
+For example, a JIT trace could be shown as a graphical tree of IR
+instructions, or as a table of IR instructions and their operands, or
+as textual disassembled machine code. The most appropriate choice
+depends on what the user is interested in at a given moment. The
+interface makes it easy to switch between views with a mouse click on
+the right tab.
+
+#### Pane visibility
+
+The screenshot shows four side-by-side panes, but the exact number of
+panes shown at any time is controlled by the user. Studio starts with
+one pane and then adds a second when the first object is selected. As
+more objects are selected the UI automatically "scrolls" to the right.
+This means that by default the user will see the right-most two panes
+that are deepest in the inspection chain, while the left-most panes
+further up the chain will have scrolled off screen.
+
+The user can also directly control which panes are visible using this
+control that is always present at the bottom of the window:
+
+![Controls](images/Controls.png)
+
+The circles represent the panes and the darker shaded area indicates
+which panes are currently visible. These mouse actions are available:
+
+- Click on a circle to make sure that the corresponding pane is
+  visible.
+- Click and drag on the shaded area to pane the visible area left or
+  right.
+- Click and drag on the side of the shaded area to resize it so that a
+  different number of panes will be visible at one time.
+
+### GTInspector framework
+
+Studio uses the Miller column implementation from the [Glamorous
+Toolkit (GT) Inspector](http://gtoolkit.org/) user interface
+framework. This framework provides the whole basic UI. Studio then
+extends this framework to support more relevant kinds of objects.
+
+You can find more information about the Glamorous Toolkit in the
+[Mastering Studio](Mastering-Studio) section.
+
 ### Writing a Nix expression
 ### Selecting objects to inspect
 ### Selecting views for objects
