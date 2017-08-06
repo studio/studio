@@ -276,7 +276,7 @@ on the right.
 
 Here is a screenshot of the Studio UI:
 
-![Studio UI](StudioUI.png)
+![Studio UI](images/StudioUI.png)
 
 We can deconstruct this in the same way. There are some key similarities:
 
