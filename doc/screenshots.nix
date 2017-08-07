@@ -17,7 +17,7 @@ let
   '';
   rj-example-2 = raptorjit.runTarball https://github.com/lukego/rj-vmprof-bench/archive/master.tar.gz;
   object = ''
-    RJITProcess new fromPath: '${rj-example-2.product}' asFileReference
+    RJITProcess new fromPath: '${rj-example-1.product}' asFileReference
   '';
  in
 

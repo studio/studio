@@ -47,10 +47,11 @@ rec {
             cp audit.log $out/
           fi
       '';
-  evalTarball = url:
+  evalTarball = url: evalDirectory (fetchTarball url);
+  evalDirectory = source:
     runCommand "raptorjit-eval-tarball"
     {
-      src = fetchTarball url;
+      src = source;
       nativeBuildInputs = [ raptorjit ];
       dontStrip = true;
     }
