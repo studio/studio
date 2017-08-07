@@ -1,3 +1,5 @@
+% Studio: a comfortable environment for working on your programs.
+
 # Introduction
 
 Studio is a productive environment for working on your programs.
@@ -350,6 +352,22 @@ extends this framework to support more relevant kinds of objects.
 
 You can find more information about the Glamorous Toolkit in the
 [Mastering Studio](Mastering-Studio) section.
+
+# Supported applications
+## RaptorJIT
+### Product: raptorjit-vm-dump
+### Nix API
+### Presentation: RaptorJIT Process
+#### View: Traces Overview
+#### View: Traces List
+#### View: VMProfiles
+### Presentation: VMProfile
+#### View: Host Traces
+### Presentation: RaptorJIT Trace
+#### View: IR Tree
+### Presentation: DWARF Value
+#### View: DWARF
+## Snabb
 
 ### Writing a Nix expression
 ### Selecting objects to inspect
