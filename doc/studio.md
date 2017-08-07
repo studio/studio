@@ -1,4 +1,4 @@
-% Studio: a comfortable environment for working on your programs.
+% Studio: a productive environment for working on your programs.
 
 # Introduction
 
