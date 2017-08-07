@@ -5,7 +5,7 @@
   (self: super:
     with super.callPackage ./backend/frontend {};
     {
-      inherit studio studio-gui studio-gui-vnc studio-base-image studio-image;
+      inherit studio studio-gui studio-gui-vnc studio-base-image studio-image studio-inspector-screenshot;
       raptorjit = super.callPackage ./backend/raptorjit {};
       snabbr = super.callPackage ./backend/snabbr {};
       timeliner = super.callPackage ./backend/timeliner {};

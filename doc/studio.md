@@ -359,6 +359,9 @@ You can find more information about the Glamorous Toolkit in the
 ### Nix API
 ### Presentation: RaptorJIT Process
 #### View: Traces Overview
+
+![RaptorJIT Process TraceOverview](screenshots/RaptorJIT-Process-TraceOverview.png)
+
 #### View: Traces List
 #### View: VMProfiles
 ### Presentation: VMProfile

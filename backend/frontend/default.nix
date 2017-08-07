@@ -63,6 +63,35 @@ let
       cp new.changes $out/pharo.changes
     '';
 
+  studio-inspector-screenshot = { name, object, width ? 800, height ? 600 }:
+    runCommand "studio-screenshot-${name}.png"
+      {
+        nativeBuildInputs = [ pharo ];
+        smalltalkScript = writeScript "studio-screenshot.st"
+          ''
+            | __window __object __morph |
+            Transcript show: 'Taking screenshot'; cr.
+            "Create the object."
+            __object := [
+              ${object}
+            ] value.
+            "Create the inspector."
+            __window := GTInspector inspector: __object.
+            __window width: ${toString width}; height: ${toString height}.
+            "Save the screenshot."
+            PNGReadWriter putForm: __window imageForm
+                          onFileNamed: Smalltalk imageDirectory / 'screenshot.png'.
+            Transcript show: 'Took screenshot'; cr.
+          '';
+       }
+      ''
+        cp ${studio-image}/* .
+        chmod +w pharo.image pharo.changes
+        pharo --nodisplay pharo.image st --quit $smalltalkScript
+        mkdir $out
+        cp screenshot.png $out/${name}.png
+      '';
+
   # Script to start the Studio image with the Pharo VM.
   studio-x11 = writeTextFile {
     name = "studio-x11-${studio-version}";
@@ -118,5 +147,6 @@ in
   studio-gui-vnc = studio-vnc;       # deprecated
   studio-base-image = base-image;
   studio-image = studio-image;
+  inherit studio-inspector-screenshot;
 }
 

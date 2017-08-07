@@ -1,6 +1,8 @@
 # Studio manual
-{ pkgs ? import ../nix/pkgs.nix {} }:
+{ pkgs ? (import ../.) }:
 with pkgs; with stdenv;
+
+let screenshots = import ./screenshots.nix { inherit pkgs; }; in
 
 runCommand "studio-manual-html" {
     src = ./.;
@@ -15,6 +17,8 @@ runCommand "studio-manual-html" {
   ''
     cp -r $src/* .
     cp $template/* .
+    mkdir screenshots
+    cp ${screenshots.RaptorJIT-Process-TraceOverview}/* screenshots/
     mkdir $out
     pandoc studio.md -o $out/studio.html \
       --template template.html --css template.css \
