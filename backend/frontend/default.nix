@@ -63,7 +63,7 @@ let
       cp new.changes $out/pharo.changes
     '';
 
-  studio-inspector-screenshot = { name, object, width ? 800, height ? 600 }:
+  studio-inspector-screenshot = { name, object, width ? 640, height ? 480 }:
     runCommand "studio-screenshot-${name}.png"
       {
         nativeBuildInputs = [ pharo ];
