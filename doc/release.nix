@@ -1,2 +1,2 @@
 { nixpkgs }:
-import ./default.nix (nixpkgs { overlays = import ../overlays.nix; })
+{ studio-manual-html = import ./default.nix (nixpkgs { overlays = import ../overlays.nix; }) }
