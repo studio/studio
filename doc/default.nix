@@ -25,7 +25,7 @@ runCommand "studio-manual-html" {
     mkdir $out
     pandoc studio.md -o $out/studio.html \
       --template template.html --css template.css \
-      --self-contained --toc --toc-depth 3
+      --self-contained --toc --toc-depth 2
     mkdir $out/nix-support
     echo "file Manual $out/studio.html" >> $out/nix-support/hydra-build-products
   ''
