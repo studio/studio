@@ -2,26 +2,40 @@
 
 # Introduction
 
-Studio is a productive environment for working on your programs.
+Studio is a debugger for the data produced by complex applications.
+First, Studio imports dense and "messy" data in an application's own
+native formats, then it processes the data to extract useful
+information, and finally it presents the results with an interactive
+graphical user interface.
 
-Studio provides a unified graphical interface for a plethora of
-special-purpose software development tools. You can have hundreds of
-tools - debuggers, profilers, linters, disassemblers, decompilers,
-benchmarks, etc - and Studio keeps them all within arm's reach. Studio
-also provides a framework where you can integrate your own custom
-domain-specific tools to help you with specific applications.
+Studio is particularly intended for complex applications with many
+moving parts. JIT compilers, network stacks, databases, operating
+system kernels, and so on. These applications are not especially well
+served by ad-hoc scripts based on gdb, graphviz, gnuplot, perl, and so
+on, but nor do they justify building fancier tools from scratch.
+Studio bridges this gap by providing a readily extensible framework
+that new applications can be added into without too much work.
 
-Studio is internally composed of a backend and a frontend. The backend
-can use practically any programming languages and software libraries
-to produce data for inspection. The frontend then presents this data
-with Pharo, a Smalltalk dialect, using a paradigm called "moldable
-tools."
+How does Studio make this easier than doing everything yourself? Just
+by combining a couple of very powerful tools: Nix for processing data
+and Pharo for user interaction. 
 
-The user interactively inspects a series of objects. The backend
-builds each object and then the frontend presents it. Presentations
-are interactive and often the user will use the first object to
-navigate to many more. The first object is specified by writing a
-script (a Nix expression.)
+Nix makes it easy to incorporate other tools, whether that is
+something simple like calling R with your favourite libraries loaded,
+or running a custom Python program, more exotic like a virtual
+machines with special CPU arch or operating system that runs some
+awkward third-party diagnostic tools.
+
+Pharo makes it easy to visually inspect data structures like graphs of
+objects. Pharo itself is a full-scale modern Smalltalk development
+environment, the [Agile Visualization](http://agilevisualization.com/)
+toolkit makes it easy to map your data onto visual objects that you
+can manipulate, and the [Glamorous Toolkit](http://gtoolkit.org/)
+provides the tools for navigating and searching your data.
+
+Do you have an application that deserves its own tools? Studio is
+ready for you to extend. Screenshots galore can be found in
+the [Supported Applications](Supported-Applications) section.
 
 ## How Studio Works
 
@@ -360,16 +374,33 @@ You can find more information about the Glamorous Toolkit in the
 ### Presentation: RaptorJIT Process
 #### View: Traces Overview
 
-![RaptorJIT Process TraceOverview](screenshots/RaptorJIT-Process-TraceOverview.png)
+![RaptorJIT-Process-TraceOverview](screenshots/RaptorJIT-Process-TraceOverview.png)
+
 
 #### View: Traces List
+
+![RaptorJIT-Process-TraceList](screenshots/RaptorJIT-Process-TraceList.png)
+
 #### View: VMProfiles
+
+![RaptorJIT-Process-VMProfiles](screenshots/RaptorJIT-Process-VMProfiles.png)
+
 ### Presentation: VMProfile
-#### View: Host Traces
+
+#### View: Hot Traces
+
+![RaptorJIT-VMProfile-HotTraces](screenshots/RaptorJIT-VMProfile-HotTraces.png)
+
 ### Presentation: RaptorJIT Trace
 #### View: IR Tree
+
+![RaptorJIT-Trace-IRTree](screenshots/RaptorJIT-Trace-IRTree.png)
+
 ### Presentation: DWARF Value
 #### View: DWARF
+
+![RaptorJIT-Trace-DWARF](screenshots/RaptorJIT-Trace-DWARF.png)
+
 ## Snabb
 
 ### Writing a Nix expression

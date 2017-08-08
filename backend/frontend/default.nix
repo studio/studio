@@ -63,21 +63,30 @@ let
       cp new.changes $out/pharo.changes
     '';
 
-  studio-inspector-screenshot = { name, object, width ? 640, height ? 480 }:
+  studio-inspector-screenshot = { name, object, view, width ? 640, height ? 480 }:
     runCommand "studio-screenshot-${name}.png"
       {
         nativeBuildInputs = [ pharo ];
         smalltalkScript = writeScript "studio-screenshot.st"
           ''
-            | __window __object __morph |
+            | __window __object __morph __presentations |
             Transcript show: 'Taking screenshot'; cr.
             "Create the object."
             __object := [
               ${object}
             ] value.
+
             "Create the inspector."
             __window := GTInspector inspector: __object.
             __window width: ${toString width}; height: ${toString height}.
+
+            "Select the right presentation."
+            __presentations := __window model panes first 
+                                 presentations first cachedPresentation first.
+            __presentations pane lastActivePresentation:
+              (__presentations presentations detect: [ :each |
+                each title = '${view}' ]).
+
             "Save the screenshot."
             PNGReadWriter putForm: __window imageForm
                           onFileNamed: Smalltalk imageDirectory / 'screenshot.png'.

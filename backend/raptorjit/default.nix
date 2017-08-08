@@ -93,4 +93,9 @@ rec {
       raw = evalTarball url;
       product = inspect raw;
     };
+  runDirectory = path:
+    rec {
+      raw = evalDirectory path;
+      product = inspect raw;
+    };
 }
