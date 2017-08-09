@@ -251,45 +251,21 @@ extends this framework to support more relevant kinds of objects.
 You can find more information about the Glamorous Toolkit in the
 [Mastering Studio](Mastering-Studio) section.
 
-## Extending Studio
+# How Studio works
 
 Studio is built on three main abstractions: _products_, _builders_,
 and _presentations_. Products are raw data on disk; builders are
 scripts that can create products; presentations are graphical views of
 products.
 
-### Defining a Product
+### Abstraction: Product
 
 A product is raw data - a directory on disk - in a well-defined
 format. Each product has a named _type_ that informally defines the
 layout of the directory and the characteristics of the files. The type
 is always specified in a file named `.studio/product-info.yaml`.
 
-For a running example, let us define a product type called
-`xml/packet-capture/pdml` that represents a network packet capture in
-XML format. Here is how we informally define this product type:
-
-- The file `.studio/product-info.yaml` will include `type: xml/packet-capture/pdml`.
-- The file `packets.pdml` will exist at the top-level.
-- `packets.pdml` will contain network packets in
-  the [PDML](https://wiki.wireshark.org/PDML) XML format defined by
-  Wireshark.
-
-This simple product definition defines the interface between builders,
-that have to produce directories in this format, and presentatins that
-will display those directories to the user.
-
-Digression: One can imagine many other product types. For example, a
-type `application/crash-report` might represent debug information
-about an application that has crashed and include the files `exe` (an
-ELF executable with debug symbols), `core` (a core dump at the point
-of the crash), `config.gz` (Linux kernel configuration copied from
-`/proc/config.gz`), and so on. Such products could serve as
-intermediate representations from which to derive other products, like
-high-level summaries or low-level disassembly of the relevant
-instructions, using tools like `gdb` and `objdump` and so on.
-
-### Defining a Builder
+### Abstraction: Builder
 
 A builder is a script - a Nix derivation - that creates one or more
 products. The builder takes some inputs - parameters, files, URLs,
@@ -306,48 +282,7 @@ common software packages are already available out of the box from the
 `nixpkgs` package repository and can easily have their versions
 overridden.
 
-For example, let us define a builder that takes for input the URL of a
-packet capture in binary `pcap` file format and for output creates a
-product of type `xml/packet-capture/pdml`.
-
-```nix
-# pdml api module
-pdml = {
-  # inspect-url function
-  inspect-url = pcap-url:
-    runCommand "pdml-from-pcap-url"
-      # inputs
-      {
-	pcap-file = fetchurl pcap-url;
-	buildInputs = [ wireshark ];
-      }
-      # build script
-      ''
-	mkdir -p $out/.studio
-	echo 'type: xml/packet-capture/pdml' > $out/.studio/product-info.yaml
-	tshark -t pdml -i ${pcap-file} -o $out/packets.pdml
-      '';
-}
-```
-
-This builder can be invoked in a script like this:
-
-```nix
-pdml.inspect-url http://my.site/foo.pcap
-```
-
-and it will produce a Studio product as a directory in exactly the
-expected file format.
-
-Note: We have specified our software dependency simply with the name
-`wireshark`. This means that Studio will download and use the default
-version in the base version of nixpkgs. That is, Studio would always
-use exactly the same version of wireshark no matter where it is
-running. If we wanted to use a more specific version, or apply patches to
-support some new experimental protocols, etc, then this would be
-straightforward with Nix.
-
-### Defining a Presentation
+### Abstraction: Presentation
 
 A presentation is an interactive user interface - a live Smalltalk
 object - that presents a product (or a component part of a product) to
@@ -355,48 +290,8 @@ the user. The input to the presentation is a product stored on the
 local file system. The presentation code then adds new _view_ tabs to
 the inspector.
 
-```smalltalk
-StudioPresentation subclass: #PDLPacketCapturePresentation
-  instanceVariableNames: 'xml'
-  classVariableNames: ''
-  package: 'Studio-UI'
-```
+## Application: RaptorJIT
 
-```smalltalk
-PDLPacketCapturePresentation class >> supportsProductType: type
-   ^ type = 'xml/packet-capture/pdl'.
-```
-
-```smalltalk
-PDLPacketCapturePresentation >> openOn: dir
-   xml := XMLDomParser parseFileNamed: dir / 'packets.pdml'.
-```
-
-```smalltalk
-PDLPacketCapturePresentation >> gtInspectorPacketsIn: composite
-   <gtInspectorPresentationOrder: 1>
-   "Reuse the standard XML tree view."
-   xml gtInspectorTreeIn: composite.
-```
-
-### Running the extension
-
-Once we have defined a product type, a builder, and a presentation
-then we have added a new capability to Studio.
-
-We can run our builder on the URL of a standard Wireshark example
-trace for a PPP handshake:
-
-```
-pdml.inspect-url https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=PPPHandshake.cap
-```
-
-which creates the product for our presenter to show as an XML tree:
-
-![XML PDL Tree browser](images/PDML.png)
-
-# Supported applications
-## RaptorJIT
 ### Product: raptorjit-vm-dump
 
 The `raptorjit-vm-dump` product represents a snapshot of the way a
@@ -492,5 +387,120 @@ different processing states. Clicking a row inspects the profile.
 
 ![RaptorJIT-Trace-DWARF](screenshots/RaptorJIT-Trace-DWARF.png)
 
-## Snabb
+## Application: Snabb
+
+(Not yet written.)
+
+## Supporting a new application
+
+### Defining a product
+
+For a running example, let us define a product type called
+`xml/packet-capture/pdml` that represents a network packet capture in
+XML format. Here is how we informally define this product type:
+
+- The file `.studio/product-info.yaml` will include `type: xml/packet-capture/pdml`.
+- The file `packets.pdml` will exist at the top-level.
+- `packets.pdml` will contain network packets in
+  the [PDML](https://wiki.wireshark.org/PDML) XML format defined by
+  Wireshark.
+
+This simple product definition defines the interface between builders,
+that have to produce directories in this format, and presentatins that
+will display those directories to the user.
+
+Digression: One can imagine many other product types. For example, a
+type `application/crash-report` might represent debug information
+about an application that has crashed and include the files `exe` (an
+ELF executable with debug symbols), `core` (a core dump at the point
+of the crash), `config.gz` (Linux kernel configuration copied from
+`/proc/config.gz`), and so on. Such products could serve as
+intermediate representations from which to derive other products, like
+high-level summaries or low-level disassembly of the relevant
+instructions, using tools like `gdb` and `objdump` and so on.
+
+### Defining a Builder
+
+For example, let us define a builder that takes for input the URL of a
+packet capture in binary `pcap` file format and for output creates a
+product of type `xml/packet-capture/pdml`.
+
+```nix
+# pdml api module
+pdml = {
+  # inspect-url function
+  inspect-url = pcap-url:
+    runCommand "pdml-from-pcap-url"
+      # inputs
+      {
+	pcap-file = fetchurl pcap-url;
+	buildInputs = [ wireshark ];
+      }
+      # build script
+      ''
+	mkdir -p $out/.studio
+	echo 'type: xml/packet-capture/pdml' > $out/.studio/product-info.yaml
+	tshark -t pdml -i ${pcap-file} -o $out/packets.pdml
+      '';
+}
+```
+
+This builder can be invoked in a script like this:
+
+```nix
+pdml.inspect-url http://my.site/foo.pcap
+```
+
+and it will produce a Studio product as a directory in exactly the
+expected file format.
+
+Note: We have specified our software dependency simply with the name
+`wireshark`. This means that Studio will download and use the default
+version in the base version of nixpkgs. That is, Studio would always
+use exactly the same version of wireshark no matter where it is
+running. If we wanted to use a more specific version, or apply patches to
+support some new experimental protocols, etc, then this would be
+straightforward with Nix.
+
+### Defining a Presentation
+
+```smalltalk
+StudioPresentation subclass: #PDLPacketCapturePresentation
+  instanceVariableNames: 'xml'
+  classVariableNames: ''
+  package: 'Studio-UI'
+```
+
+```smalltalk
+PDLPacketCapturePresentation class >> supportsProductType: type
+   ^ type = 'xml/packet-capture/pdl'.
+```
+
+```smalltalk
+PDLPacketCapturePresentation >> openOn: dir
+   xml := XMLDomParser parseFileNamed: dir / 'packets.pdml'.
+```
+
+```smalltalk
+PDLPacketCapturePresentation >> gtInspectorPacketsIn: composite
+   <gtInspectorPresentationOrder: 1>
+   "Reuse the standard XML tree view."
+   xml gtInspectorTreeIn: composite.
+```
+
+### Running the extension
+
+Once we have defined a product type, a builder, and a presentation
+then we have added a new capability to Studio.
+
+We can run our builder on the URL of a standard Wireshark example
+trace for a PPP handshake:
+
+```
+pdml.inspect-url https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=PPPHandshake.cap
+```
+
+which creates the product for our presenter to show as an XML tree:
+
+![XML PDL Tree browser](images/PDML.png)
 
