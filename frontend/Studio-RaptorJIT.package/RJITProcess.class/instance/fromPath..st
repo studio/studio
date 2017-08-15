@@ -4,7 +4,8 @@ fromPath: aPath
 	path := aPath.
 	dwarfPath := path / 'raptorjit-dwarf.json'.
 	auditPath := path / 'audit.log'.
-	[ dwarfPath isFile and: auditPath isFile ] assert.
+	[ dwarfPath isFile and: auditPath isFile ] assertWithDescription:
+		'JIT audit log not found'.
 	auditLog := RJITAuditLog loadFromFileNamed: auditPath pathString withDWARF: (DWARF loadFromFileNamed: dwarfPath pathString).
 	vmprofiles := OrderedCollection new.
 	(path / 'vmprofile') children do: [ :vmprofile |
