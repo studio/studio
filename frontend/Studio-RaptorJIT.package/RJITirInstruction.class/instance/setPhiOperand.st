@@ -1,0 +1,3 @@
+initialization
+setPhiOperand
+	isPhiOperand := true.

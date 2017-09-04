@@ -1,0 +1,3 @@
+initialization
+register
+	^ register
