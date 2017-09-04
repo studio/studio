@@ -59,6 +59,13 @@ let
     '';
     view = "IR Tree";
   };
+  RaptorJIT-Trace-IRListing = studio-inspector-screenshot {
+    name = "RaptorJIT-Trace-IRListing";
+    object = ''
+    ( ${object2} ) auditLog traces last
+    '';
+    view = "IR Listing";
+  };
   RaptorJIT-Trace-DWARF = studio-inspector-screenshot {
     name = "RaptorJIT-Trace-DWARF";
     object = ''

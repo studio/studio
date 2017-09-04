@@ -382,6 +382,11 @@ different processing states. Clicking a row inspects the profile.
 
 ![RaptorJIT-Trace-IRTree](screenshots/RaptorJIT-Trace-IRTree.png)
 
+### Presentation: RaptorJIT IR Listing
+#### View: IR Listing
+
+![RaptorJIT-Trace-IRListing](screenshots/RaptorJIT-Trace-IRListing.png)
+
 ### Presentation: DWARF Value
 #### View: DWARF
 
