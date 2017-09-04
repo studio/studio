@@ -2,5 +2,5 @@ accessing
 children: dwarfValue
    ^(self hasChildren: dwarfValue)
       ifTrue: [
-	      { '' -> self dereference: dwarfValue. } ]
+	      { '' -> (self dereference: dwarfValue). } ]
       ifFalse: [ {} ].

@@ -10,4 +10,5 @@ gtInspectorDWARFIn: composite
 		column: 'Address' evaluated: [ :x | '0x', (x value address printStringBase: 16). ];
 		hasChildren: [ :x | x value hasChildren ];
 		children: [ :x | x value children ];
-		icon: [ :x | x value type icon ].
+		icon: [ :x | x value type icon ];
+		expandedUntil: 1.
