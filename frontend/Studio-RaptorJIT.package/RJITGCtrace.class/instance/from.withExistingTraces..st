@@ -1,14 +1,17 @@
 instance creation
 from: aGCtrace withExistingTraces: traces
-	| flashback bias irAddress |
+	| flashback bias irAddress nk nins |
 	gctrace := DWARFValueProxy on: aGCtrace.
 	flashback := gctrace dwarfValue flashback.
 	dwarf := flashback auditLog dwarf.
 	bias := dwarf resolveConstant: 'REF_BIAS'.
 	irAddress := gctrace ir value abs.
-	irConstants := (1 to: bias - gctrace nk value) collect: [ :x | x ].
-	irInstructions := (1 to: gctrace nins value - bias - 1) collect: [ :i |
-		flashback irInstructionAt: irAddress + ((i + bias) * 8). ].
+	nk := bias - gctrace nk value.
+	nins := gctrace nins value - bias - 1.
+	irConstants := (1 to: nk) collect: [ :i |
+		[flashback irInstructionAt: irAddress + ((bias - i) * 8) index: i ] on: Error do: [ ] ].
+	irInstructions := (1 to: nins - 1) collect: [ :i |
+		flashback irInstructionAt: irAddress + ((bias + i) * 8) index: i ].
 	irInstructions do: [ :ins | ins link: self. ].
 	traceno := gctrace traceno.
 	root := traces detect: [ :tr | tr traceno = gctrace root ] ifNone: [nil].

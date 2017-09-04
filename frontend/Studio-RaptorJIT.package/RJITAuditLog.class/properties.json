@@ -9,7 +9,8 @@
 		"events",
 		"flashback",
 		"dwarf",
-		"traces"
+		"traces",
+		"irModes"
 	],
 	"name" : "RJITAuditLog",
 	"type" : "normal"
