@@ -1,5 +1,8 @@
 initialization
 resolveIR: num in: aGCtrace
-	| bias |
+	| bias idx |
 	bias := dwarf resolveConstant: 'REF_BIAS'.
-	^ aGCtrace irInstructions at: (num - bias) ifAbsent: [nil].
+	idx := num - bias.
+	idx >= 0
+		ifTrue: [ ^ aGCtrace irInstructions at: idx ifAbsent: [nil] ]
+		ifFalse: [ ^ aGCtrace irConstants at: 0 - idx ifAbsent: [nil] ].

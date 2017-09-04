@@ -16,7 +16,10 @@
 		"op12",
 		"op1ins",
 		"op2ins",
-		"dwarf"
+		"dwarf",
+		"index",
+		"isPhiOperand",
+		"mode"
 	],
 	"name" : "RJITirInstruction",
 	"type" : "normal"

@@ -1,3 +1,3 @@
-accessing
+initialization
 stackSlot
 	^ stackSlot
