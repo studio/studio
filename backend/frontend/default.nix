@@ -24,9 +24,9 @@ let
   # Built on Inria CI (Jenkins) with Metacello to install Studio.
   base-image = fetchImageZip rec {
     name = "studio-base-image-${version}";
-    version = "19";
+    version = "24";
     url = "https://ci.inria.fr/pharo-contribution/job/Studio/default/${version}/artifact/Studio.zip";
-    sha256 = "19jhw0fnca4450a7iv51mzq91wixm5gllq7qwnw9r4yxhnkm3vak";
+    sha256 = "0dy9i0rl0v4h4dabgld5k8032mwifm8kiqdra484ylbgxjy35n7f";
   };
 
   # Script to update and customize the image for Studio.
