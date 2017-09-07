@@ -1,12 +1,12 @@
 {
 	"instance" : {
 		"previous:" : "LukeGorrie 6/12/2017 12:15",
-		"irInstructionAt:" : "LukeGorrie 6/15/2017 08:45",
+		"irInstructionAt:" : "LukeGorrie 9/7/2017 13:47",
 		"initialize" : "LukeGorrie 6/12/2017 10:52",
 		"bytesAt:size:" : "LukeGorrie 6/12/2017 13:45",
 		"irOperandModeFor:" : "LukeGorrie 9/4/2017 08:35",
 		"irConstantFrom:" : "LukeGorrie 9/4/2017 04:25",
-		"irInstructionAt:index:" : "LukeGorrie 9/2/2017 17:48",
+		"irInstructionAt:index:" : "LukeGorrie 9/7/2017 13:47",
 		"decodeType:at:" : "LukeGorrie 6/13/2017 14:56",
 		"byteAt:" : "LukeGorrie 6/12/2017 12:24",
 		"includesAddress:byteSize:" : "LukeGorrie 6/13/2017 14:42",

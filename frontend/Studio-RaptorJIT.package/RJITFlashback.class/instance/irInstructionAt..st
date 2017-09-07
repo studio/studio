@@ -1,3 +1,3 @@
 accessing
 irInstructionAt: anAddress
-	^RJITirInstruction new irIns: (self decodeTypeNamed: 'IRIns' at: anAddress).
+	^RJITIRInstruction new irIns: (self decodeTypeNamed: 'IRIns' at: anAddress).
