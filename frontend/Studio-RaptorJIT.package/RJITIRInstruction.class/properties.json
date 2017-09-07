@@ -21,6 +21,6 @@
 		"isPhiOperand",
 		"mode"
 	],
-	"name" : "RJITirInstruction",
+	"name" : "RJITIRInstruction",
 	"type" : "normal"
 }
