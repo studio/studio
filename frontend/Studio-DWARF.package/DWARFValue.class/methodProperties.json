@@ -1,11 +1,12 @@
 {
 	"instance" : {
-		"hasChildren" : "LukeGorrie 6/13/2017 14:49",
 		"child:" : "LukeGorrie 6/15/2017 04:53",
+		"hasChildren" : "LukeGorrie 6/13/2017 14:49",
 		"address:" : "LukeGorrie 6/13/2017 14:05",
 		"dwarf" : "LukeGorrie 6/16/2017 08:38",
 		"children" : "LukeGorrie 6/13/2017 14:48",
 		"gtInspectorDWARFIn:" : "LukeGorrie 8/9/2017 11:09",
+		"dereference" : "LukeGorrie 12/6/2017 10:12",
 		"value" : "LukeGorrie 6/12/2017 14:56",
 		"value:" : "LukeGorrie 6/13/2017 05:35",
 		"flashback:" : "LukeGorrie 6/13/2017 14:05",
@@ -13,6 +14,7 @@
 		"printOn:" : "LukeGorrie 6/12/2017 14:41",
 		"type" : "LukeGorrie 6/13/2017 09:55",
 		"flashback" : "LukeGorrie 6/13/2017 14:05",
+		"asInteger" : "LukeGorrie 12/4/2017 09:51",
 		"associations" : "LukeGorrie 6/13/2017 09:52",
 		"type:" : "LukeGorrie 6/11/2017 12:45"
 	},

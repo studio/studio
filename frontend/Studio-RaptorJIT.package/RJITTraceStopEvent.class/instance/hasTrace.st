@@ -1,3 +1,3 @@
 testing
 hasTrace
-	^true.
+	^ true.

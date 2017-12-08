@@ -1,0 +1,16 @@
+{
+	"commentStamp" : "",
+	"super" : "Object",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"gcproto",
+		"firstline",
+		"lineinfo",
+		"sourceName"
+	],
+	"name" : "RJITPrototype",
+	"type" : "normal"
+}

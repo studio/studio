@@ -1,23 +1,47 @@
 instance creation
 gtInspectorVMProfilesIn: composite
 	<gtInspectorPresentationOrder: 6>
-	| percent |
-	percent := [ :selector |
-					[ :object |
-						(100 * (object perform: selector) / object totalSamples) asFloat rounded asString , '%' ] ].
-	^ composite fastTable
-		title: 'VMProfiles';
-		display: #vmprofiles;
-		column: 'Profile' evaluated: #name width: 100;
-		column: 'Samples' evaluated: #totalSamples width: 100;
-		column: 'JIT Head' evaluated: (percent value: #totalTraceHead) width: 80;
-		column: 'JIT Loop' evaluated: (percent value: #totalTraceLoop) width:80 ;
-		column: 'JIT FFI' evaluated: (percent value: #totalTraceFFI) width: 80;
-		column: 'GC' evaluated: (percent value: #totalTraceGC) width: 80;
-		column: 'Interpret' evaluated: (percent value: #totalInterpreter) width: 80;
-		column: 'Runtime/C' evaluated: (percent value: #totalC) width: 80;
-		column: 'Trace Exit' evaluated: (percent value: #totalExit) width: 80;
-		column: 'Recording' evaluated: (percent value: #totalRecording) width: 80;
-		column: 'Optimize' evaluated: (percent value: #totalOptimize) width: 80;
-		column: 'Assemble' evaluated: (percent value: #totalAssemble) width: 80.
-		
+	| w percent |
+	w := 50. "width of numeric columns"
+	^ composite tabulator
+		title: 'VM Profile';
+		with: [ :t |
+			t row: #profiles; row: #locations; row: #traces.
+			t transmit to: #profiles; andShow: [ :a |
+				percent := [ :sel |
+					[ :obj |
+						[ ((obj perform: sel) round: 1) asString , '%' ] on: ZeroDivide do: [ '-' ] ] ].
+				a fastTable
+					title: 'Profiler datasets (VMProfile)';
+					display: #vmprofiles;
+					column: 'Profile' evaluated: #name width: 100;
+					column: 'Samples' evaluated: #total width: 60;
+					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w;
+					column: 'VM' evaluated: (percent value: #vmPercent) width: w;
+					column: 'GC' evaluated: (percent value: #gcPercent) width: w.	].
+			t transmit from: #profiles; to: #locations; andShow: [ :a |
+				a fastTable
+					title: 'Source code locations of root traces that are hot in the selected profile';
+					display: [ :profile | profile locations select: [ :x | x samples > 0 ] ];
+					sorted: [ :x :y | x samples > y samples ];
+					column: 'Location' evaluated: #location width: 180;
+					column: 'Samples' evaluated: #samples width: 60;
+					column: '#Root' evaluated: #numberOfRootTraces width: w;
+					column: '#Side' evaluated: #numberOfSideTraces width: w. ].
+			t transmit from: #locations; to: #traces; andShow: [ :a |
+				a fastTreeTable
+					title: 'Root traces starting at selected location (and their side-traces as children)';
+					display: #profiledTraces;
+					children: #children;
+					sorted: [ :x :y | x samples > y samples ];
+					column: 'Trace' evaluated: #traceno width: 160;
+					column: 'Start line' evaluated: #location width: 160;
+					column: 'Stop line' evaluated: [ :x | '-' ] width: 160;
+					column: 'Link' evaluated: #linktype width: 60;
+					column: 'Samples' evaluated: #samples width: 60;
+					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w;
+					column: 'VM' evaluated: (percent value: #vmPercent) width: w;
+					column: 'GC' evaluated: (percent value: #gcPercent) width: w;
+					allExpanded. ].
+			t transmit toOutsidePort: #selection; from: #traces port: #selection transformed: #trace.
+			].

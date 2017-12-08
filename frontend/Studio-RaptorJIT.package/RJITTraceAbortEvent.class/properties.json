@@ -6,8 +6,7 @@
 	"pools" : [ ],
 	"classvars" : [ ],
 	"instvars" : [
-		"error",
-		"jitState"
+		"error"
 	],
 	"name" : "RJITTraceAbortEvent",
 	"type" : "normal"

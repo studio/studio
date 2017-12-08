@@ -10,7 +10,8 @@
 		"previous",
 		"address",
 		"data",
-		"hint"
+		"hint",
+		"index"
 	],
 	"name" : "RJITFlashback",
 	"type" : "normal"

@@ -1,4 +1,3 @@
 accessing
 includesAddress: anAddress byteSize: size
-   [ self bytesAt: anAddress size: size ] on: SubscriptOutOfBounds do: [ ^false ].
-   ^true.
+	^ (anAddress to: anAddress + size) allSatisfy: [ :addr | self includes: addr. ].

@@ -1,0 +1,24 @@
+{
+	"commentStamp" : "",
+	"super" : "Object",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"interp",
+		"c",
+		"igc",
+		"exit",
+		"record",
+		"opt",
+		"asm",
+		"head",
+		"loop",
+		"jgc",
+		"ffi",
+		"id"
+	],
+	"name" : "RJITVMProfileTrace",
+	"type" : "normal"
+}

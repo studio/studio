@@ -1,3 +1,0 @@
-initialization
-totalRecording
-	^ record

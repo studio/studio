@@ -1,0 +1,22 @@
+{
+	"commentStamp" : "",
+	"super" : "Object",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"prototype",
+		"position",
+		"framedepth",
+		"flashback",
+		"opcode",
+		"a",
+		"b",
+		"c",
+		"d",
+		"opcodeName"
+	],
+	"name" : "RJITBytecode",
+	"type" : "normal"
+}

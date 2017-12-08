@@ -1,0 +1,3 @@
+accessing
+linktype
+	^ trace linktype

@@ -1,3 +1,4 @@
 as yet unclassified
 gcTraceWithExistingTraces: traces
-	^RJITGCtrace new from: self decode withExistingTraces: traces.
+	trace := RJITTrace new from: self decode withExistingTraces: traces; jitState: jitState.
+	^ trace.

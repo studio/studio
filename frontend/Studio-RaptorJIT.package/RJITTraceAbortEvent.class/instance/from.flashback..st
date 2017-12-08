@@ -1,5 +1,5 @@
 initializating
 from: dict flashback: aFlashback
    flashback := aFlashback.
-   jitState := dict at: 'jit_State'.
-   traceError := dict at: 'TraceError'.
+   jitState := flashback decodeJITStateAt: (dict at: 'jit_State').
+   error := dict at: 'TraceError'.

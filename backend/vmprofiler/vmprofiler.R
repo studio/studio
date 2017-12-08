@@ -25,10 +25,8 @@ summarize_vmprofile <- function(inputdir, outputdir) {
 # Reading and decoding profiler samples
 # ------------------------------------------------------------
 
-states <- c("interp", "c", "gc", "exit", "record", "opt", "asm")
-traces <- unlist(map(0:4096,
-                     function(t) { paste(c("head","loop","foreign", "gc"),t,sep=".") }))
-columns = c(states, traces)
+states <- c("interp", "c", "igc", "exit", "record", "opt", "asm",
+            "head", "loop", "jgc", "ffi")
 
 read_files <- function(filenames) {
   return(do.call(rbind,lapply(filenames, read_file)))
@@ -37,9 +35,18 @@ read_files <- function(filenames) {
 read_file <- function(filename) {
   f <- file(filename, 'rb')
   profile <- tools::file_path_sans_ext(basename(filename))
-  # XXX check magic and version
-  seek(f, 8)
-  tmp <- readBin(f, "double", n=length(states)+4097*4, size=8, endian="little")
+  header <- readBin(f, "integer", signed=F, n=4, size=2, endian="little")
+  if ((header[1] != 0xf007) || (header[2] != 0x1d50)) {
+      stop(sprintf("bad magic number in %s: 0x%04x%04x", filename, header[1], header[2]))
+  }
+  if (header[3] != 4) stop("unsupported vmprofile file format version")
+  data <- tibble(count = readBin(f, "double", n=length(states)*4097, size=8, endian="little"))
+  data <- mutate(state = states[row_number() %% length(states)]
+                 trace = row_number() %/% length(states))
+  
+  # Label with states
+  
+  tmp <- 
   close(f)
   class(tmp) <- "integer64"    # cast to true type: int64
   samples <- as.numeric(tmp)   # convert to numeric for R
@@ -62,11 +69,8 @@ analyze_profile <- function(data) {
 
 analyze_what <- function(data) {
   data %>%
-    transform(what = str_match(where, "^[^.]*")) %>%
-    group_by(what) %>%
-    summarize(num = sum(num)) %>%
-    ungroup() %>%
-    transmute(what = what, percent = round(100*num/sum(num),1)) %>%
+    filter(!grepl("[.]", where)) %>%                
+    transmute(what = where, percent = round(100*num/sum(num),1)) %>%
     arrange(-percent) %>%
     as.data.frame()
 }
