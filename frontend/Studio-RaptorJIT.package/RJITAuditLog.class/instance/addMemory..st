@@ -5,7 +5,8 @@ addMemory: dict
       previous: flashback;
       address: (dict at: 'address');
       data: (dict at: 'data') asByteArray;
-      hint: (dict at: 'hint').
+      hint: (dict at: 'hint');
+		setup.
 	"Detect special memory."
 	flashback hint = 'lj_ir_mode' ifTrue: [ irModes := flashback asIrModes ]
 	

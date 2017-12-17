@@ -17,7 +17,8 @@
 		"link",
 		"linktype",
 		"start",
-		"jitState"
+		"jitState",
+		"nins"
 	],
 	"name" : "RJITTrace",
 	"type" : "normal"

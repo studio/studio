@@ -11,7 +11,9 @@
 		"address",
 		"data",
 		"hint",
-		"index"
+		"index",
+		"time",
+		"image"
 	],
 	"name" : "RJITFlashback",
 	"type" : "normal"

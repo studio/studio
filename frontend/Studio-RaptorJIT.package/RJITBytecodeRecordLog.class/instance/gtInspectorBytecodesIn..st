@@ -1,6 +1,6 @@
 accessing
 gtInspectorBytecodesIn: composite
-	<gtInspectorPresentationOrder: 5>
+	<gtInspectorPresentationOrder: 1>
 	composite fastTable
 		title: 'Bytecodes';
 		display: [ self bytecodes ];

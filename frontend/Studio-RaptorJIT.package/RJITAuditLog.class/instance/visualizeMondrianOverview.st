@@ -11,7 +11,7 @@ visualizeMondrianOverview
 		b shape rectangle
 			color: Color lightBlue;
 			borderColor: Color black;
-			size: [ :x | x irInstructions size sqrt * 10];
+			size: [ :x | x numberOfIrInstructions sqrt * 10];
 			withTextAbove: [ :tr | 'Trace ', tr traceno asString ].
 		b nodes: group value.
 		b layout dominanceTree.

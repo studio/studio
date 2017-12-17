@@ -1,3 +1,5 @@
 accessing
 location
-	^ 'dummy.lua:' , ((location at: 1) value % 300) asString.
+	| root |
+	root := traces detect: #isRootTrace ifNone: [ ^'?' ].
+	^ root startLine.

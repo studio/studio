@@ -1,6 +1,6 @@
 instance creation
 gtInspectorVMProfilesIn: composite
-	<gtInspectorPresentationOrder: 6>
+	<gtInspectorPresentationOrder: 1>
 	| w percent |
 	w := 50. "width of numeric columns"
 	^ composite tabulator
@@ -24,7 +24,7 @@ gtInspectorVMProfilesIn: composite
 					title: 'Source code locations of root traces that are hot in the selected profile';
 					display: [ :profile | profile locations select: [ :x | x samples > 0 ] ];
 					sorted: [ :x :y | x samples > y samples ];
-					column: 'Location' evaluated: #location width: 180;
+					column: 'Location' evaluated: #location width: 240;
 					column: 'Samples' evaluated: #samples width: 60;
 					column: '#Root' evaluated: #numberOfRootTraces width: w;
 					column: '#Side' evaluated: #numberOfSideTraces width: w. ].
@@ -35,13 +35,13 @@ gtInspectorVMProfilesIn: composite
 					children: #children;
 					sorted: [ :x :y | x samples > y samples ];
 					column: 'Trace' evaluated: #traceno width: 160;
-					column: 'Start line' evaluated: #location width: 160;
-					column: 'Stop line' evaluated: [ :x | '-' ] width: 160;
-					column: 'Link' evaluated: #linktype width: 60;
 					column: 'Samples' evaluated: #samples width: 60;
+					column: 'Link' evaluated: #linktype width: 60;
 					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w;
 					column: 'VM' evaluated: (percent value: #vmPercent) width: w;
 					column: 'GC' evaluated: (percent value: #gcPercent) width: w;
+					column: 'Start line' evaluated: #location width: 240;
+					column: 'Stop line' evaluated: [ :x | '-' ] width: 240;
 					allExpanded. ].
 			t transmit toOutsidePort: #selection; from: #traces port: #selection transformed: #trace.
 			].

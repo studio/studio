@@ -1,5 +1,5 @@
 accessing
 gtInspectorBytecodesIn: composite
-	<gtInspectorPresentationOrder: 5>
+	<gtInspectorPresentationOrder: 1>
 	self jitState ifNil: [ ^nil ].
 	self jitState gtInspectorBytecodesIn: composite.

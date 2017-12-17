@@ -1,5 +1,5 @@
 initialization
 sourceLine
-	^ prototype 
-		ifNil: [ '' ]
-		ifNotNil: [ prototype sourceName , ':' , (prototype bytecodeLine: position) asString ].
+	prototype ifNil: [ ^ '' ].
+	^ [ prototype sourceName , ':' , (prototype bytecodeLine: position) asString ]
+		ifCurtailed: [ ^'?' ].

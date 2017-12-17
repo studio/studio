@@ -1,3 +1,4 @@
 accessing
 includesAddress: anAddress byteSize: size
-	^ (anAddress to: anAddress + size) allSatisfy: [ :addr | self includes: addr. ].
+	[ self bytesAt: anAddress size: size ] on: RJITFlashbackDataMissing do: [ ^ false ].
+	^ true.
