@@ -1,3 +1,3 @@
-as yet unclassified
+accessing
 bytecodes
-	^ bytecodes
+	^ bytecodes select: [ :bc | bc opcode isNotNil ].
