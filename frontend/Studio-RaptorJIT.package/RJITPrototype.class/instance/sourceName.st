@@ -1,3 +1,3 @@
 accessing
 sourceName
-	^ sourceName
+	^ sourceName trimLeft: [ :x | x = $@ or: x = $= ]

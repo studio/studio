@@ -18,8 +18,8 @@ rec {
     src = fetchFromGitHub {
       owner = "lukego";
       repo = "raptorjit";
-      rev = "7b9840dbb090726661dd5e359cdd75f3c54c29cf";
-      sha256 = "0wmc9k3syppmpz8i4z7j99lyrp9yxqdsr61c4sds1k3ih0kb46b1";
+      rev = "864a100f1da64d635442a7ccee6592e9dc3e1974";
+      sha256 = "0al7kslmzili4lhfkdv72dzdgajh3kylnf12b5r5fsj8dvqhg7np";
     };
     installPhase = ''
       install -D src/raptorjit $out/bin/raptorjit
@@ -36,7 +36,7 @@ rec {
       }
       ''
         mkdir $out
-        raptorjit ${luaSourceFile} 2>&1 | tee $out/output.txt
+        raptorjit -a audit.log ${luaSourceFile} 2>&1 | tee $out/output.txt
         cp ${raptorjit}/lib/raptorjit.dwo $out/
         if [ -f audit.log ]; then
           cp audit.log $out/
