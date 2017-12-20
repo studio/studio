@@ -18,8 +18,8 @@ rec {
     src = fetchFromGitHub {
       owner = "lukego";
       repo = "raptorjit";
-      rev = "864a100f1da64d635442a7ccee6592e9dc3e1974";
-      sha256 = "0al7kslmzili4lhfkdv72dzdgajh3kylnf12b5r5fsj8dvqhg7np";
+      rev = "840643881d676459f1c1d77dbd41600b682f8d56";
+      sha256 = "0mhs89kxf45jjy6rwkjblq22jjg9phficlmr7l8rfdx70k4mass4";
     };
     installPhase = ''
       install -D src/raptorjit $out/bin/raptorjit
@@ -36,7 +36,8 @@ rec {
       }
       ''
         mkdir $out
-        raptorjit -a audit.log ${luaSourceFile} 2>&1 | tee $out/output.txt
+        ln -s ${luaSourceFile} script.lua
+        raptorjit -p initial.vmprofile -a audit.log script.lua 2>&1 | tee $out/output.txt
         cp ${raptorjit}/lib/raptorjit.dwo $out/
         if [ -f audit.log ]; then
           cp audit.log $out/
@@ -60,7 +61,7 @@ rec {
       mkdir $out
       find $src
       cp -r $src/* .
-      raptorjit *.lua 2>&1 | tee $out/output.txt
+      raptorjit -p initial.vmprofile *.lua 2>&1 | tee $out/output.txt
       mkdir -p $out/vmprofile
       cp ${raptorjit}/lib/raptorjit.dwo $out/
       find . -name '*.vmprofile' -exec cp {} $out/vmprofile \;
