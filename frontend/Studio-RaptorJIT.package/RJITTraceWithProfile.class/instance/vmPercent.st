@@ -1,0 +1,3 @@
+accessing
+vmPercent
+	^ profile vmPercent

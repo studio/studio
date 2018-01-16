@@ -1,0 +1,3 @@
+initializing
+flashbacks
+	^ flashback asOrderedCollection.

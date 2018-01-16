@@ -1,3 +1,0 @@
-initialization
-totalSamples
-	^ totalSamples

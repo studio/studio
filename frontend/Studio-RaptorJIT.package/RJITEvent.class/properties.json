@@ -6,7 +6,9 @@
 	"pools" : [ ],
 	"classvars" : [ ],
 	"instvars" : [
-		"flashback"
+		"jitState",
+		"flashback",
+		"number"
 	],
 	"name" : "RJITEvent",
 	"type" : "normal"

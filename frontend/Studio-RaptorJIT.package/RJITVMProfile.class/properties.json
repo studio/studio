@@ -19,7 +19,14 @@
 		"traceFFI",
 		"totalSamples",
 		"name",
-		"process"
+		"process",
+		"igc",
+		"head",
+		"loop",
+		"jgc",
+		"ffi",
+		"traceInterp",
+		"traces"
 	],
 	"name" : "RJITVMProfile",
 	"type" : "normal"

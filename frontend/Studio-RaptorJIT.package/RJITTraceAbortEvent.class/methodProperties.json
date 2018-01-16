@@ -1,8 +1,13 @@
 {
 	"instance" : {
-		"from:flashback:" : "LukeGorrie 6/12/2017 10:55",
+		"decode" : "LukeGorrie 6/13/2017 05:46",
+		"traceErrorReason" : "LukeGorrie 12/8/2017 11:24",
+		"printOn:" : "LukeGorrie 12/5/2017 09:53",
 		"hasTrace" : "LukeGorrie 6/17/2017 09:20",
-		"decode" : "LukeGorrie 6/13/2017 05:46"
+		"info" : "LukeGorrie 12/8/2017 12:10",
+		"traceErrorReasons" : "LukeGorrie 12/8/2017 11:48",
+		"from:flashback:" : "LukeGorrie 12/5/2017 14:05",
+		"traceError" : "LukeGorrie 12/8/2017 11:47"
 	},
 	"class" : { }
 }

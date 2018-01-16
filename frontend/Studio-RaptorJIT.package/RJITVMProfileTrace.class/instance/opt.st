@@ -1,0 +1,3 @@
+accessing
+opt
+	^ opt

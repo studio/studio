@@ -1,3 +1,0 @@
-initialization
-totalInterpreter
-	^ interp

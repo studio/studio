@@ -1,0 +1,15 @@
+{
+	"commentStamp" : "",
+	"super" : "Object",
+	"category" : "Studio-RaptorJIT",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"location",
+		"traces",
+		"profile"
+	],
+	"name" : "RJITRootTraceSet",
+	"type" : "normal"
+}

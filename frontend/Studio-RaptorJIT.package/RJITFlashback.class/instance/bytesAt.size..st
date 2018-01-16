@@ -1,4 +1,3 @@
 accessing
-bytesAt: startAddress size: size
-	^((startAddress to: startAddress + size-1) collect:
-		[ :i | self byteAt: i ]) asByteArray.
+bytesAt: anAddress size: size
+	^ image getBytes: size atAddress: anAddress atTime: time.

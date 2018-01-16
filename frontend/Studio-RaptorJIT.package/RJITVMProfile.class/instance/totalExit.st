@@ -1,3 +1,0 @@
-initialization
-totalExit
-	^ exit

@@ -1,3 +1,0 @@
-initializing
-irInstructions
-	^irInstructions.
