@@ -28,14 +28,16 @@ fi
 # Run studio
 #
 
+nixopts="--option extra-binary-caches https://hydra.snabb.co"
+
 case "$1" in
     vnc)
-        nix-shell \
+        nix-shell $nixopts \
             -E '(import ../.).studio-gui-vnc' \
             --run studio-vnc
         ;;
     x11)
-        nix-shell \
+        nix-shell $nixopts \
             -E '(import ../.).studio-gui' \
             --run studio-x11
         ;;
