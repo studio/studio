@@ -40,7 +40,7 @@ case "$1" in
         ;;
     x11)
         nix-shell $nixopts \
-            -E '(import "$studio").studio-gui' \
+            -E "(import "$studio").studio-gui" \
             --run studio-x11
         ;;
     *)

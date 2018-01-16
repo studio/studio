@@ -15,8 +15,8 @@ $ curl https://nixos.org/nix/install | sh    # Get nix
 $ git clone https://github.com/studio/studio # Get studio
 $ cd studio
 $ git checkout next      # to try development version
-$ studio/bin/studio vnc  # to start GUI as VNC server
-$ studio/bin/studio x11  # to start GUI as X11 client
+$ bin/studio vnc         # to start GUI as VNC server
+$ bin/studio x11         # to start GUI as X11 client
 ```
 
 Script to load some interesting example data:
