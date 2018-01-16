@@ -6,15 +6,30 @@ formats, then it applies all the tools that are needed to extract
 useful information, and finally it presents the results in an
 interactive graphical user interface.
 
-Learn more in the draft [Studio
-manual](https://hydra.snabb.co/job/lukego/studio-manual/studio-manual-html/latest/download-by-type/file/Manual) fresh from the master branch.
+### TLDR
 
-Studio is very new. It is based on a [Pharo](http://pharo.org/)
-frontend and a [Nix](https://nixos.org/nix/) backend. The first
-supported applications are
-[RaptorJIT](https://github.com/raptorjit/raptorjit) and
-[Snabb](https://github.com/snabbco/snabb) but there is room for
-hundreds more. Early adopters welcome!
+Get up and running on Linux:
+
+```shell
+$ curl https://nixos.org/nix/install | sh    # Get nix
+$ git clone https://github.com/studio/studio # Get studio
+$ cd studio
+$ git checkout next      # to try development version
+$ studio/bin/studio vnc  # to start GUI as VNC server
+$ studio/bin/studio x11  # to start GUI as X11 client
+```
+
+Script to load some interesting example data:
+
+```
+with import <studio>;
+raptorjit.runTarball https://github.com/lukego/rj-vmprof-bench/archive/master.tar.gz
+```
+
+### RTFM
+
+See the current manual for the [master](https://hydra.snabb.co/job/lukego/studio-manual/studio-manual-html/latest/download-by-type/file/Manual) release branch or
+the [next](https://hydra.snabb.co/job/lukego/studio-manual-next/studio-manual-html/latest/download-by-type/file/Manual) development branch.
 
 ----
 

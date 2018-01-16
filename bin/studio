@@ -1,5 +1,7 @@
 #!/bin/sh
 
+studio="$(dirname $(readlink -f $0))/.."
+
 error() {
     echo "error: $*" >&2
     exit 1
@@ -28,17 +30,17 @@ fi
 # Run studio
 #
 
-nixopts="--option extra-binary-caches https://hydra.snabb.co"
+nixopts="-j 10 --option signed-binary-caches https://cache.nixos.org --option extra-binary-caches https://hydra.snabb.co"
 
 case "$1" in
     vnc)
         nix-shell $nixopts \
-            -E '(import ../.).studio-gui-vnc' \
+            -E "(import $studio).studio-gui-vnc" \
             --run studio-vnc
         ;;
     x11)
         nix-shell $nixopts \
-            -E '(import ../.).studio-gui' \
+            -E '(import "$studio").studio-gui' \
             --run studio-x11
         ;;
     *)

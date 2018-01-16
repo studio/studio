@@ -18,8 +18,8 @@ let
   rj-example-2 = raptorjit.runDirectory
     (fetchFromGitHub { owner = "lukego";
                        repo = "rj-vmprof-bench";
-                       rev = "a70c2a46cf03aac86f60833efe3b742453951702";
-                       sha256 = "1l51wn1nlzxiz5xwjsv0ph8p8d31d5yy0ah04q3cy6ixgrlhlyyz";
+                       rev = "ba7992aefc2a0bb1c9c45a69e2f18547fe5103ec";
+                       sha256 = "01hw00bv4qgjhm8zm8ybk7m0y5q7mw2851bnm4l4vsy1in250qzs";
                       });
   object1 = ''
     RJITProcess new fromPath: '${rj-example-1.product}' asFileReference
@@ -27,24 +27,50 @@ let
   object2 = ''
     RJITProcess new fromPath: '${rj-example-2.product}' asFileReference
   '';
+  # A root trace from the 'series' benchmark. This should be medium-size and interesting.
+  trace1 = ''
+    ( ${object2} ) auditLog traces detect: [ :tr |
+      tr isRootTrace and: [ tr startLine beginsWith: 'bench/series' ] ]
+  '';
  in
 
 {
-  RaptorJIT-Process-TraceOverview = studio-inspector-screenshot {
-    name = "RaptorJIT-Process-TraceOverview";
+  RaptorJIT-Process-Events = studio-inspector-screenshot {
+    name = "RaptorJIT-Process-Events";
     object = object1;
-    view = "Traces Overview";
+    view = "Events";
   };
-  RaptorJIT-Process-TraceList = studio-inspector-screenshot {
-    name = "RaptorJIT-Process-TraceList";
+  RaptorJIT-Process-VMProfile = studio-inspector-screenshot {
+    name = "RaptorJIT-Process-VMProfile";
     object = object2;
-    view = "Trace List";
+    view = "VM Profile";
   };
+
+  RaptorJIT-Trace-IRTree = studio-inspector-screenshot {
+    name = "RaptorJIT-Trace-IRTree";
+    object = trace1;
+    view = "IR Tree";
+  };
+
+  RaptorJIT-Trace-IRListing = studio-inspector-screenshot {
+    name = "RaptorJIT-Trace-IRListing";
+    object = trace1;
+    view = "IR Listing";
+  };
+
+  RaptorJIT-Trace-Bytecodes = studio-inspector-screenshot {
+    name = "RaptorJIT-Trace-Bytecodes";
+    object = trace1;
+    view = "Bytecodes";
+  };
+
+  /*
   RaptorJIT-Process-VMProfiles = studio-inspector-screenshot {
     name = "RaptorJIT-Process-VMProfiles";
     object = object2;
     view = "VMProfiles";
   };
+
   RaptorJIT-VMProfile-HotTraces = studio-inspector-screenshot {
     name = "RaptorJIT-VMProfile-HotTraces";
     object = ''
@@ -74,4 +100,6 @@ let
     '';
     view = "DWARF";
   };
+
+  */
 }
