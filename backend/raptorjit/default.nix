@@ -1,6 +1,11 @@
 # raptorjit nix library API:
 #
-#   raptorjit.evalFile <luaSourceFile>:
+#   raptorjit.run <luaString>:
+#   raptorjit.runFile <path>:
+#   raptorjit.runTarball <url>:
+#   raptorjit.runDirectory <path>:
+#
+#     Evaluate Lua code and provide a Studio product.
 #     Evaluate a Lua source file. Provide its output and the trace
 #     data produced during execution.
 #
@@ -28,49 +33,29 @@ rec {
     enableParallelBuilding = true;  # Do 'make -j'
     dontStrip = true;
   };
-  evalFile = luaSourceFile:
-    runCommand "raptorjit-eval"
-      {
-        nativeBuildInputs = [ raptorjit ];
-        dontStrip = true;
-      }
-      ''
-        mkdir $out
-        ln -s ${luaSourceFile} script.lua
-        raptorjit -p initial.vmprofile -a audit.log script.lua 2>&1 | tee $out/output.txt
-        cp ${raptorjit}/lib/raptorjit.dwo $out/
-        if [ -f audit.log ]; then
-          cp audit.log $out/
-        fi
-        mkdir $out/vmprofile
-        find . -name '*.vmprofile' -exec cp {} $out/vmprofile \;
-          if [ -f audit.log ]; then
-            cp audit.log $out/
-          fi
-      '';
-  evalTarball = url: evalDirectory (fetchTarball url);
-  evalDirectory = source:
-    runCommand "raptorjit-eval-tarball"
+  evalTarball = url: evalCode (fetchTarball url);
+  evalCode = source:
+    runCommand "raptorjit-eval-code"
     {
       src = source;
       nativeBuildInputs = [ raptorjit ];
       dontStrip = true;
     }
     ''
-      set -x
       mkdir $out
-      find $src
-      cp -r $src/* .
-      raptorjit -p initial.vmprofile *.lua 2>&1 | tee $out/output.txt
+      if [ -d $src ]; then
+          cp -r $src/* .
+      else
+          cp $src ./
+      fi
+      raptorjit -p initial.vmprofile -a audit.log *.lua 2>&1 | tee $out/output.txt
+      if [ -f audit.log ]; then
+        cp audit.log $out/
+      fi
       mkdir -p $out/vmprofile
-      cp ${raptorjit}/lib/raptorjit.dwo $out/
       find . -name '*.vmprofile' -exec cp {} $out/vmprofile \;
-        if [ -f audit.log ]; then
-          cp audit.log $out/
-        fi
+      cp ${raptorjit}/lib/raptorjit.dwo $out/
     '';
-  evalString = luaSource:
-    evalFile (writeScript "eval-source.lua" luaSource);
   inspect = jit:
     runCommand "inspect" {
         inherit jit;
@@ -84,19 +69,15 @@ rec {
         cp -r $jit/* $out/
         cp $dwarfjson $out/raptorjit-dwarf.json
       '';
-  run = luaSource:
+  # Run RaptorJIT code and product a Studio product.
+  runCode = fileOrDirectory:
     rec {
-      raw = evalString luaSource;
+      raw = evalCode fileOrDirectory;
       product = inspect raw;
     };
-  runTarball = url:
-    rec {
-      raw = evalTarball url;
-      product = inspect raw;
-    };
-  runDirectory = path:
-    rec {
-      raw = evalDirectory path;
-      product = inspect raw;
-    };
+  # Convenience wrappers
+  run = luaSource: runCode (writeScript "script.lua" luaSource);
+  runTarball = url: runCode (fetchTarball url);
+  runFile = runCode;
+  runDirectory = runCode;
 }
