@@ -1,120 +1,4 @@
-#! /usr/bin/env nix-shell
-#! nix-shell -i bash -p nix
-
-set -e
-
-studio="$(dirname $(readlink -f $0))/.."
-
-#
-# Error-handling subroutines.
-#
-
-usage() {
-    cat >&2 <<EOF
-Studio: the extensible software diagnostics suite
-
-Usage:
-
-  studio [common-options] <command> ...
-
-Commands:
-
-    studio snabb               Snabb diagnostic tools.
-    studio rstudio             RStudio IDE with relevant packages.
-    studio gui                 Studio GUI front-end (NYI).
-
-For detailed command help:
-    studio <command> --help
-
-Common options:
-
-    -v, --verbose              Print verbose nix trace information.
-    -j, --jobs NUM             Execute NUM build jobs in parallel.
-                               Defaults to 8 or $STUDIO_JOBS.
-    -n, --nix ARGS             Extra arguments for nix-build.
-                               Defaults to $STUDIO_NIXARGS.
-
-EOF
-    exit 1
-}
-
-usage_snabb() {
-    cat >&2 <<EOF
-Subcommands for 'studio snabb':
-
-    studio snabb processes     Analyze a set of Snabb processes.
-    studio snabb vmprofile     Analyze "VMProfile" data from one process.
-
-For detailed subcommand help:
-    studio snabb <subcommand> --help
-EOF
-    exit 1
-}
-
-usage_snabb_processes() {
-    cat >&2 <<EOF
-Usage:
-
-    studio snabb processes [option|directory]*
-
-Arguments:
-
-    DIRECTORY                  Snabb process state directory to analyze.
-                               Many directories can be specified.
-    -g, --group GROUP          Group name for the following Snabb processes.
-                               Use to assign Snabb processes to groups.
-
-    -o, --output PATH          Create output (symlink to directory) at PATH.
-
-EOF
-    exit 1
-}
-
-usage_snabb_vmprofile() {
-    cat >&2 <<EOF
-Usage:
-
-    studio snabb vmprofile [option]* <directory>
-
-Arguments:
-
-    DIRECTORY                  Snabb process state directory to analyze.
-                               Exactly one directory must be provided.
-    -o, --output PATH          Create output (symlink to directory) at PATH.
-
-EOF
-    exit 1
-}
-
-usage_rstudio() {
-    cat >&2 <<EOF
-Usage:
-
-    studio rstudio
-
-Runs the RStudio IDE (https://www.rstudio.com/) with the packages
-relevant to Studio available in the appropriate version. 
-
-This provides an environment for writing R code that works as expected
-when deployed with Studio.
-EOF
-    exit 1
-}
-
-usage_gui() {
-    cat >&2 <<EOF
-Usage:
-
-    studio gui
-
-Runs the Studio graphical user interface.
-
-The GUI is not yet implemented. It will be based on the Glamorous
-Toolkit (http://gtoolkit.org/) and will provide convenient access to
-all Studio functionality.
-EOF
-    exit 1
-}
+#!/bin/sh
 
 error() {
     echo "error: $*" >&2
@@ -122,12 +6,12 @@ error() {
 }
 
 #
-# Check software and hardware environment.
+# Preamble and checking.
 #
 
-[ $(uname -s) == "Linux" ]  || (echo "error: 'uname -s' is not Linux";  exit 1)
-[ $(uname -m) == "x86_64" ] || (echo "error: 'uname -m' is not x86_64"; exit 1)
+[ $(uname -s) == "Linux" ]  || (error "error: 'uname -s' is not Linux")
 
+# Check that nix is available
 if ! type nix-build &> /dev/null; then
     cat <<EOF
 command not found: nix-build
@@ -141,141 +25,22 @@ EOF
 fi
 
 #
-# Handle the general arguments that come before the command.
+# Run studio
 #
 
-nixargs="${STUDIO_NIXARGS}"
-verbose=""
-parallel=${STUDIO_JOBS:-8}
-
-while [ "$#" -gt 0 ]; do
-    case "$1" in
-        -n|--nix)     nix=$2;        shift 2 ;;
-        -j|--jobs)    parallel=$2;   shift 2 ;;
-        -v|--verbose) verbose="yes"; shift 1 ;;
-        -h|--help)    usage ;;
-        *)            break;;
-    esac
-done
-
-#
-# Handle the main command.
-#
-
-[ "$#" == 0 ] && usage
-# Check for gui command
-if [ $1 == "gui" ]; then
-    [ $# == 1 ] || usage_gui
-    echo "Sorry: Snazzy GUI not yet implemented."
-    exit 1
-fi
-
-# Check for rstudio command
-if [ $1 == "rstudio" ]; then
-    [ $# == 1 ] || usage_rstudio
-    nix-shell -j 10 $studio/tools/snabbr -A rstudio --run rstudio
-    exit $?
-fi    
-
-# Fall through to Snabb commands
-[ "$1" == "snabb" ] || usage
-shift 1
-
-subcommand="$1"; shift
-case "$subcommand" in
-    vmprofile)
-        tmpdir=$(mktemp -d)
-        nixexpr=$tmpdir/vmprofile-analysis.nix
-        output=./result
-        while [ "$#" -gt 0 ]; do
-            case "$1" in
-                -h|--help)
-                    usage_snabb_vmprofile
-                    ;;
-                -o|--output)
-                    output=$2
-                    shift 2
-                    ;;
-                *)
-                    break
-                    ;;
-            esac
-        done
-        [ "$#" == 1 ] || usage_snabb_vmprofile
-
-        # Sanity-check the input.
-        [ -d "$1/engine/vmprofile" ] || error "can't open directory $1/engine/vmprofile"
-        # Create a nix expression to perform the analysis.
-        path=$(readlink -f "$1")
-        cat > $nixexpr <<EOF
-with import $studio/nix/import.nix {};
-snabbVMProfileAnalysis $path
-EOF
-        if [ -n "$verbose" ]; then
-            echo "nix expression:" >&2
-            cat $nixexpr | sed 's/^/  /g' >&2
-        fi
-        storepath=$(nix-build -j $parallel $nixargs -o $output $nixexpr)
-        status=$?
-        if [ $status == 0 ]; then
-            echo "created $output -> $storepath"
-        fi
-        rm -rf $tmpdir
-        exit $status
+case "$1" in
+    vnc)
+        nix-shell \
+            -E '(import ../.).studio-gui-vnc' \
+            --run studio-vnc
         ;;
-    processes)
-        tmpdir=$(mktemp -d)
-        nixexpr=$tmpdir/process-report.nix
- 
-        cat > $nixexpr <<EOF
-with import $studio/nix/import.nix {};
-snabbProcessReport
-  (snabbProcessSet [
-EOF
-        group="other"
-        output="./result"
-        while [ "$#" -gt 0 ]; do
-            case "$1" in
-                -o|--output)
-                    output="$2"
-                    shift 2
-                    ;;
-                -g|--group)
-                    group=$2
-                    shift 2
-                    ;;
-                -h|--help)
-                    usage_snabb_processes
-                    ;;
-                *)
-                    path=$(readlink -f $1)
-                    checkfile=$path/engine/latency.histogram
-                    [ -f "$checkfile" ] || error "cannot read $checkfile"
-                    cat >> $nixexpr <<EOF
-    (snabbProcessGroup "$group" [
-      (snabbProcess (snabbProcessTarball $path)) ])
-EOF
-                    shift 1
-                    ;;
-            esac
-        done
-        cat >> $nixexpr <<EOF
-  ])
-EOF
-        if [ -n "$verbose" ]; then
-            echo "nix expression:" >&2
-            cat $nixexpr | sed 's/^/  /g' >&2
-        fi
-        storepath=$(nix-build -j $parallel $nixargs -o $output $nixexpr)
-        status=$?
-        if [ $status == 0 ]; then
-            echo "created $output -> $storepath"
-        fi
-        rm -rf "$tmpdir"
-        exit $status
+    x11)
+        nix-shell \
+            -E '(import ../.).studio-gui' \
+            --run studio-x11
         ;;
     *)
-        usage_snabb
+        error "Usage: studio <vnc|x11>"
         ;;
 esac
-        
+
