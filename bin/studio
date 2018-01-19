@@ -32,16 +32,23 @@ fi
 
 nixopts="-j 10 --option signed-binary-caches https://cache.nixos.org --option extra-binary-caches https://hydra.snabb.co"
 
+runstudio() {
+  attr="$1"
+  cmd="$2"
+  nix-shell $nixopts --run "$cmd" -E - <<EOF
+    with import $studio;
+    runCommandNoCC "studio" {
+      nativeBuildInputs = [ $attr ];
+    } ""
+EOF
+}
+
 case "$1" in
     vnc)
-        nix-shell $nixopts \
-            -E "(import $studio).studio-gui-vnc" \
-            --run studio-vnc
+        runstudio studio-gui-vnc studio-vnc
         ;;
     x11)
-        nix-shell $nixopts \
-            -E "(import "$studio").studio-gui" \
-            --run studio-x11
+        runstudio studio-gui studio-x11
         ;;
     *)
         error "Usage: studio <vnc|x11>"
