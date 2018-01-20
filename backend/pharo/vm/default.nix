@@ -1,4 +1,6 @@
-{ stdenv, fetchurl, fetchFromGitHub, bash, unzip, glibc, openssl, gcc, mesa, freetype, xorg, alsaLib, cairo, libuuid, autoreconfHook, gcc48, runCommand, ... }:
+{ stdenv, fetchurl, fetchFromGitHub, bash, unzip, glibc, openssl, gcc, mesa, freetype, xorg, alsaLib, cairo, pixman, fontconfig, xlibs, libuuid, autoreconfHook, gcc48, runCommand, ... }:
+
+with stdenv.lib;
 
 # Build the Pharo VM
 stdenv.mkDerivation rec {
@@ -84,7 +86,7 @@ stdenv.mkDerivation rec {
     mkdir -p "$out/bin"
 
     # Note: include ELF rpath in LD_LIBRARY_PATH for finding libc.
-    libs=$out:$(patchelf --print-rpath "$out/pharo"):${cairo}/lib:${mesa}/lib:${freetype}/lib:${openssl}/lib:${libuuid}/lib:${alsaLib}/lib:${xorg.libICE}/lib:${xorg.libSM}/lib
+    libs=$out:$(patchelf --print-rpath "$out/pharo"):${getLib cairo}/lib:${getLib pixman}/lib:${getLib fontconfig}/lib:${getLib xlibs.libxcb}/lib:${getLib xlibs.libXrender}/lib:${getLib mesa}/lib:${getLib freetype}/lib:${getLib openssl}/lib:${getLib libuuid}/lib:${getLib alsaLib}/lib:${getLib xorg.libICE}/lib:${getLib xorg.libSM}/lib
 
     # Create the script
     cat > "$out/bin/pharo" <<EOF
@@ -104,5 +106,5 @@ stdenv.mkDerivation rec {
   # http://forum.world.st/OSProcess-fork-issue-with-Debian-built-VM-td4947326.html
   #
   # (stack protection is disabled above for gcc 4.8 compatibility.)
-  nativeBuildInputs = [ bash unzip glibc openssl gcc48 mesa freetype xorg.libX11 xorg.libICE xorg.libSM alsaLib cairo pharo-share libuuid autoreconfHook ];
+  nativeBuildInputs = [ bash unzip glibc openssl gcc48 mesa freetype xorg.libX11 xorg.libICE xorg.libSM alsaLib cairo pixman fontconfig xlibs.libxcb xlibs.libXrender pharo-share libuuid autoreconfHook ];
 }
