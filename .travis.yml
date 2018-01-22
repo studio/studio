@@ -1,3 +1,4 @@
+language: bash
 dist: trusty
 sudo: required
 install: sudo apt-get install -y nix
