@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 studio="$(dirname $(readlink -f $0))/.."
 
@@ -14,7 +14,7 @@ error() {
 [ $(uname -s) = "Linux" ]  || (error "error: 'uname -s' is not Linux")
 
 # Check that nix is available
-if ! type nix-build &> /dev/null; then
+if ! type nix-build; then
     cat <<EOF
 command not found: nix-build
 
