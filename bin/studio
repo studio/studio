@@ -11,7 +11,7 @@ error() {
 # Preamble and checking.
 #
 
-[ $(uname -s) == "Linux" ]  || (error "error: 'uname -s' is not Linux")
+[ $(uname -s) = "Linux" ]  || (error "error: 'uname -s' is not Linux")
 
 # Check that nix is available
 if ! type nix-build &> /dev/null; then
