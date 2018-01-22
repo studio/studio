@@ -1,3 +1,3 @@
 initializing
 loopInstructions
-	^ irInstructions copyAfter: self loop.
+	^ self irInstructions copyAfter: self loop.
