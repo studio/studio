@@ -1,3 +1,3 @@
 initializing
 headInstructions
-	^ irInstructions copyUpTo: self loop.
+	^ self irInstructions copyUpTo: self loop.
