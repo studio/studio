@@ -40,6 +40,11 @@ let
         (repo versionFromFileNamed: file) load.
       ].
 
+    "Load additional patches to the image."
+    '${./patches}' asFileReference entries do: [ :entry |
+        Transcript show: 'Patching: ', entry asFileReference fullName; cr.
+        entry asFileReference fileIn. ].
+
     "Setup desktop"
     Pharo3Theme beCurrent. "light theme"
     World closeAllWindowsDiscardingChanges.
