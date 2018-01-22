@@ -45,13 +45,16 @@ EOF
 
 case "$1" in
     vnc)
-        runstudio studio-gui-vnc studio-vnc
+        runstudio studio.studio-vnc studio-vnc
         ;;
     x11)
-        runstudio studio-gui studio-x11
+        runstudio studio.studio-x11 studio-x11
+        ;;
+    test)
+        runstudio studio.studio-test studio-test
         ;;
     *)
-        error "Usage: studio <vnc|x11>"
+        error "Usage: studio <vnc|x11|test>"
         ;;
 esac
 
