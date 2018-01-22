@@ -1,0 +1,4 @@
+dist: trusty
+sudo: required
+install: sudo apt-get install -y nix
+script: bin/studio test && test -f studio-test.png
