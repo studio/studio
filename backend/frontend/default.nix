@@ -155,7 +155,12 @@ let
   studio-test =
     # Script to do a simple test of the GUI.
     let studio-test-script = writeScript "studio-test-script.st" ''
+        Transcript show: 'Exercising the Studio UI..'; cr.
+        StudioInspector new
+          go: 'with import <studio>; raptorjit.run "for i = 1, 1e8 do end"'.
+        GTInspector openOn: (RJITAuditLog allInstances first) traces first irTreeView.
         Transcript show: 'Taking a screenshot..'; cr.
+        (Smalltalk imageDirectory / 'studio-test.png') asFileReference delete.
         PNGReadWriter putForm: World imageForm
                       onFileNamed: Smalltalk imageDirectory / 'studio-test.png'.
         Transcript show: 'Took screenshot'; cr.
