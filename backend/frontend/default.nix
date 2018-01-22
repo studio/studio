@@ -173,7 +173,7 @@ let
         #!${stdenv.shell}
         cp ${studio-image}/* .
         timeout 30 \
-          pharo --nodisplay pharo.image st --quit ${studio-test-script}
+          ${pharo}/bin/pharo --nodisplay pharo.image st --quit ${studio-test-script}
       '';
   };
 in
