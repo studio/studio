@@ -172,7 +172,7 @@ let
       text = ''
         #!${stdenv.shell}
         cp ${studio-image}/* .
-        chmod +x pharo.image pharo.changes
+        chmod +w pharo.image pharo.changes
         timeout 30 \
           ${pharo}/bin/pharo --nodisplay pharo.image st --quit ${studio-test-script}
       '';
