@@ -1,5 +1,5 @@
 language: bash
 dist: trusty
 sudo: required
-install: sudo apt-get install -y nix
+install: curl https://nixos.org/nix/install | sh
 script: bin/studio test && test -f studio-test.png
