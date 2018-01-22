@@ -173,7 +173,7 @@ let
         #!${stdenv.shell}
         cp ${studio-image}/* .
         chmod +w pharo.image pharo.changes
-        timeout 30 \
+        timeout 600 \
           ${pharo}/bin/pharo --nodisplay pharo.image st --quit ${studio-test-script}
       '';
   };
