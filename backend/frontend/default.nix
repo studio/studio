@@ -118,7 +118,7 @@ let
       chmod +w pharo.image
       chmod +w pharo.changes
       export STUDIO_PATH=''${STUDIO_PATH:-${../..}}
-      ${pharo}/bin/pharo pharo.image
+      ${pharo}/bin/pharo pharo.image "$@"
     '';
   };
 
