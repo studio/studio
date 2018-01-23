@@ -106,6 +106,22 @@ let
         cp screenshot.png $out/${name}.png
       '';
 
+  # Get a read-write copy of the Pharo image.
+  studio-get-image = writeTextFile {
+    name = "studio-get-image";
+    destination = "/bin/studio-get-image";
+    executable = true;
+    text = ''
+      #!${stdenv.shell}
+      version=$(basename ${studio-image})
+      cp ${studio-image}/pharo.image pharo-$version.image
+      cp ${studio-image}/pharo.changes pharo-$version.changes
+      chmod +w pharo-$version.image
+      chmod +w pharo-$version.changes
+      echo pharo-$version.image
+    '';
+  };
+
   # Script to start the Studio image with the Pharo VM.
   studio-x11 = writeTextFile {
     name = "studio-x11-${studio-version}";
@@ -113,12 +129,9 @@ let
     executable = true;
     text = ''
       #!${stdenv.shell}
-      cp ${studio-image}/pharo.image pharo.image
-      cp ${studio-image}/pharo.changes pharo.changes
-      chmod +w pharo.image
-      chmod +w pharo.changes
       export STUDIO_PATH=''${STUDIO_PATH:-${../..}}
-      ${pharo}/bin/pharo pharo.image "$@"
+      image=$(${studio-get-image}/bin/studio-get-image)
+      ${pharo}/bin/pharo $image "$@"
     '';
   };
 
@@ -171,10 +184,9 @@ let
       executable = true;
       text = ''
         #!${stdenv.shell}
-        cp ${studio-image}/* .
-        chmod +w pharo.image pharo.changes
+        image=$(${studio-get-image}/bin/studio-get-image)
         timeout 600 \
-          ${pharo}/bin/pharo --nodisplay pharo.image st --quit ${studio-test-script}
+          ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-test-script}
       '';
   };
 in
