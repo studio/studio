@@ -173,7 +173,8 @@ let
           go: 'with import <studio>; raptorjit.run "for i = 1, 1e8 do end"'.
         GTInspector openOn: (RJITAuditLog allInstances first) traces first irTreeView.
         Transcript show: 'Taking a screenshot..'; cr.
-        (Smalltalk imageDirectory / 'studio-test.png') asFileReference delete.
+        [ (Smalltalk imageDirectory / 'studio-test.png') asFileReference delete ]
+          on: FileDoesNotExist do: []. "Ignore."
         PNGReadWriter putForm: World imageForm
                       onFileNamed: Smalltalk imageDirectory / 'studio-test.png'.
         Transcript show: 'Took screenshot'; cr.

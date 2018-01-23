@@ -35,10 +35,12 @@ nixopts="--pure -j 10 --option signed-binary-caches https://cache.nixos.org --op
 runstudio() {
   attr="$1"
   cmd="$2"
+  export TMPDIR=$(mktemp -d)
+  trap "rm -rf $TMPDIR" EXIT
   nix-shell $nixopts --run "$cmd" -E - <<EOF
     with import $studio;
     runCommandNoCC "studio" {
-      nativeBuildInputs = [ nixUnstable perl xorg.xauth $attr ];
+      nativeBuildInputs = [ nixUnstable xorg.xauth perl $attr ];
     } ""
 EOF
 }
