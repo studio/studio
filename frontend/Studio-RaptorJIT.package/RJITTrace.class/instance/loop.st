@@ -1,3 +1,3 @@
 initializing
 loop
-	^ irInstructions detect: #isLoop ifNone: [nil].
+	^ self irInstructions detect: #isLoop ifNone: [nil].

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 studio="$(dirname $(readlink -f $0))/.."
 
@@ -11,10 +11,10 @@ error() {
 # Preamble and checking.
 #
 
-[ $(uname -s) == "Linux" ]  || (error "error: 'uname -s' is not Linux")
+[ $(uname -s) = "Linux" ]  || (error "error: 'uname -s' is not Linux")
 
 # Check that nix is available
-if ! type nix-build &> /dev/null; then
+if ! type nix-build; then
     cat <<EOF
 command not found: nix-build
 
@@ -30,21 +30,33 @@ fi
 # Run studio
 #
 
-nixopts="-j 10 --option signed-binary-caches https://cache.nixos.org --option extra-binary-caches https://hydra.snabb.co"
+nixopts="--pure -j 10 --option signed-binary-caches https://cache.nixos.org --option extra-binary-caches https://hydra.snabb.co"
+
+runstudio() {
+  attr="$1"
+  cmd="$2"
+  export TMPDIR=$(mktemp -d)
+  trap "rm -rf $TMPDIR" EXIT
+  nix-shell $nixopts --run "$cmd" -E - <<EOF
+    with import $studio;
+    runCommandNoCC "studio" {
+      nativeBuildInputs = [ nixUnstable xorg.xauth perl $attr ];
+    } ""
+EOF
+}
 
 case "$1" in
     vnc)
-        nix-shell $nixopts \
-            -E "(import $studio).studio-gui-vnc" \
-            --run studio-vnc
+        runstudio studio.studio-vnc studio-vnc
         ;;
     x11)
-        nix-shell $nixopts \
-            -E "(import "$studio").studio-gui" \
-            --run studio-x11
+        runstudio studio.studio-x11 studio-x11
+        ;;
+    test)
+        runstudio studio.studio-test studio-test
         ;;
     *)
-        error "Usage: studio <vnc|x11>"
+        error "Usage: studio <vnc|x11|test>"
         ;;
 esac
 

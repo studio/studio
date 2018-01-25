@@ -1,0 +1,5 @@
+language: bash
+dist: trusty
+sudo: required
+install: curl https://nixos.org/nix/install | sh
+script: . /home/travis/.nix-profile/etc/profile.d/nix.sh && bin/studio test && test -f studio-test.png

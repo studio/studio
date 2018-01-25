@@ -40,6 +40,11 @@ let
         (repo versionFromFileNamed: file) load.
       ].
 
+    "Load additional patches to the image."
+    '${./patches}' asFileReference entries do: [ :entry |
+        Transcript show: 'Patching: ', entry asFileReference fullName; cr.
+        entry asFileReference fileIn. ].
+
     "Setup desktop"
     Pharo3Theme beCurrent. "light theme"
     World closeAllWindowsDiscardingChanges.
@@ -113,7 +118,7 @@ let
       chmod +w pharo.image
       chmod +w pharo.changes
       export STUDIO_PATH=''${STUDIO_PATH:-${../..}}
-      ${pharo}/bin/pharo pharo.image
+      ${pharo}/bin/pharo pharo.image "$@"
     '';
   };
 
@@ -146,16 +151,46 @@ let
         -SecurityTypes None
     '';
   };
+
+  studio-test =
+    # Script to do a simple test of the GUI.
+    let studio-test-script = writeScript "studio-test-script.st" ''
+        Transcript show: 'Exercising the Studio UI..'; cr.
+        StudioInspector new
+          go: 'with import <studio>; raptorjit.run "for i = 1, 1e8 do end"'.
+        GTInspector openOn: (RJITAuditLog allInstances first) traces first irTreeView.
+        Transcript show: 'Taking a screenshot..'; cr.
+        [ (Smalltalk imageDirectory / 'studio-test.png') asFileReference delete ]
+          on: FileDoesNotExist do: []. "Ignore."
+        PNGReadWriter putForm: World imageForm
+                      onFileNamed: Smalltalk imageDirectory / 'studio-test.png'.
+        Transcript show: 'Took screenshot'; cr.
+      ''; in
+     writeTextFile {
+      name = "studio-test-${studio-version}";
+      destination = "/bin/studio-test";
+      executable = true;
+      text = ''
+        #!${stdenv.shell}
+        cp ${studio-image}/* .
+        chmod +w pharo.image pharo.changes
+        timeout 600 \
+          ${pharo}/bin/pharo --nodisplay pharo.image st --quit ${studio-test-script}
+      '';
+  };
 in
   
 {
   # main package collection for 'nix-env -i'
-  studio = { inherit studio-x11 studio-vnc tigervnc; };
+  studio = { inherit studio-x11 studio-vnc studio-test tigervnc; };
   # individual packages
   studio-gui = studio-x11;           # deprecated
   studio-gui-vnc = studio-vnc;       # deprecated
   studio-base-image = base-image;
   studio-image = studio-image;
   inherit studio-inspector-screenshot;
+  inherit studio-x11 studio-vnc studio-test;
+
+
 }
 
