@@ -14,7 +14,6 @@ rec {
     cp --no-preserve=mode -r $dir $out
     cd $out
     cp ${./raptorjit-dwarf.json} raptorjit-dwarf.json
-    ln -s engine/vmprofile vmprofile
   '';
   processTarball = url: processDirectory (fetchTarball url);
 
