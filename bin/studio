@@ -19,7 +19,7 @@ if ! type nix-build; then
 command not found: nix-build
 
 Please install the nix package manager:
-  curl https://nix.org/nix/install | sh
+  curl https://nixos.org/nix/install | sh
 
 See https://nixos.org/nix/ for more information.
 EOF
