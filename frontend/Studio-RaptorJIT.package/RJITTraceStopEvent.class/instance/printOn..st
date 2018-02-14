@@ -1,3 +1,3 @@
 printing
 printOn: aStream
-	aStream nextPutAll: '<trace_stop>'
+	aStream nextPutAll: 'trace stop (success) from ', self startSourceLine, ' to ', self endSourceLine, ' (', self numberOfBytecodes asString, ' bytecodes)'
