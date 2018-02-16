@@ -1,3 +1,3 @@
-testing
+accessing
 hasTrace
-	^false.
+	^ false
