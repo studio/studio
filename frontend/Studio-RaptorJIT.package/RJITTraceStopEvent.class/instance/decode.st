@@ -1,3 +1,3 @@
 decoding
 decode
-	^flashback decodeTypeNamed: 'GCtrace' at: gctrace.
+	^flashback decodeTypeNamed: #GCtrace at: gctrace.

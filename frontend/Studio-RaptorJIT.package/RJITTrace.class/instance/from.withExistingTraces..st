@@ -4,7 +4,7 @@ from: aGCtrace withExistingTraces: traces
 	gctrace := DWARFValueProxy on: aGCtrace.
 	flashback := gctrace dwarfValue flashback.
 	dwarf := flashback auditLog dwarf.
-	bias := dwarf resolveConstant: 'REF_BIAS'.
+	bias := dwarf resolveConstant: #REF_BIAS.
 	irAddress := gctrace ir value abs.
 	nk := bias - gctrace nk value.
 	nins := gctrace nins value - bias - 1.
