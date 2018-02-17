@@ -1,14 +1,15 @@
 {
 	"instance" : {
+		"isTraceEvent" : "LukeGorrie 2/17/2018 12:47",
 		"jitState" : "LukeGorrie 12/8/2017 08:59",
-		"flashback:" : "LukeGorrie 6/12/2017 11:43",
-		"hasTrace" : "LukeGorrie 12/4/2017 11:49",
-		"gtInspectorInfoIn:" : "LukeGorrie 12/8/2017 11:58",
-		"endSourceLine" : "LukeGorrie 2/14/2018 09:34",
-		"info" : "LukeGorrie 2/14/2018 09:30",
-		"gtInspectorBytecodesIn:" : "LukeGorrie 12/17/2017 08:35",
 		"numberOfBytecodes" : "LukeGorrie 2/14/2018 09:30",
-		"startSourceLine" : "LukeGorrie 2/16/2018 10:23"
+		"gtInspectorInfoIn:" : "LukeGorrie 12/8/2017 11:58",
+		"hasTrace" : "LukeGorrie 12/4/2017 11:49",
+		"flashback:" : "LukeGorrie 6/12/2017 11:43",
+		"gtInspectorBytecodesIn:" : "LukeGorrie 12/17/2017 08:35",
+		"info" : "LukeGorrie 2/14/2018 09:30",
+		"startSourceLine" : "LukeGorrie 2/16/2018 10:23",
+		"endSourceLine" : "LukeGorrie 2/14/2018 09:34"
 	},
 	"class" : { }
 }
