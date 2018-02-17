@@ -2,7 +2,5 @@ accessing
 jitEvents
 	^ gctrace flashback auditLog events select: [ :event |
 		event hasTrace and: [ 
-			| trace |
-			trace := event trace.
-			"check startpc"
-			"check parent" ] ]
+			event jitState parentTraceno = gctrace parent and: [ 
+				event jitState startpc value = gctrace startpc value ] ] ].
