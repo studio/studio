@@ -1,0 +1,3 @@
+tracing
+trace
+	^ jitState currentTrace.

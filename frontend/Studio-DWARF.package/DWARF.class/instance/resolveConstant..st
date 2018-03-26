@@ -1,5 +1,5 @@
 initializing
 resolveConstant: name
-	types select: #isEnumeration
+	alltypes select: #isEnumeration
 			thenDo: [ :e | (e nameToValue: name) ifNotNil: [ :value | ^value ]. ].
 	^nil.

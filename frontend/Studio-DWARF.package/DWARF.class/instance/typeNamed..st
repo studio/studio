@@ -1,3 +1,3 @@
 accessing
 typeNamed: typename
-	^types detect: [ :t | t typename = typename ].
+	^ types at: typename.

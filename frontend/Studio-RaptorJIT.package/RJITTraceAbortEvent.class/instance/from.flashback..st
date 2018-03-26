@@ -1,5 +1,4 @@
-initializating
+decoding
 from: dict flashback: aFlashback
-   flashback := aFlashback.
-   jitState := flashback decodeJITStateAt: (dict at: 'jit_State').
-   error := dict at: 'TraceError'.
+	super from: dict flashback: aFlashback.
+	error := dict at: 'TraceError'.

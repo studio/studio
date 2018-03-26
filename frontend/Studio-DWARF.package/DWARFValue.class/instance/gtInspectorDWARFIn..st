@@ -3,7 +3,7 @@ gtInspectorDWARFIn: composite
 	<gtInspectorPresentationOrder: 1>
 	^ composite fastTreeTable
 		title: 'DWARF';
-		display: [ :x | { '(root)' -> x. } ];
+		display: [ { '(root)' -> self. } ];
 		column: 'Name' evaluated: [ :x | x key ];
 		column: 'Value' evaluated: [ :x | x value ];
 		column: 'Type' evaluated: [ :x | x value type typename ];

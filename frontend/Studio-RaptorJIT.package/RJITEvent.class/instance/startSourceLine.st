@@ -1,0 +1,3 @@
+accessing
+startSourceLine
+	^ jitState startSourceLine.

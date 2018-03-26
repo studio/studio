@@ -1,6 +1,6 @@
 {
 	"commentStamp" : "",
-	"super" : "RJITEvent",
+	"super" : "RJITTraceEvent",
 	"category" : "Studio-RaptorJIT",
 	"classinstvars" : [ ],
 	"pools" : [ ],

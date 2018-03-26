@@ -1,11 +1,9 @@
 {
 	"instance" : {
-		"decode" : "LukeGorrie 6/12/2017 11:52",
-		"gtInspectorIRTreeIn:" : "LukeGorrie 12/8/2017 12:23",
-		"printOn:" : "LukeGorrie 12/5/2017 09:53",
-		"hasTrace" : "LukeGorrie 12/8/2017 12:52",
-		"gcTraceWithExistingTraces:" : "LukeGorrie 12/8/2017 12:21",
-		"from:flashback:" : "LukeGorrie 12/6/2017 15:13"
+		"printOn:" : "LukeGorrie 2/14/2018 09:38",
+		"from:flashback:" : "LukeGorrie 2/16/2018 09:49",
+		"hasTrace" : "LukeGorrie 2/17/2018 12:45",
+		"decode" : "LukeGorrie 2/17/2018 13:05"
 	},
 	"class" : { }
 }
