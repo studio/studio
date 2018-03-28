@@ -30,7 +30,7 @@ fi
 # Run studio
 #
 
-nixopts="--pure -j 10 --option signed-binary-caches https://cache.nixos.org --option extra-binary-caches https://hydra.snabb.co"
+nixopts="--pure -j 10"
 
 runstudio() {
   attr="$1"
