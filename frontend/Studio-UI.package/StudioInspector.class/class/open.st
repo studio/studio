@@ -6,6 +6,7 @@ open
 		showFirst: [ :composite |
 			composite text
 				title: 'Nix expression';
-				populate: #selection iconName: #glamorousGo on: $G entitled: 'Build' with: [ :editor | inspector go: editor text. ] ].
+				populate: #selection iconName: #glamorousGo on: $G entitled: 'Build' with: [ :editor |
+					inspector go: editor text asString withUnixLineEndings. ] ].
 	^inspector openOn: 'with import <studio>;
 '.
