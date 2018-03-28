@@ -13,6 +13,7 @@ command: commandLine
 		stderr nextPutAll: err.
 		self showProgress: out.
 		self showProgress: err.
+		World doOneCycle.
 		(Delay forMilliseconds: 50) wait.
 	].
 	out := process upToEndOfFile.
