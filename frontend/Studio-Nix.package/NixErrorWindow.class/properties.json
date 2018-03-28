@@ -1,0 +1,14 @@
+{
+	"commentStamp" : "",
+	"super" : "ComposableModel",
+	"category" : "Studio-Nix",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"button",
+		"text"
+	],
+	"name" : "NixErrorWindow",
+	"type" : "normal"
+}

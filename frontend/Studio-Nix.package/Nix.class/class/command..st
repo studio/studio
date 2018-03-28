@@ -1,8 +1,25 @@
 instance creation
 command: commandLine
-	| process outputs |
+	| process stdout stderr out err |
+	stdout := WriteStream on: String new.
+	stderr := WriteStream on: String new.
 	process := PipeableOSProcess command: 'NIX_PATH=studio=', self studioNixPath, ' ', commandLine.
 	process close.
-	outputs := process outputAndError collect: [ :m | TextConverter default convertFromSystemString: m ].
-	process succeeded ifFalse: [ NixError new messageText: (outputs at: 2); signal ].
-	^(outputs at: 1).
+	[  process isComplete ] whileFalse: [ 
+		process updateErrorPipelineStream.
+		out := process upToEnd.
+		err := process errorUpToEnd.
+		stdout nextPutAll: out.
+		stderr nextPutAll: err.
+		self showProgress: out.
+		self showProgress: err.
+		(Delay forMilliseconds: 50) wait.
+	].
+	out := process upToEndOfFile.
+	err := process errorUpToEndOfFile.
+	stdout nextPutAll: out.
+	stderr nextPutAll: err.
+	self showProgress: out.
+	self showProgress: err.
+	process succeeded ifFalse: [ NixError new messageText: stderr contents asByteArray utf8Decoded; signal ].
+	^ stdout contents.
