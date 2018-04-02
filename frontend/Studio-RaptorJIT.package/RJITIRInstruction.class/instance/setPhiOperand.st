@@ -1,3 +1,0 @@
-initialization
-setPhiOperand
-	isPhiOperand := true.

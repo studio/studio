@@ -1,3 +1,0 @@
-accessing
-traceno
-	^ trace traceno

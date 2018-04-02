@@ -1,3 +1,0 @@
-printing
-hasChildren: value
-	^false.

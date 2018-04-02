@@ -1,3 +1,0 @@
-initialization
-index
-	^ index

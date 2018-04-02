@@ -1,3 +1,0 @@
-accessing
-hint
-	^ hint
