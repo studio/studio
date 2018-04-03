@@ -24,9 +24,9 @@ let
   # Built on Inria CI (Jenkins) with Metacello to install Studio.
   base-image = fetchImageZip rec {
     name = "studio-base-image-${version}";
-    version = "25";
+    version = "32";
     url = "https://ci.inria.fr/pharo-contribution/job/Studio/default/${version}/artifact/Studio.zip";
-    sha256 = "0kc938mz4b37jbl2994ch3ln8sbdaa797333f49sgb1glx83ny90";
+    sha256 = "08hjh3qldh5h1rgjk9pqx56d2zwn34j79gh44d9vcgw8vxvdkgaz";
   };
 
   # Script to update and customize the image for Studio.
@@ -34,11 +34,12 @@ let
     | repo window |
 
     "Force reload of all Studio packages from local sources."
-    repo := MCFileTreeRepository new directory: '${../../frontend}' asFileReference.
-    repo allFileNames do: [ :file |
-        Transcript show: 'Loading: ', file; cr.
-        (repo versionFromFileNamed: file) load.
-      ].
+    repo := '${../../frontend}' asFileReference.
+    (FileSystem disk childrenAt: repo) do: [ :path |
+      | packageName reader |
+      packageName := path basenameWithoutExtension.
+      reader := (TonelReader on: repo fileName: packageName).
+      reader version load. ].
 
     "Load additional patches to the image."
     '${./patches}' asFileReference entries do: [ :entry |
