@@ -39,9 +39,13 @@ RJITProcess >> fromPath: aPath [
 	[ dwarfPath isFile and: auditPath isFile ] assertWithDescription:
 		'JIT audit log not found'.
 	auditLog := RJITAuditLog loadFromFileNamed: auditPath pathString withDWARF: (DWARF loadFromFileNamed: dwarfPath pathString).
+	"Load VMProfile data with progress monitoring."
 	vmprofiles := OrderedCollection new.
-	(path / 'vmprofile') children do: [ :vmprofile |
-		vmprofiles add: (RJITVMProfile loadFromFileNamed: vmprofile pathString name: vmprofile basenameWithoutExtension process: self) ].
+	(path / 'vmprofile') children
+		do: [ :vmprofile |
+			vmprofiles add: (RJITVMProfile loadFromFileNamed: vmprofile pathString name: vmprofile basenameWithoutExtension process: self) ]
+		displayingProgress: [ :x | 'Loading VMProfile: ', x base ].
+	UIManager default inform: 'Loaded ', vmprofiles size asString, ' RaptorJIT profiles'.
 ]
 
 { #category : #accessing }
