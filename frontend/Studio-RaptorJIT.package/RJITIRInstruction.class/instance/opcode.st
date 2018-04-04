@@ -1,3 +1,0 @@
-accessing
-opcode
-	^ opcode

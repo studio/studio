@@ -1,3 +1,0 @@
-accessing
-exit
-	^ exit

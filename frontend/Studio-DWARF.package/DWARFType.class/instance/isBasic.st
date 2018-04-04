@@ -1,3 +1,0 @@
-printing
-isBasic
-	^false

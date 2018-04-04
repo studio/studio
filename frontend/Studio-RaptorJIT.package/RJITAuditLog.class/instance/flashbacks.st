@@ -1,3 +1,0 @@
-initializing
-flashbacks
-	^ flashback asOrderedCollection.

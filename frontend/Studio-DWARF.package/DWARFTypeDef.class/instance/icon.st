@@ -1,3 +1,0 @@
-printing
-icon
-   ^ type icon.

@@ -1,3 +1,0 @@
-accessing
-gc
-	^ igc + jgc.

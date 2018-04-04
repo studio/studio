@@ -1,3 +1,0 @@
-initializing
-numberOfIrInstructions
-	^ nins.
