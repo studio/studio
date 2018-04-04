@@ -1,3 +1,0 @@
-initialization
-roassalShape
-	^ RTBox.

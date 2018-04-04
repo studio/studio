@@ -1,3 +1,0 @@
-initialization
-name
-	^name

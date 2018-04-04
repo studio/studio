@@ -1,3 +1,0 @@
-accessing
-gcPercent
-	^ profile gcPercent

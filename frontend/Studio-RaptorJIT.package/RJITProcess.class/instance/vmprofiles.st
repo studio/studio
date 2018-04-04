@@ -1,3 +1,0 @@
-accessing
-vmprofiles
-	^ vmprofiles

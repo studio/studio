@@ -1,3 +1,0 @@
-accessing
-firstOutput
-	^ outputs first

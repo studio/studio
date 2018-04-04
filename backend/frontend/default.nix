@@ -24,9 +24,9 @@ let
   # Built on Inria CI (Jenkins) with Metacello to install Studio.
   base-image = fetchImageZip rec {
     name = "studio-base-image-${version}";
-    version = "25";
+    version = "32";
     url = "https://ci.inria.fr/pharo-contribution/job/Studio/default/${version}/artifact/Studio.zip";
-    sha256 = "0kc938mz4b37jbl2994ch3ln8sbdaa797333f49sgb1glx83ny90";
+    sha256 = "08hjh3qldh5h1rgjk9pqx56d2zwn34j79gh44d9vcgw8vxvdkgaz";
   };
 
   # Script to update and customize the image for Studio.
@@ -34,11 +34,12 @@ let
     | repo window |
 
     "Force reload of all Studio packages from local sources."
-    repo := MCFileTreeRepository new directory: '${../../frontend}' asFileReference.
-    repo allFileNames do: [ :file |
-        Transcript show: 'Loading: ', file; cr.
-        (repo versionFromFileNamed: file) load.
-      ].
+    repo := '${../../frontend}' asFileReference.
+    (FileSystem disk childrenAt: repo) do: [ :path |
+      | packageName reader |
+      packageName := path basenameWithoutExtension.
+      reader := (TonelReader on: repo fileName: packageName).
+      reader version load. ].
 
     "Load additional patches to the image."
     '${./patches}' asFileReference entries do: [ :entry |
@@ -106,6 +107,22 @@ let
         cp screenshot.png $out/${name}.png
       '';
 
+  # Get a read-write copy of the Pharo image.
+  studio-get-image = writeTextFile {
+    name = "studio-get-image";
+    destination = "/bin/studio-get-image";
+    executable = true;
+    text = ''
+      #!${stdenv.shell}
+      version=$(basename ${studio-image})
+      cp ${studio-image}/pharo.image pharo-$version.image
+      cp ${studio-image}/pharo.changes pharo-$version.changes
+      chmod +w pharo-$version.image
+      chmod +w pharo-$version.changes
+      echo pharo-$version.image
+    '';
+  };
+
   # Script to start the Studio image with the Pharo VM.
   studio-x11 = writeTextFile {
     name = "studio-x11-${studio-version}";
@@ -113,12 +130,9 @@ let
     executable = true;
     text = ''
       #!${stdenv.shell}
-      cp ${studio-image}/pharo.image pharo.image
-      cp ${studio-image}/pharo.changes pharo.changes
-      chmod +w pharo.image
-      chmod +w pharo.changes
       export STUDIO_PATH=''${STUDIO_PATH:-${../..}}
-      ${pharo}/bin/pharo pharo.image "$@"
+      image=$(${studio-get-image}/bin/studio-get-image)
+      ${pharo}/bin/pharo $image "$@"
     '';
   };
 
@@ -172,10 +186,9 @@ let
       executable = true;
       text = ''
         #!${stdenv.shell}
-        cp ${studio-image}/* .
-        chmod +w pharo.image pharo.changes
+        image=$(${studio-get-image}/bin/studio-get-image)
         timeout 600 \
-          ${pharo}/bin/pharo --nodisplay pharo.image st --quit ${studio-test-script}
+          ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-test-script}
       '';
   };
 in

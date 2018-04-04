@@ -1,3 +1,0 @@
-accessing
-irOperandModes
-	self shouldBeImplemented.
