@@ -49,7 +49,10 @@ RJITProcess >> gtInspectorEventsIn: composite [
 	<gtInspectorPresentationOrder: 2>
 	composite fastList
 		title: 'Events';
-		display: [ self auditLog events reverse ].
+		display: [ self auditLog events reverse ];
+		format: [ :e |
+			"Catch errors."
+			[ e printString ] on: Error do: [ :err | '<Decoding error: ', err printString, '>' ] ].
 
 ]
 
