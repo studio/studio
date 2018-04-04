@@ -70,6 +70,11 @@ RJITEvent >> jitState [
 ]
 
 { #category : #accessing }
+RJITEvent >> number: anInteger [ 
+	number := anInteger
+]
+
+{ #category : #accessing }
 RJITEvent >> numberOfBytecodes [
 	^ self jitState bytecodes size.
 ]
