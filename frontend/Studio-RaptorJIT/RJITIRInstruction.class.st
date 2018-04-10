@@ -197,8 +197,8 @@ RJITIRInstruction >> irRefString [
 RJITIRInstruction >> irRegisterString [
 	self isSunk ifTrue: [ ^ '{sink' ].
 	stackSlot > 0 ifTrue: [ ^ '[{1}]' format: { stackSlot radix: 16 } ].
-	register = 255 ifTrue: [ ^ '' ]. "None"
-	^ register asX64RegisterAssignment.
+	register < 128 ifTrue: [ ^ register asX64RegisterAssignment ].
+	^ ''. "None"
 
 ]
 
