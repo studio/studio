@@ -194,12 +194,23 @@ RJITIRInstruction >> irRefString [
 ]
 
 { #category : #printing }
+RJITIRInstruction >> irRegisterString [
+	self isSunk ifTrue: [ ^ '{sink' ].
+	stackSlot > 0 ifTrue: [ ^ '[{1}]' format: { stackSlot radix: 16 } ].
+	register < 128 ifTrue: [ ^ register asX64RegisterAssignment ].
+	^ ''. "None"
+
+]
+
+{ #category : #printing }
 RJITIRInstruction >> irString [
 	"LOOP is a special case"
 	opcode = #loop ifTrue: [ ^ self irRefString , ' ------ LOOP ------------' ].
 	^ String streamContents: [ :s |
 		s
 			nextPutAll: self irRefString;
+			space;
+			nextPutAll: (self irRegisterString padRightTo: 6);
 			space;
 			nextPutAll: (self isGuardedAssertion ifTrue: '>' ifFalse: ' ');
 			nextPutAll: (isPhiOperand ifTrue: '+' ifFalse: ' ');
@@ -285,6 +296,14 @@ RJITIRInstruction >> isStore [
 	^ #(astore hstore ustore fstore xstore) includes: opcode.
 ]
 
+{ #category : #testing }
+RJITIRInstruction >> isSunk [
+	"Logic copied from LuaJIT dump.lua"
+	^ (#(253 254) includes: register) and: 
+		[ #(0 255) includes: stackSlot ].
+
+]
+
 { #category : #initialization }
 RJITIRInstruction >> isTypeConversion [
 	^ opcode matchesRegex: 'conv|tobit|tostr|strto'.
@@ -355,7 +374,9 @@ RJITIRInstruction >> resolveIR: num in: aGCtrace [
 
 { #category : #initialization }
 RJITIRInstruction >> roassalColor [	
-	self isAllocation ifTrue: [ ^Color red. ].
+	self isAllocation ifTrue: [
+		^ self isSunk ifTrue: [ Color pink ] ifFalse: [ Color red ].
+	].
 	self isArithmetic ifTrue: [ ^Color paleGreen. ].
 	self isBitOp ifTrue: [ ^Color paleGreen darker. ].
 	"Calls"
