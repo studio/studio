@@ -16,6 +16,18 @@ Class {
 	#category : #'Studio-RaptorJIT'
 }
 
+{ #category : #printing }
+RJITBytecode >> bytecodeListingLine [
+	^ String streamContents: [ :s |
+		s
+			nextPutAll: (self framedepth printString padLeftTo: 3);
+			space;
+			nextPutAll: (self opcodeName padRightTo: 8);
+			space;
+			nextPutAll: (self sourceLine)].
+
+]
+
 { #category : #accessing }
 RJITBytecode >> framedepth [
 	^ framedepth

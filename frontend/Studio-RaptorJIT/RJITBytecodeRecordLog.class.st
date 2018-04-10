@@ -7,6 +7,14 @@ Class {
 	#category : #'Studio-RaptorJIT'
 }
 
+{ #category : #converting }
+RJITBytecodeRecordLog >> bytecodeListing [
+	^ String streamContents: [ :s |
+		bytecodes select: [ :bc | bc framedepth isNotNil ] thenDo: [ :bc |
+			s nextPutAll: bc bytecodeListingLine; cr. ] ].
+
+]
+
 { #category : #accessing }
 RJITBytecodeRecordLog >> bytecodes [
 	^ bytecodes select: [ :bc | bc opcode isNotNil ].
@@ -24,6 +32,7 @@ RJITBytecodeRecordLog >> gtInspectorBytecodesIn: composite [
 	composite fastTable
 		title: 'Bytecodes';
 		display: [ self bytecodes ];
+		addAction: [ self bytecodeListing ] gtInspectorActionCopyValueToClipboard;
 		enableElementIndex;
 		column: 'Index' evaluated: [ :x :idx | idx ] width: 60;
 		column: 'Depth' evaluated: #framedepth width: 60;
