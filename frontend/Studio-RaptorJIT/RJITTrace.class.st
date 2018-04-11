@@ -69,14 +69,13 @@ RJITTrace >> gtInspectorGCTraceIn: composite [
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorIRListingIn: composite [
-	| insns |
+	| listing |
 	<gtInspectorPresentationOrder: 3>
-	insns := self irInstructions.
+	listing := self irListing.
 	composite text
 		title: 'IR Listing';
-		display: (String streamContents: [ :s |
-			insns do: [ :i | s nextPutAll: i irString; cr. ] ]).
-
+		display: listing;
+		addAction: [ listing ] gtInspectorActionCopyValueToClipboard.
 ]
 
 { #category : #'gt-inspector-extension' }
@@ -120,6 +119,13 @@ RJITTrace >> irInstructions [
 		irInstructions do: [ :ins | ins link: self. ].
  		].
 	^ irInstructions.
+
+]
+
+{ #category : #'as yet unclassified' }
+RJITTrace >> irListing [
+	^ String streamContents: [ :s |
+		self irInstructions do: [ :i | s nextPutAll: i irString; cr. ] ].
 
 ]
 
