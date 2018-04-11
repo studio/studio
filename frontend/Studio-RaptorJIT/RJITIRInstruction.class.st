@@ -187,6 +187,29 @@ RJITIRInstruction >> gtInspectorInputTreeIn: composite [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> gtInspectorUsesListingIn: composite [
+	<gtInspectorPresentationOrder: 4>
+	composite fastList
+		title: 'Uses List';
+		display: [ self transitiveUses asArray];
+		format: #irString;
+		addAction: [
+			String streamContents: [ :s |
+				self transitiveUses do: [ :i | 
+					s nextPutAll: i irString; cr ] ]
+		] gtInspectorActionCopyValueToClipboard.
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorUsesTreeIn: composite [
+	<gtInspectorPresentationOrder: 5>
+	composite roassal2
+		title: 'Uses Tree';
+		initializeView: [ trace irTreeViewOfInstructions: self transitiveUses ].
+
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> index [
 	^ index
 ]
@@ -489,6 +512,11 @@ RJITIRInstruction >> stackSlot [
 { #category : #querying }
 RJITIRInstruction >> transitiveInputs [
 	^ trace transitiveInputsOf: self.
+]
+
+{ #category : #querying }
+RJITIRInstruction >> transitiveUses [
+	^ trace transitiveUsesOf: self.
 ]
 
 { #category : #initialization }
