@@ -131,9 +131,23 @@ RJITTrace >> irListing [
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> irTreeView [
-	| view head loop all separator popup |
-	head := RTGroup new addAll: (self headInstructions collect: #asElement); yourself.
-	loop := RTGroup new addAll: (self loopInstructions collect: #asElement); yourself.
+	^ self irTreeViewOfInstructions: self irInstructions.
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> irTreeViewOfInstructions: insns [
+	| headInsns loopInsns view head loop all separator popup |
+	self hasLoop ifTrue: [
+		| loopindex |
+		loopindex := self loop index.
+		headInsns := insns select: [ :i | i index < loopindex ].
+		loopInsns := insns select: [ :i | i index > loopindex ].
+	] ifFalse: [ 
+		headInsns := insns.
+		loopInsns := { }.
+	 ].
+	head := RTGroup new addAll: (headInsns collect: #asElement); yourself.
+	loop := RTGroup new addAll: (loopInsns collect: #asElement); yourself.
 	all := RTGroup new addAll: head; addAll: loop; yourself.
 	separator := RTLabel new elementOn: #'LOOP:'.
 	view := RTView new.
@@ -157,7 +171,7 @@ RJITTrace >> irTreeView [
 		connectFrom: #op2ins.
 	RTDominanceTreeLayout new doNotAttachPoint; on: head.
 	RTDominanceTreeLayout new doNotAttachPoint; on: loop.
-	self hasLoop ifTrue: [ 
+	loopInsns size > 0 ifTrue: [
 		view add: separator.
 		RTVerticalLineLayout on: { head. separator. loop }. ].
 	^ view 
@@ -279,4 +293,17 @@ RJITTrace >> startPrototype [
 { #category : #accessing }
 RJITTrace >> traceno [
 	^ traceno
+]
+
+{ #category : #querying }
+RJITTrace >> transitiveInputsOf: ins [
+	| visit inputs |
+	inputs := Set new.
+	visit := [ :i | 
+		(i isNil or: [ i isConstant or: [ inputs includes: i ] ]) ifFalse: [ 
+			inputs add: i.
+			visit value: i op1ins; value: i op2ins.
+			 ] ].
+	visit value: ins.
+	^ inputs
 ]

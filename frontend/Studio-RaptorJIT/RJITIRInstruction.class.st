@@ -15,7 +15,8 @@ Class {
 		'dwarf',
 		'index',
 		'isPhiOperand',
-		'mode'
+		'mode',
+		'trace'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -146,9 +147,19 @@ RJITIRInstruction >> constantValue [
 RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 	<gtInspectorPresentationOrder: 1>
 	composite table
+		title: 'Info';
 		display: [ self attributes ];
 		column: 'Key' evaluated: #key width: 100;
 		column: 'Value' evaluated: #value.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorInputTreeIn: composite [
+	<gtInspectorPresentationOrder: 3>
+	composite roassal2
+		title: 'Input Tree';
+		initializeView: [ trace irTreeViewOfInstructions: self transitiveInputs ].
 
 ]
 
@@ -364,6 +375,7 @@ RJITIRInstruction >> register [
 { #category : #initialization }
 RJITIRInstruction >> resolveIR: num in: aGCtrace [
 	| bias idx |
+	trace := aGCtrace.
 	bias := dwarf resolveConstant: 'REF_BIAS'.
 	idx := num - bias.
 	idx >= 0
@@ -437,6 +449,11 @@ RJITIRInstruction >> shape [
 { #category : #initialization }
 RJITIRInstruction >> stackSlot [
 	^ stackSlot
+]
+
+{ #category : #querying }
+RJITIRInstruction >> transitiveInputs [
+	^ trace transitiveInputsOf: self.
 ]
 
 { #category : #initialization }
