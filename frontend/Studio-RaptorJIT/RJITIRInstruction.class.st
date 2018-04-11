@@ -138,6 +138,15 @@ RJITIRInstruction >> attributes [
 		}
 ]
 
+{ #category : #roassal }
+RJITIRInstruction >> baseShape [
+	| shape |
+	shape := RTBox new width: 50; height: 20; color: self roassalColor; borderColor: Color lightGray; borderWidth: 1.
+	self isSpilledOntoStack ifTrue: [ shape borderColor: Color black; borderWidth: 2 ].
+	^ shape
+
+]
+
 { #category : #accessing }
 RJITIRInstruction >> constantValue [
 	self shouldBeImplemented.
@@ -160,8 +169,12 @@ RJITIRInstruction >> gtInspectorInputListingIn: composite [
 	composite fastList
 		title: 'Input List';
 		display: [ self transitiveInputs asArray];
-		format: #irString.
-
+		format: #irString;
+		addAction: [
+			String streamContents: [ :s |
+				self transitiveInputs do: [ :i | 
+					s nextPutAll: i irString; cr ] ]
+		] gtInspectorActionCopyValueToClipboard.
 ]
 
 { #category : #initialization }
@@ -319,6 +332,12 @@ RJITIRInstruction >> isNop [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> isSpilledOntoStack [
+	"Return true if the IR value is stored on the stack instead of in a register."
+	^ stackSlot > 0
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> isStore [
 	^ #(astore hstore ustore fstore xstore) includes: opcode.
 ]
@@ -451,13 +470,12 @@ RJITIRInstruction >> shape [
 "
 	shape := RTCompositeShape new.
 	(op1ins notNil and: [op1ins isConstant]) ifTrue: [
-		shape add: ((RTBox new width: 50; height: 20; borderColor: Color lightGray; color: Color transparent) +
+		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
 			(RTLabel new color: Color veryDarkGray; text: op1ins irRefString)) allOfSameSize ].
 	shape add:
-		(RTBox new width: 50; height: 20; borderColor: Color lightGray; color: self roassalColor) +
-		(RTLabel new color: Color veryDarkGray; text: opcode asString).
+		self baseShape + (RTLabel new color: Color veryDarkGray; text: opcode asString).
 	(op2ins notNil and: [op2ins isConstant]) ifTrue: [
-		shape add: ((RTBox new width: 50; height: 20; borderColor: Color lightGray; color: Color transparent) +
+		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
 				(RTLabel new color: Color veryDarkGray; text: op2ins irRefString)) allOfSameSize ].
 	shape horizontal.
 	^shape
