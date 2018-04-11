@@ -15,7 +15,8 @@ Class {
 		'dwarf',
 		'index',
 		'isPhiOperand',
-		'mode'
+		'mode',
+		'trace'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -137,6 +138,15 @@ RJITIRInstruction >> attributes [
 		}
 ]
 
+{ #category : #roassal }
+RJITIRInstruction >> baseShape [
+	| shape |
+	shape := RTBox new width: 50; height: 20; color: self roassalColor; borderColor: Color lightGray; borderWidth: 1.
+	self isSpilledOntoStack ifTrue: [ shape borderColor: Color black; borderWidth: 2 ].
+	^ shape
+
+]
+
 { #category : #accessing }
 RJITIRInstruction >> constantValue [
 	self shouldBeImplemented.
@@ -146,9 +156,33 @@ RJITIRInstruction >> constantValue [
 RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 	<gtInspectorPresentationOrder: 1>
 	composite table
+		title: 'Info';
 		display: [ self attributes ];
 		column: 'Key' evaluated: #key width: 100;
 		column: 'Value' evaluated: #value.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorInputListingIn: composite [
+	<gtInspectorPresentationOrder: 2>
+	composite fastList
+		title: 'Input List';
+		display: [ self transitiveInputs asArray];
+		format: #irString;
+		addAction: [
+			String streamContents: [ :s |
+				self transitiveInputs do: [ :i | 
+					s nextPutAll: i irString; cr ] ]
+		] gtInspectorActionCopyValueToClipboard.
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorInputTreeIn: composite [
+	<gtInspectorPresentationOrder: 3>
+	composite roassal2
+		title: 'Input Tree';
+		initializeView: [ trace irTreeViewOfInstructions: self transitiveInputs ].
 
 ]
 
@@ -292,6 +326,18 @@ RJITIRInstruction >> isMisc [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> isNop [
+	^ opcode = #nop
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> isSpilledOntoStack [
+	"Return true if the IR value is stored on the stack instead of in a register."
+	^ stackSlot > 0
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> isStore [
 	^ #(astore hstore ustore fstore xstore) includes: opcode.
 ]
@@ -311,6 +357,7 @@ RJITIRInstruction >> isTypeConversion [
 
 { #category : #accessing }
 RJITIRInstruction >> link: aGCtrace [
+	trace := aGCtrace.
 	mode op1mode = #ref ifTrue: [ op1ins := self resolveIR: op1 in: aGCtrace ].
 	mode op2mode = #ref ifTrue: [ op2ins := self resolveIR: op2 in: aGCtrace ].
 	opcode = 'phi' ifTrue: [ 
@@ -364,6 +411,7 @@ RJITIRInstruction >> register [
 { #category : #initialization }
 RJITIRInstruction >> resolveIR: num in: aGCtrace [
 	| bias idx |
+	trace := aGCtrace.
 	bias := dwarf resolveConstant: 'REF_BIAS'.
 	idx := num - bias.
 	idx >= 0
@@ -422,13 +470,12 @@ RJITIRInstruction >> shape [
 "
 	shape := RTCompositeShape new.
 	(op1ins notNil and: [op1ins isConstant]) ifTrue: [
-		shape add: ((RTBox new width: 50; height: 20; borderColor: Color lightGray; color: Color transparent) +
+		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
 			(RTLabel new color: Color veryDarkGray; text: op1ins irRefString)) allOfSameSize ].
 	shape add:
-		(RTBox new width: 50; height: 20; borderColor: Color lightGray; color: self roassalColor) +
-		(RTLabel new color: Color veryDarkGray; text: opcode asString).
+		self baseShape + (RTLabel new color: Color veryDarkGray; text: opcode asString).
 	(op2ins notNil and: [op2ins isConstant]) ifTrue: [
-		shape add: ((RTBox new width: 50; height: 20; borderColor: Color lightGray; color: Color transparent) +
+		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
 				(RTLabel new color: Color veryDarkGray; text: op2ins irRefString)) allOfSameSize ].
 	shape horizontal.
 	^shape
@@ -437,6 +484,11 @@ RJITIRInstruction >> shape [
 { #category : #initialization }
 RJITIRInstruction >> stackSlot [
 	^ stackSlot
+]
+
+{ #category : #querying }
+RJITIRInstruction >> transitiveInputs [
+	^ trace transitiveInputsOf: self.
 ]
 
 { #category : #initialization }

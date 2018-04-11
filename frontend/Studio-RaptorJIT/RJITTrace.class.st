@@ -69,18 +69,17 @@ RJITTrace >> gtInspectorGCTraceIn: composite [
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorIRListingIn: composite [
-	| listing |
 	<gtInspectorPresentationOrder: 3>
-	listing := self irListing.
-	composite text
+	composite fastList
 		title: 'IR Listing';
-		display: listing;
-		addAction: [ listing ] gtInspectorActionCopyValueToClipboard.
+		display: self irInstructionsNoNop;
+		format: #irString;
+		addAction: [ self irListing ] gtInspectorActionCopyValueToClipboard.
 ]
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorIRTreeIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	<gtInspectorPresentationOrder: 4>
 	composite roassal2
 		title: 'IR Tree';
 		initializeView: [ self irTreeView ].
@@ -122,18 +121,37 @@ RJITTrace >> irInstructions [
 
 ]
 
+{ #category : #accessing }
+RJITTrace >> irInstructionsNoNop [
+	^ self irInstructions reject: #isNop.
+]
+
 { #category : #'as yet unclassified' }
 RJITTrace >> irListing [
 	^ String streamContents: [ :s |
-		self irInstructions do: [ :i | s nextPutAll: i irString; cr. ] ].
+		self irInstructionsNoNop do: [ :i | s nextPutAll: i irString; cr. ] ].
 
 ]
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> irTreeView [
-	| view head loop all separator popup |
-	head := RTGroup new addAll: (self headInstructions collect: #asElement); yourself.
-	loop := RTGroup new addAll: (self loopInstructions collect: #asElement); yourself.
+	^ self irTreeViewOfInstructions: self irInstructionsNoNop.
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> irTreeViewOfInstructions: insns [
+	| headInsns loopInsns view head loop all separator popup |
+	self hasLoop ifTrue: [
+		| loopindex |
+		loopindex := self loop index.
+		headInsns := insns select: [ :i | i index < loopindex ].
+		loopInsns := insns select: [ :i | i index > loopindex ].
+	] ifFalse: [ 
+		headInsns := insns.
+		loopInsns := { }.
+	 ].
+	head := RTGroup new addAll: (headInsns collect: #asElement); yourself.
+	loop := RTGroup new addAll: (loopInsns collect: #asElement); yourself.
 	all := RTGroup new addAll: head; addAll: loop; yourself.
 	separator := RTLabel new elementOn: #'LOOP:'.
 	view := RTView new.
@@ -157,7 +175,7 @@ RJITTrace >> irTreeView [
 		connectFrom: #op2ins.
 	RTDominanceTreeLayout new doNotAttachPoint; on: head.
 	RTDominanceTreeLayout new doNotAttachPoint; on: loop.
-	self hasLoop ifTrue: [ 
+	loopInsns size > 0 ifTrue: [
 		view add: separator.
 		RTVerticalLineLayout on: { head. separator. loop }. ].
 	^ view 
@@ -279,4 +297,17 @@ RJITTrace >> startPrototype [
 { #category : #accessing }
 RJITTrace >> traceno [
 	^ traceno
+]
+
+{ #category : #querying }
+RJITTrace >> transitiveInputsOf: ins [
+	| visit inputs |
+	inputs := Set new.
+	visit := [ :i | 
+		(i isNil or: [ i isConstant or: [ inputs includes: i ] ]) ifFalse: [ 
+			inputs add: i.
+			visit value: i op1ins; value: i op2ins.
+			 ] ].
+	visit value: ins.
+	^ inputs asArray sort: [ :a :b | a index < b index ].
 ]
