@@ -179,7 +179,7 @@ RJITIRInstruction >> gtInspectorInputListingIn: composite [
 
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorInputTreeIn: composite [
-	<gtInspectorPresentationOrder: 3>
+	<gtInspectorPresentationOrder: 4>
 	composite roassal2
 		title: 'Input Tree';
 		initializeView: [ trace irTreeViewOfInstructions: self transitiveInputs ].
@@ -188,7 +188,7 @@ RJITIRInstruction >> gtInspectorInputTreeIn: composite [
 
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorUsesListingIn: composite [
-	<gtInspectorPresentationOrder: 4>
+	<gtInspectorPresentationOrder: 3>
 	composite fastList
 		title: 'Uses List';
 		display: [ self transitiveUses asArray];
