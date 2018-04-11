@@ -155,10 +155,20 @@ RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> gtInspectorInputListingIn: composite [
+	<gtInspectorPresentationOrder: 2>
+	composite fastList
+		title: 'IR Input Listing';
+		display: [ self transitiveInputs asArray];
+		format: #irString.
+
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> gtInspectorInputTreeIn: composite [
 	<gtInspectorPresentationOrder: 3>
 	composite roassal2
-		title: 'Input Tree';
+		title: 'IR Input Tree';
 		initializeView: [ trace irTreeViewOfInstructions: self transitiveInputs ].
 
 ]
@@ -322,6 +332,7 @@ RJITIRInstruction >> isTypeConversion [
 
 { #category : #accessing }
 RJITIRInstruction >> link: aGCtrace [
+	trace := aGCtrace.
 	mode op1mode = #ref ifTrue: [ op1ins := self resolveIR: op1 in: aGCtrace ].
 	mode op2mode = #ref ifTrue: [ op2ins := self resolveIR: op2 in: aGCtrace ].
 	opcode = 'phi' ifTrue: [ 

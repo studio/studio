@@ -69,18 +69,17 @@ RJITTrace >> gtInspectorGCTraceIn: composite [
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorIRListingIn: composite [
-	| listing |
 	<gtInspectorPresentationOrder: 3>
-	listing := self irListing.
-	composite text
+	composite fastList
 		title: 'IR Listing';
-		display: listing;
-		addAction: [ listing ] gtInspectorActionCopyValueToClipboard.
+		display: self irInstructions;
+		format: #irString;
+		addAction: [ self irListing ] gtInspectorActionCopyValueToClipboard.
 ]
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorIRTreeIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	<gtInspectorPresentationOrder: 4>
 	composite roassal2
 		title: 'IR Tree';
 		initializeView: [ self irTreeView ].
@@ -115,7 +114,7 @@ RJITTrace >> irConstants [
 { #category : #initializing }
 RJITTrace >> irInstructions [
 	irInstructions isBlock ifTrue: [ 
-		irInstructions := irInstructions value.
+		irInstructions := irInstructions value select: [ :ins | ins opcode ~= #nop ].
 		irInstructions do: [ :ins | ins link: self. ].
  		].
 	^ irInstructions.
@@ -305,5 +304,5 @@ RJITTrace >> transitiveInputsOf: ins [
 			visit value: i op1ins; value: i op2ins.
 			 ] ].
 	visit value: ins.
-	^ inputs
+	^ inputs asArray sort: [ :a :b | a index < b index ].
 ]
