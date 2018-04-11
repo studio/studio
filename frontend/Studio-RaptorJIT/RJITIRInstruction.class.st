@@ -158,7 +158,7 @@ RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 RJITIRInstruction >> gtInspectorInputListingIn: composite [
 	<gtInspectorPresentationOrder: 2>
 	composite fastList
-		title: 'IR Input Listing';
+		title: 'Input List';
 		display: [ self transitiveInputs asArray];
 		format: #irString.
 
@@ -168,7 +168,7 @@ RJITIRInstruction >> gtInspectorInputListingIn: composite [
 RJITIRInstruction >> gtInspectorInputTreeIn: composite [
 	<gtInspectorPresentationOrder: 3>
 	composite roassal2
-		title: 'IR Input Tree';
+		title: 'Input Tree';
 		initializeView: [ trace irTreeViewOfInstructions: self transitiveInputs ].
 
 ]
@@ -310,6 +310,12 @@ RJITIRInstruction >> isMemoryReference [
 { #category : #initialization }
 RJITIRInstruction >> isMisc [
 	^ #(nop base pval gcstep hiop loop use phi rename) includes: opcode.
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> isNop [
+	^ opcode = #nop
+
 ]
 
 { #category : #initialization }

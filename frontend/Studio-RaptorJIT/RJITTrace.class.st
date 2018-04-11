@@ -72,7 +72,7 @@ RJITTrace >> gtInspectorIRListingIn: composite [
 	<gtInspectorPresentationOrder: 3>
 	composite fastList
 		title: 'IR Listing';
-		display: self irInstructions;
+		display: self irInstructionsNoNop;
 		format: #irString;
 		addAction: [ self irListing ] gtInspectorActionCopyValueToClipboard.
 ]
@@ -114,23 +114,28 @@ RJITTrace >> irConstants [
 { #category : #initializing }
 RJITTrace >> irInstructions [
 	irInstructions isBlock ifTrue: [ 
-		irInstructions := irInstructions value select: [ :ins | ins opcode ~= #nop ].
+		irInstructions := irInstructions value.
 		irInstructions do: [ :ins | ins link: self. ].
  		].
 	^ irInstructions.
 
 ]
 
+{ #category : #accessing }
+RJITTrace >> irInstructionsNoNop [
+	^ self irInstructions reject: #isNop.
+]
+
 { #category : #'as yet unclassified' }
 RJITTrace >> irListing [
 	^ String streamContents: [ :s |
-		self irInstructions do: [ :i | s nextPutAll: i irString; cr. ] ].
+		self irInstructionsNoNop do: [ :i | s nextPutAll: i irString; cr. ] ].
 
 ]
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> irTreeView [
-	^ self irTreeViewOfInstructions: self irInstructions.
+	^ self irTreeViewOfInstructions: self irInstructionsNoNop.
 ]
 
 { #category : #'gt-inspector-extension' }
