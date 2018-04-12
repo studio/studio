@@ -311,3 +311,17 @@ RJITTrace >> transitiveInputsOf: ins [
 	visit value: ins.
 	^ inputs asArray sort: [ :a :b | a index < b index ].
 ]
+
+{ #category : #querying }
+RJITTrace >> transitiveUsesOf: startIns [
+	| uses candidates graph |
+	uses := Set new.
+	graph := Dictionary new.
+	uses add: startIns.
+	candidates := self irInstructions.
+	candidates do: [ :ins |
+		(uses includesAny: { ins op1ins. ins op2ins }) ifTrue: [ 
+			uses add: ins ].
+	].
+	^ uses asArray sort: [ :a :b | a index < b index ]
+]
