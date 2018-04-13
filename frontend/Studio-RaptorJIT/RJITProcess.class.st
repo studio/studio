@@ -105,7 +105,7 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 					sorted: [ :x :y | x samples > y samples ];
 					column: 'Trace' evaluated: #traceno width: 160;
 					column: 'Samples' evaluated: #samples width: 60;
-					column: 'Link' evaluated: #linktype width: 60;
+					column: 'Link' evaluated: #linkname width: 60;
 					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w;
 					column: 'VM' evaluated: (percent value: #vmPercent) width: w;
 					column: 'GC' evaluated: (percent value: #gcPercent) width: w;

@@ -215,6 +215,14 @@ RJITTrace >> link [
 ]
 
 { #category : #accessing }
+RJITTrace >> linkname [
+	^linktype = #root
+		ifTrue: [ '->', link traceno asString ]
+		ifFalse: linktype.
+
+]
+
+{ #category : #accessing }
 RJITTrace >> linktype [
 	^ linktype
 ]
