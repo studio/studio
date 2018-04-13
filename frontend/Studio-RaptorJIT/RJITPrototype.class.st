@@ -61,3 +61,11 @@ RJITPrototype >> programCounterLine: pc [
 RJITPrototype >> sourceName [
 	^ sourceName trimLeft: [ :x | x = $@ or: x = $= ]
 ]
+
+{ #category : #'as yet unclassified' }
+RJITPrototype >> upvalueName: index [
+	| uvinfoPtr |
+	uvinfoPtr := (gcproto child: #uvinfo) value value.
+	^ gcproto flashback decodeCStringAt: uvinfoPtr + (index * 8).
+
+]

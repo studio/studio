@@ -15,7 +15,8 @@ Class {
 		'dwarf',
 		'index',
 		'isPhiOperand',
-		'mode'
+		'mode',
+		'trace'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -137,6 +138,15 @@ RJITIRInstruction >> attributes [
 		}
 ]
 
+{ #category : #roassal }
+RJITIRInstruction >> baseShape [
+	| shape |
+	shape := RTBox new width: 50; height: 20; color: self roassalColor; borderColor: Color lightGray; borderWidth: 1.
+	self isSpilledOntoStack ifTrue: [ shape borderColor: Color black; borderWidth: 2 ].
+	^ shape
+
+]
+
 { #category : #accessing }
 RJITIRInstruction >> constantValue [
 	self shouldBeImplemented.
@@ -146,9 +156,42 @@ RJITIRInstruction >> constantValue [
 RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 	<gtInspectorPresentationOrder: 1>
 	composite table
+		title: 'Info';
 		display: [ self attributes ];
 		column: 'Key' evaluated: #key width: 100;
 		column: 'Value' evaluated: #value.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorInputListingIn: composite [
+	<gtInspectorPresentationOrder: 2>
+	self transitiveInputs irListViewIn: composite title: 'Input List'.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorInputTreeIn: composite [
+	<gtInspectorPresentationOrder: 4>
+	composite roassal2
+		title: 'Input Tree';
+		initializeView: [ trace irTreeViewOfInstructions: self transitiveInputs ].
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorUsesListingIn: composite [
+	<gtInspectorPresentationOrder: 3>
+	self transitiveUses irListViewIn: composite title: 'Uses List'.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorUsesTreeIn: composite [
+	<gtInspectorPresentationOrder: 5>
+	composite roassal2
+		title: 'Uses Tree';
+		initializeView: [ trace irTreeViewOfInstructions: self transitiveUses ].
 
 ]
 
@@ -160,6 +203,13 @@ RJITIRInstruction >> index [
 { #category : #initialization }
 RJITIRInstruction >> index: i [
 	index := i
+]
+
+{ #category : #printing }
+RJITIRInstruction >> irFlagsString [
+	^ (self isGuardedAssertion ifTrue: '>' ifFalse: ' ') ,
+		(isPhiOperand ifTrue: '+' ifFalse: ' ').
+
 ]
 
 { #category : #initialization }
@@ -181,6 +231,7 @@ RJITIRInstruction >> irIns: dwValue [
 
 { #category : #printing }
 RJITIRInstruction >> irRefString [
+	"This is a hairy function that should be refactored once its ideal structure becomes clear."
 	self isConstant ifFalse: [ 
 		^ index printStringLength: 4 padded: true.
 	].
@@ -188,14 +239,37 @@ RJITIRInstruction >> irRefString [
 	(opcode = #kpri and: type = #true)  ifTrue: [ ^ 'T' ].
 	(opcode = #kpri and: type = #false) ifTrue: [ ^ 'F' ].
 	(opcode = #kpri and: type = #nil)   ifTrue: [ ^ 'NULL' ].
+	(opcode = #kgc)    ifTrue: [
+		| ptr |
+		ptr := (irIns flashback decodeTypeNamed: #uint64_t at: irIns address + 8) value.
+		type = #str ifTrue: [
+			[ ^ '''', (irIns flashback decodeLuaStringAt: ptr), '''' ]
+				on: Error do: [ ] ].
+		type = #func ifTrue: [ 
+			[ | gcfunc protoPtr proto |
+				gcfunc := irIns flashback decodeTypeNamed: #GCfunc at: ptr.
+				protoPtr := ((gcfunc child: #l) value child: #pc) value value - (irIns dwarf typeNamed: #GCproto) byteSize.
+				proto := irIns flashback decodeGCprotoAt: protoPtr.
+				^ proto sourceName, ':', (proto bytecodeLine: 0) asString. ] on: RJITFlashbackDataMissing do: [] ] ].
+	opcode = #kint64 ifTrue: [
+		| v |
+		v := irIns flashback decodeTypeNamed: 'uint64_t' at: irIns address + 8.
+		^ v value asString, 'LL' ].
+	opcode = #knull ifTrue: [ ^'NULL' ].
+	(#(kptr kkptr) includes: opcode) ifTrue: [
+		| v |
+		v := irIns flashback decodeTypeNamed: 'uint64_t' at: irIns address + 8.
+		^ '@0x', (v value radix: 16).		
+	].
 	opcode = #kint ifTrue: [ ^ (op12 sign = -1 ifTrue: ['-'] ifFalse: ['+']) , op12 printString ].
+	opcode = #kslot ifTrue: [  op1ins ifNotNil: [ ^ op1ins irRefString ] ].
 	"XXX NYI"
 	^ '<' , type , '>'
 ]
 
 { #category : #printing }
 RJITIRInstruction >> irRegisterString [
-	self isSunk ifTrue: [ ^ '{sink' ].
+	self isSunk ifTrue: [ ^ '{sink}' ].
 	stackSlot > 0 ifTrue: [ ^ '[{1}]' format: { stackSlot radix: 16 } ].
 	register < 128 ifTrue: [ ^ register asX64RegisterAssignment ].
 	^ ''. "None"
@@ -215,7 +289,7 @@ RJITIRInstruction >> irString [
 			nextPutAll: (self isGuardedAssertion ifTrue: '>' ifFalse: ' ');
 			nextPutAll: (isPhiOperand ifTrue: '+' ifFalse: ' ');
 			space;
-			nextPutAll: (self type = #nil ifTrue: [ '   ' ] ifFalse: [ self type ]);
+			nextPutAll: ((self type = #nil ifTrue: [ '' ] ifFalse: [ self type ]) padRightTo: 6);
 			space;
 			nextPutAll: (opcode padRightTo: 6).
 		op1ins ifNotNil: [ s space; nextPutAll: (op1ins irRefString padRightTo: 5) ].
@@ -292,6 +366,18 @@ RJITIRInstruction >> isMisc [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> isNop [
+	^ opcode = #nop
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> isSpilledOntoStack [
+	"Return true if the IR value is stored on the stack instead of in a register."
+	^ stackSlot > 0
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> isStore [
 	^ #(astore hstore ustore fstore xstore) includes: opcode.
 ]
@@ -311,6 +397,7 @@ RJITIRInstruction >> isTypeConversion [
 
 { #category : #accessing }
 RJITIRInstruction >> link: aGCtrace [
+	trace := aGCtrace.
 	mode op1mode = #ref ifTrue: [ op1ins := self resolveIR: op1 in: aGCtrace ].
 	mode op2mode = #ref ifTrue: [ op2ins := self resolveIR: op2 in: aGCtrace ].
 	opcode = 'phi' ifTrue: [ 
@@ -324,6 +411,19 @@ RJITIRInstruction >> op1 [
 ]
 
 { #category : #accessing }
+RJITIRInstruction >> op12 [
+	^ op12
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> op1InlineString [
+	(#(cnew cnewi) includes: opcode) ifTrue: [
+		^ irIns flashback auditLog ctypeName: op1ins op12 ].
+	(op1ins ~= nil and: [ op1ins isConstant]) ifTrue: [ ^ op1ins irRefString ].
+	^ nil
+]
+
+{ #category : #accessing }
 RJITIRInstruction >> op1ins [
 	^ op1ins
 ]
@@ -334,6 +434,14 @@ RJITIRInstruction >> op2 [
 ]
 
 { #category : #accessing }
+RJITIRInstruction >> op2InlineString [
+	(#(urefo urefc) includes: opcode) ifTrue: [ 
+		^ '#', op2 asString ].
+	(op2ins ~= nil and: [ op2ins isConstant ]) ifTrue: [ ^ op2ins irRefString ].
+	^ nil
+]
+
+{ #category : #accessing }
 RJITIRInstruction >> op2ins [
 	^ op2ins
 ]
@@ -341,6 +449,26 @@ RJITIRInstruction >> op2ins [
 { #category : #accessing }
 RJITIRInstruction >> opcode [
 	^ opcode
+]
+
+{ #category : #'as yet unclassified' }
+RJITIRInstruction >> operand1String [
+	^ String streamContents: [ :s |
+		op1ins ifNotNil: [ s nextPutAll: (op1ins irRefString padRightTo: 5) ].
+		mode op1mode = #lit ifTrue: [ s space; nextPutAll: '#' , op1 printString ]. ]
+]
+
+{ #category : #'as yet unclassified' }
+RJITIRInstruction >> operand2String [
+	^ String streamContents: [ :s |
+		op2ins ifNotNil: [ s nextPutAll: (op2ins irRefString padRightTo: 5) ].
+		mode op2mode = #lit ifTrue: [ s space; nextPutAll: '#' , op2 printString ]. ]
+]
+
+{ #category : #'as yet unclassified' }
+RJITIRInstruction >> operandsString [
+	^ self operand1String , String space, self operand2String.
+
 ]
 
 { #category : #initialization }
@@ -364,6 +492,7 @@ RJITIRInstruction >> register [
 { #category : #initialization }
 RJITIRInstruction >> resolveIR: num in: aGCtrace [
 	| bias idx |
+	trace := aGCtrace.
 	bias := dwarf resolveConstant: 'REF_BIAS'.
 	idx := num - bias.
 	idx >= 0
@@ -421,15 +550,14 @@ RJITIRInstruction >> shape [
  ].
 "
 	shape := RTCompositeShape new.
-	(op1ins notNil and: [op1ins isConstant]) ifTrue: [
-		shape add: ((RTBox new width: 50; height: 20; borderColor: Color lightGray; color: Color transparent) +
-			(RTLabel new color: Color veryDarkGray; text: op1ins irRefString)) allOfSameSize ].
+	self op1InlineString ifNotNil: [ :str |
+		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
+			(RTLabel new color: Color veryDarkGray; text: str)) allOfSameSize ].
 	shape add:
-		(RTBox new width: 50; height: 20; borderColor: Color lightGray; color: self roassalColor) +
-		(RTLabel new color: Color veryDarkGray; text: opcode asString).
-	(op2ins notNil and: [op2ins isConstant]) ifTrue: [
-		shape add: ((RTBox new width: 50; height: 20; borderColor: Color lightGray; color: Color transparent) +
-				(RTLabel new color: Color veryDarkGray; text: op2ins irRefString)) allOfSameSize ].
+		self baseShape + (RTLabel new color: Color veryDarkGray; text: opcode asString).
+	self op2InlineString ifNotNil: [ :str |
+		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
+				(RTLabel new color: Color veryDarkGray; text: str)) allOfSameSize ].
 	shape horizontal.
 	^shape
 ]
@@ -437,6 +565,16 @@ RJITIRInstruction >> shape [
 { #category : #initialization }
 RJITIRInstruction >> stackSlot [
 	^ stackSlot
+]
+
+{ #category : #querying }
+RJITIRInstruction >> transitiveInputs [
+	^ trace transitiveInputsOf: self.
+]
+
+{ #category : #querying }
+RJITIRInstruction >> transitiveUses [
+	^ trace transitiveUsesOf: self.
 ]
 
 { #category : #initialization }

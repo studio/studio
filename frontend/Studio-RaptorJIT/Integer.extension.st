@@ -9,3 +9,9 @@ Integer >> asX64RegisterAssignment [
 		) at: self + 1.
 
 ]
+
+{ #category : #'*studio-raptorjit' }
+Integer >> itypeToTypeName [
+	^ #(nil false true str upval thread proto func trace cdata tab udata numx) at: self + 1.
+
+]
