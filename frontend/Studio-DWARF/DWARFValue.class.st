@@ -73,6 +73,17 @@ DWARFValue >> flashback: aFlashback [
    flashback := aFlashback.
 ]
 
+{ #category : #'as yet unclassified' }
+DWARFValue >> gcval [
+	"Remove tag bits."
+	^ DWARFValue
+		type: type
+		value: (value bitAnd: 16r7FFFFFFFFFFF)
+		address: address
+		flashback: flashback
+
+]
+
 { #category : #accessing }
 DWARFValue >> gtInspectorDWARFIn: composite [
 	<gtInspectorPresentationOrder: 1>

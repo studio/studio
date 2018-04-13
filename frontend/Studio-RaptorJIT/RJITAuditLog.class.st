@@ -6,7 +6,8 @@ Class {
 		'flashback',
 		'dwarf',
 		'traces',
-		'irModes'
+		'irModes',
+		'ctypes'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -45,6 +46,23 @@ RJITAuditLog >> addRecord: dict [
    type := dict at: 'type'.
    type = 'event' ifTrue:  [ self addEvent: dict ].
    type = 'memory' ifTrue: [ self addMemory: dict ].
+]
+
+{ #category : #visualization }
+RJITAuditLog >> ctypeName: id [
+	^ self ctypes at: id ifAbsent: [ 'CT#', id asString ]
+
+]
+
+{ #category : #visualization }
+RJITAuditLog >> ctypes [
+	ctypes ifNil: [ 
+		ctypes := Dictionary new.
+		events select: [ :e | e class = RJITNewCTypeIDEvent ] thenDo: [ :e |
+			ctypes at: e id put: e desc ]
+	].
+	^ ctypes
+
 ]
 
 { #category : #accessing }
@@ -106,6 +124,7 @@ RJITAuditLog >> makeEventFrom: dict [
    event = 'trace_stop' ifTrue: [ ^RJITTraceStopEvent new from: dict flashback: flashback ].
    event = 'trace_abort' ifTrue: [ ^RJITTraceAbortEvent new from: dict flashback: flashback ].
 	event = 'new_prototype' ifTrue: [  ^RJITNewPrototypeEvent new from: dict flashback: flashback ].
+	event = 'new_ctypeid' ifTrue: [ ^RJITNewCTypeIDEvent new from: dict flashback: flashback ].
    ^RJITUnknownEvent new from: dict flashback: flashback.
 
 ]

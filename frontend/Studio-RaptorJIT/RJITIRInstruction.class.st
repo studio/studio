@@ -238,6 +238,7 @@ RJITIRInstruction >> irIns: dwValue [
 
 { #category : #printing }
 RJITIRInstruction >> irRefString [
+	"This is a hairy function that should be refactored once its ideal structure becomes clear."
 	self isConstant ifFalse: [ 
 		^ index printStringLength: 4 padded: true.
 	].
@@ -245,14 +246,37 @@ RJITIRInstruction >> irRefString [
 	(opcode = #kpri and: type = #true)  ifTrue: [ ^ 'T' ].
 	(opcode = #kpri and: type = #false) ifTrue: [ ^ 'F' ].
 	(opcode = #kpri and: type = #nil)   ifTrue: [ ^ 'NULL' ].
+	(opcode = #kgc)    ifTrue: [
+		| ptr |
+		ptr := (irIns flashback decodeTypeNamed: #uint64_t at: irIns address + 8) value.
+		type = #str ifTrue: [
+			[ ^ '''', (irIns flashback decodeLuaStringAt: ptr), '''' ]
+				on: Error do: [ ] ].
+		type = #func ifTrue: [ 
+			[ | gcfunc protoPtr proto |
+				gcfunc := irIns flashback decodeTypeNamed: #GCfunc at: ptr.
+				protoPtr := ((gcfunc child: #l) value child: #pc) value value - (irIns dwarf typeNamed: #GCproto) byteSize.
+				proto := irIns flashback decodeGCprotoAt: protoPtr.
+				^ proto sourceName, ':', (proto bytecodeLine: 0) asString. ] on: RJITFlashbackDataMissing do: [] ] ].
+	opcode = #kint64 ifTrue: [
+		| v |
+		v := irIns flashback decodeTypeNamed: 'uint64_t' at: irIns address + 8.
+		^ v value asString, 'LL' ].
+	opcode = #knull ifTrue: [ ^'NULL' ].
+	(#(kptr kkptr) includes: opcode) ifTrue: [
+		| v |
+		v := irIns flashback decodeTypeNamed: 'uint64_t' at: irIns address + 8.
+		^ '@0x', (v value radix: 16).		
+	].
 	opcode = #kint ifTrue: [ ^ (op12 sign = -1 ifTrue: ['-'] ifFalse: ['+']) , op12 printString ].
+	opcode = #kslot ifTrue: [  op1ins ifNotNil: [ ^ op1ins irRefString ] ].
 	"XXX NYI"
 	^ '<' , type , '>'
 ]
 
 { #category : #printing }
 RJITIRInstruction >> irRegisterString [
-	self isSunk ifTrue: [ ^ '{sink' ].
+	self isSunk ifTrue: [ ^ '{sink}' ].
 	stackSlot > 0 ifTrue: [ ^ '[{1}]' format: { stackSlot radix: 16 } ].
 	register < 128 ifTrue: [ ^ register asX64RegisterAssignment ].
 	^ ''. "None"
@@ -272,7 +296,7 @@ RJITIRInstruction >> irString [
 			nextPutAll: (self isGuardedAssertion ifTrue: '>' ifFalse: ' ');
 			nextPutAll: (isPhiOperand ifTrue: '+' ifFalse: ' ');
 			space;
-			nextPutAll: (self type = #nil ifTrue: [ '   ' ] ifFalse: [ self type ]);
+			nextPutAll: ((self type = #nil ifTrue: [ '' ] ifFalse: [ self type ]) padRightTo: 6);
 			space;
 			nextPutAll: (opcode padRightTo: 6).
 		op1ins ifNotNil: [ s space; nextPutAll: (op1ins irRefString padRightTo: 5) ].
@@ -394,6 +418,19 @@ RJITIRInstruction >> op1 [
 ]
 
 { #category : #accessing }
+RJITIRInstruction >> op12 [
+	^ op12
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> op1InlineString [
+	(#(cnew cnewi) includes: opcode) ifTrue: [
+		^ irIns flashback auditLog ctypeName: op1ins op12 ].
+	(op1ins ~= nil and: [ op1ins isConstant]) ifTrue: [ ^ op1ins irRefString ].
+	^ nil
+]
+
+{ #category : #accessing }
 RJITIRInstruction >> op1ins [
 	^ op1ins
 ]
@@ -401,6 +438,14 @@ RJITIRInstruction >> op1ins [
 { #category : #accessing }
 RJITIRInstruction >> op2 [
 	^ op2
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> op2InlineString [
+	(#(urefo urefc) includes: opcode) ifTrue: [ 
+		^ '#', op2 asString ].
+	(op2ins ~= nil and: [ op2ins isConstant ]) ifTrue: [ ^ op2ins irRefString ].
+	^ nil
 ]
 
 { #category : #accessing }
@@ -492,14 +537,14 @@ RJITIRInstruction >> shape [
  ].
 "
 	shape := RTCompositeShape new.
-	(op1ins notNil and: [op1ins isConstant]) ifTrue: [
+	self op1InlineString ifNotNil: [ :str |
 		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
-			(RTLabel new color: Color veryDarkGray; text: op1ins irRefString)) allOfSameSize ].
+			(RTLabel new color: Color veryDarkGray; text: str)) allOfSameSize ].
 	shape add:
 		self baseShape + (RTLabel new color: Color veryDarkGray; text: opcode asString).
-	(op2ins notNil and: [op2ins isConstant]) ifTrue: [
+	self op2InlineString ifNotNil: [ :str |
 		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
-				(RTLabel new color: Color veryDarkGray; text: op2ins irRefString)) allOfSameSize ].
+				(RTLabel new color: Color veryDarkGray; text: str)) allOfSameSize ].
 	shape horizontal.
 	^shape
 ]
