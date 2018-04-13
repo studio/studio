@@ -75,11 +75,8 @@ RJITTrace >> gtInspectorGCTraceIn: composite [
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorIRListingIn: composite [
 	<gtInspectorPresentationOrder: 3>
-	composite fastList
-		title: 'IR Listing';
-		display: self irInstructionsNoNop;
-		format: #irString;
-		addAction: [ self irListing ] gtInspectorActionCopyValueToClipboard.
+	self irInstructionsNoNop irListViewIn: composite title: 'IR List'.
+
 ]
 
 { #category : #'gt-inspector-extension' }

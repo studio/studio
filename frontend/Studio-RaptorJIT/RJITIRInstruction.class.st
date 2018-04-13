@@ -166,15 +166,8 @@ RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorInputListingIn: composite [
 	<gtInspectorPresentationOrder: 2>
-	composite fastList
-		title: 'Input List';
-		display: [ self transitiveInputs asArray];
-		format: #irString;
-		addAction: [
-			String streamContents: [ :s |
-				self transitiveInputs do: [ :i | 
-					s nextPutAll: i irString; cr ] ]
-		] gtInspectorActionCopyValueToClipboard.
+	self transitiveInputs irListViewIn: composite title: 'Input List'.
+
 ]
 
 { #category : #initialization }
@@ -189,15 +182,8 @@ RJITIRInstruction >> gtInspectorInputTreeIn: composite [
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorUsesListingIn: composite [
 	<gtInspectorPresentationOrder: 3>
-	composite fastList
-		title: 'Uses List';
-		display: [ self transitiveUses asArray];
-		format: #irString;
-		addAction: [
-			String streamContents: [ :s |
-				self transitiveUses do: [ :i | 
-					s nextPutAll: i irString; cr ] ]
-		] gtInspectorActionCopyValueToClipboard.
+	self transitiveUses irListViewIn: composite title: 'Uses List'.
+
 ]
 
 { #category : #initialization }
@@ -217,6 +203,13 @@ RJITIRInstruction >> index [
 { #category : #initialization }
 RJITIRInstruction >> index: i [
 	index := i
+]
+
+{ #category : #printing }
+RJITIRInstruction >> irFlagsString [
+	^ (self isGuardedAssertion ifTrue: '>' ifFalse: ' ') ,
+		(isPhiOperand ifTrue: '+' ifFalse: ' ').
+
 ]
 
 { #category : #initialization }
@@ -456,6 +449,26 @@ RJITIRInstruction >> op2ins [
 { #category : #accessing }
 RJITIRInstruction >> opcode [
 	^ opcode
+]
+
+{ #category : #'as yet unclassified' }
+RJITIRInstruction >> operand1String [
+	^ String streamContents: [ :s |
+		op1ins ifNotNil: [ s nextPutAll: (op1ins irRefString padRightTo: 5) ].
+		mode op1mode = #lit ifTrue: [ s space; nextPutAll: '#' , op1 printString ]. ]
+]
+
+{ #category : #'as yet unclassified' }
+RJITIRInstruction >> operand2String [
+	^ String streamContents: [ :s |
+		op2ins ifNotNil: [ s nextPutAll: (op2ins irRefString padRightTo: 5) ].
+		mode op2mode = #lit ifTrue: [ s space; nextPutAll: '#' , op2 printString ]. ]
+]
+
+{ #category : #'as yet unclassified' }
+RJITIRInstruction >> operandsString [
+	^ self operand1String , String space, self operand2String.
+
 ]
 
 { #category : #initialization }
