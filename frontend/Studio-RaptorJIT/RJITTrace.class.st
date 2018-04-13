@@ -24,6 +24,11 @@ RJITTrace >> exitno [
 	^ exitno
 ]
 
+{ #category : #accessing }
+RJITTrace >> flashback [
+	^ gctrace flashback
+]
+
 { #category : #'instance creation' }
 RJITTrace >> from: aGCtrace withExistingTraces: traces [
 	| flashback bias irAddress nk |
@@ -107,7 +112,9 @@ RJITTrace >> headInstructions [
 
 { #category : #accessing }
 RJITTrace >> irConstants [
-	irConstants isBlock ifTrue: [ irConstants := irConstants value. ].
+	irConstants isBlock ifTrue: [
+		irConstants := irConstants value.
+		irConstants select: #notNil thenDo: [ :ins | ins link: self ] ].
 	^ irConstants
 ]
 

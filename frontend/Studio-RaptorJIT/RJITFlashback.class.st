@@ -83,6 +83,12 @@ RJITFlashback >> decodeArrayOfTypeNamed: typename at: anAddress elements: elems 
 
 ]
 
+{ #category : #accessing }
+RJITFlashback >> decodeCStringAt: anAddress [
+	^ (self decodeStringAt: anAddress size: 1024) copyUpTo: 0 asCharacter.
+
+]
+
 { #category : #decoding }
 RJITFlashback >> decodeGCobjectAt: anAddress [
 	| gcobj |
@@ -103,6 +109,19 @@ RJITFlashback >> decodeJITStateAt: anAddress [
 ]
 
 { #category : #decoding }
+RJITFlashback >> decodeLuaObjectAt: gcref [
+	| itype type addr |
+	itype := gcref bitShift: -47.
+	type := itype itypeToTypeName.
+	addr := gcref bitAnd: 16r7FFFFFFFFFFF. "mask off tag bits"
+	type = nil ifTrue: [ ^nil ].
+	type = false ifTrue: [ ^false ].
+	type = true ifTrue: [ ^true ].
+	self halt.
+
+]
+
+{ #category : #decoding }
 RJITFlashback >> decodeLuaStringAt: anAddress [
 	| gcstr |
 	gcstr := self decodeTypeNamed: #GCstr at: anAddress asInteger.
@@ -111,6 +130,7 @@ RJITFlashback >> decodeLuaStringAt: anAddress [
 
 { #category : #accessing }
 RJITFlashback >> decodeStringAt: anAddress size: size [
+	[  size < 65536 ] assert.
 	^ (self bytesAt: anAddress size: size) asString
 
 ]
