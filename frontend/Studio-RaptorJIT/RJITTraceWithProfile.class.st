@@ -25,6 +25,11 @@ RJITTraceWithProfile >> gcPercent [
 ]
 
 { #category : #accessing }
+RJITTraceWithProfile >> linkname [
+	^ trace linkname
+]
+
+{ #category : #accessing }
 RJITTraceWithProfile >> linktype [
 	^ trace linktype
 ]
