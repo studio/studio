@@ -7,7 +7,8 @@ Class {
 		'dwarf',
 		'traces',
 		'irModes',
-		'ctypes'
+		'ctypes',
+		'process'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -127,6 +128,16 @@ RJITAuditLog >> makeEventFrom: dict [
 	event = 'new_ctypeid' ifTrue: [ ^RJITNewCTypeIDEvent new from: dict flashback: flashback ].
    ^RJITUnknownEvent new from: dict flashback: flashback.
 
+]
+
+{ #category : #accessing }
+RJITAuditLog >> process [
+	^ process
+]
+
+{ #category : #accessing }
+RJITAuditLog >> process: aRJITProcess [ 
+	process := aRJITProcess
 ]
 
 { #category : #visualization }
