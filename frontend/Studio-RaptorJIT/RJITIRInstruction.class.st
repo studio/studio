@@ -467,6 +467,7 @@ RJITIRInstruction >> operand2String [
 
 { #category : #'as yet unclassified' }
 RJITIRInstruction >> operandsString [
+	opcode = #loop ifTrue: [ ^ '-----------------------------------------' ].
 	^ self operand1String , String space, self operand2String.
 
 ]

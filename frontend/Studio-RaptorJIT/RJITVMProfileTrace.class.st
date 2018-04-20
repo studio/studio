@@ -13,7 +13,8 @@ Class {
 		'loop',
 		'jgc',
 		'ffi',
-		'id'
+		'id',
+		'vmprofile'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -185,4 +186,14 @@ RJITVMProfileTrace >> vm [
 RJITVMProfileTrace >> vmPercent [
 	^ self vm * 100.0 / self all.
 
+]
+
+{ #category : #accessing }
+RJITVMProfileTrace >> vmprofile [
+	^ vmprofile
+]
+
+{ #category : #accessing }
+RJITVMProfileTrace >> vmprofile: aVMProfile [
+	vmprofile := aVMProfile
 ]

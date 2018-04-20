@@ -20,6 +20,37 @@ Class {
 }
 
 { #category : #accessing }
+RJITTrace >> allChildren [
+	| set children |
+	set := Set new.
+	children := self children.
+	children do: [ :c | set addAll: c allChildren ].
+	set addAll: children.
+	^ set.
+
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> asElement [
+	| box |
+	box := RTBox new size: [ :tr | tr numberOfIrInstructions sqrt * 5 ];
+					borderColor: Color black;
+					color: [ :tr | Color red alpha: ((self totalSamples) / self process totalSamples) ].
+	self isRootTrace ifTrue: [ box borderColor: Color black; borderWidth: 2 ].
+	^ box	+ (RTLabel new color: Color black; text: #traceno) elementOn: self.	
+]
+
+{ #category : #'as yet unclassified' }
+RJITTrace >> bytecodes [
+	self shouldBeImplemented.
+]
+
+{ #category : #accessing }
+RJITTrace >> children [
+	^ self process traces select: [ :tr | tr parent = self ]
+]
+
+{ #category : #accessing }
 RJITTrace >> exitno [
 	^ exitno
 ]
@@ -54,7 +85,7 @@ RJITTrace >> from: aGCtrace withExistingTraces: traces [
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorBytecodesIn: composite [
-	<gtInspectorPresentationOrder: 1>
+	<gtInspectorPresentationOrder: 2>
 	jitState ifNil: [ ^nil ].
 	jitState gtInspectorBytecodesIn: composite.
 
@@ -88,6 +119,35 @@ RJITTrace >> gtInspectorIRTreeIn: composite [
 
 ]
 
+{ #category : #accessing }
+RJITTrace >> gtInspectorInfoIn: composite [
+	<gtInspectorPresentationOrder: 1>
+	composite tabulator
+		title: 'Info';
+		with: [ :t |
+			t row: #info; row: #profile.
+			t transmit to: #info; andShow: [ :a |
+				a fastTable
+					title: 'Trace Attributes';
+					display: [ self info ];
+					column: 'Name' evaluated: #key width: 100;
+					column: 'Value' evaluated: #value width: 600.
+				].
+			t transmit to: #profile; andShow: [ :a |
+				| tab |
+				tab := a fastTable 
+					title: 'Profiler Samples';
+					display: [ self process vmprofiles collect: [ :p | p trace: self ] ];
+					format: #asString;
+					sorted: [ :x :y | x all > y all ];
+					column: 'Profile' evaluated: [ :pt | pt vmprofile name ].
+				"#( all vm mcode gc )"
+				#( interp c igc exit record opt asm head loop ffi jgc ) do: [ :key |
+					tab column: key asString evaluated: key width: 45 ].
+				].
+	].
+]
+
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorJITIn: composite [
 	<gtInspectorPresentationOrder: 5>
@@ -105,6 +165,23 @@ RJITTrace >> hasLoop [
 { #category : #initializing }
 RJITTrace >> headInstructions [
 	^ self irInstructions copyUpTo: self loop.
+]
+
+{ #category : #accessing }
+RJITTrace >> info [
+	^{
+		'Summary' -> self printString.
+		'TraceNo' -> traceno.
+		'Root' -> (root = self ifTrue: [ '(self)' ] ifFalse: [ root ]).
+		'Parent' -> parent.
+		'Link' -> (link ifNil: linktype).
+		'Start Line' -> self startLine.
+		'IR Instructions' -> self numberOfIrInstructions.
+		'Profiler samples' -> ('{1} ({2}%)' format: {
+			self totalSamples.
+			(self totalSamples * 100.0 / self process totalSamples) printShowingDecimalPlaces: 1.
+		}).
+	}
 ]
 
 { #category : #accessing }
@@ -247,6 +324,24 @@ RJITTrace >> parent [
 	^parent
 ]
 
+{ #category : #accessing }
+RJITTrace >> parentname [
+	^ parent ifNil: [ '' ] ifNotNil: [ parent traceno asString , '/' , exitno asString ].
+]
+
+{ #category : #printing }
+RJITTrace >> printOn: aStream [
+	aStream nextPutAll: 'trace '.
+	aStream nextPutAll: traceno asString.
+	self isSideTrace ifTrue: [ aStream nextPutAll: '/' , self parentname ].
+	aStream nextPutAll: ' from ', self startLine.
+]
+
+{ #category : #accessing }
+RJITTrace >> process [
+	^ gctrace flashback auditLog process
+]
+
 { #category : #initializing }
 RJITTrace >> roassal [
 	| view elements head loop headIns loopIns insShape shapeContainer shapeIns headLabel loopLabel line border |
@@ -307,6 +402,12 @@ RJITTrace >> startPrototype [
 ]
 
 { #category : #accessing }
+RJITTrace >> totalSamples [
+	^ self process totalSamplesFor: self.
+
+]
+
+{ #category : #accessing }
 RJITTrace >> traceno [
 	^ traceno
 ]
@@ -336,4 +437,10 @@ RJITTrace >> transitiveUsesOf: startIns [
 			uses add: ins ].
 	].
 	^ uses asArray sort: [ :a :b | a index < b index ]
+]
+
+{ #category : #accessing }
+RJITTrace >> withAllChildren [
+	^ self allChildren add: self; yourself.
+
 ]

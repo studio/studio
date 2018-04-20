@@ -49,7 +49,7 @@ RJITVMProfile >> gcPercent [
 
 { #category : #initialization }
 RJITVMProfile >> gtInspectorHotTracesIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	"<gtInspectorPresentationOrder: 5>"
 	process ifNil: [ ^nil ].
 	^ composite roassal2
 		view: (process visualizeTraces: process auditLog traces withProfile: self);
@@ -64,7 +64,7 @@ RJITVMProfile >> loadFromFileNamed: aFilename [
 	[ (data unsignedShortAt: 5) = 4 ] assert.
 	index := 8.
 	traces := (0 to: 4096) collect: [ :tr | | trace |
-		trace := RJITVMProfileTrace new id: tr.
+		trace := RJITVMProfileTrace new id: tr; vmprofile: self; yourself.
 		#(interp: c: igc: exit: record: opt: asm: head: loop: jgc: ffi:) do: [ :selector |
 			trace perform: selector with: (data unsignedLongLongAt: index+1).
 			index := index + 8. ].
