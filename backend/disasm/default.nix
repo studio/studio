@@ -5,16 +5,13 @@ writeScriptBin "disasm" ''
   #!/usr/bin/env bash
   set -e
 
-  [ $# == 1 ] || (echo "Usage: $0 <startaddress>"; exit 1)
-  start=$1
+  [ $# == 2 ] || (echo "Usage: disasm <file> <startaddress>"; exit 1)
+  file="$1"
+  start="$2"
 
-  tmp=$(mktemp)
-  trap "rm -f $tmp" EXIT
-
-  cat > $tmp
   ${binutils}/bin/objdump -mi386 -M intel -M intel-mnemonic -M x86-64 \
           --adjust-vma=$start \
           --no-show-raw-insn \
-          -D -b binary $tmp \
+          -D -b binary "$file" \
     | ${gnugrep}/bin/grep -E '^ *[0-9a-fA-F]+:'
 ''
