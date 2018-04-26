@@ -19,6 +19,17 @@ RJITAuditLog class >> loadFromFileNamed: fileName withDWARF: dwarf [
 
 ]
 
+{ #category : #decoding }
+RJITAuditLog >> addBlob: dict [
+	(dict at: 'name') = 'lj_dwarf.dwo' ifTrue: [ 
+		self addDWARF: (dict at: 'data') ].
+]
+
+{ #category : #accessing }
+RJITAuditLog >> addDWARF: byteArray [
+	self dwarf: (DWARF new loadFromByteArray: byteArray)
+]
+
 { #category : #initialization }
 RJITAuditLog >> addEvent: dict [
 	| event |
@@ -47,6 +58,7 @@ RJITAuditLog >> addRecord: dict [
    type := dict at: 'type'.
    type = 'event' ifTrue:  [ self addEvent: dict ].
    type = 'memory' ifTrue: [ self addMemory: dict ].
+	type = 'blob' ifTrue: [ self addBlob: dict ].
 ]
 
 { #category : #visualization }

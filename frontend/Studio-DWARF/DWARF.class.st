@@ -36,6 +36,22 @@ DWARF >> enumerationTypeWith: aName [
 ]
 
 { #category : #initialization }
+DWARF >> loadFromBinaryFileNamed: fileName [
+	| res |
+	res := Nix build: 'with import <studio>; dwarfish.elf2json ', fileName.
+	self loadFromFileNamed: res first.
+
+]
+
+{ #category : #initialization }
+DWARF >> loadFromByteArray: array [
+	| tmp |
+	tmp := FileReference newTempFilePrefix: 'dwarf-' suffix: '.dwo'.
+	tmp writeStream binary nextPutAll: array; close.
+	self loadFromBinaryFileNamed: tmp pathString.
+]
+
+{ #category : #initialization }
 DWARF >> loadFromFileNamed: fileName [
 	| references  |
 	json := (NeoJSONReader on: (FileStream readOnlyFileNamed: fileName)) next.

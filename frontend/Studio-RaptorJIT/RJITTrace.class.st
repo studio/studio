@@ -50,6 +50,27 @@ RJITTrace >> children [
 	^ self process traces select: [ :tr | tr parent = self ]
 ]
 
+{ #category : #'instance creation' }
+RJITTrace >> decodeIrMcodeMapping [
+	| szirmcode mcodeAddr mcodeOffset flashback nbytes index |
+	flashback := gctrace flashback.
+	szirmcode := gctrace szirmcode asInteger.
+	mcodeAddr := gctrace mcode asInteger.
+	"First value is size of trace head (before first instruction)"
+	mcodeOffset := (flashback decodeTypeNamed: #uint16_t at: szirmcode) value.
+	index := 2.
+	self irInstructions do: [ :ins |
+		nbytes := (flashback decodeTypeNamed: #uint16_t at: szirmcode + index) value.
+		Transcript show: 'nbytes: ', nbytes asString; cr.
+		ins mcode: (flashback bytesAt: mcodeAddr + mcodeOffset size: nbytes).
+		ins szmcode: nbytes.
+		ins mcodeAddress: mcodeAddr + mcodeOffset.
+		index := index + 2. "next uint16_t"
+		mcodeOffset := mcodeOffset + nbytes.
+	].
+
+]
+
 { #category : #accessing }
 RJITTrace >> exitno [
 	^ exitno
@@ -81,6 +102,7 @@ RJITTrace >> from: aGCtrace withExistingTraces: traces [
 	link := traces detect: [ :tr | tr traceno = gctrace link ] ifNone: [ nil ].
 	linktype := (dwarf valueToName: gctrace linktype inEnumerationWith: 'LJ_TRLINK_NONE') asLinkTypeName.
 	start := gctrace startpc.
+
 ]
 
 { #category : #'gt-inspector-extension' }
@@ -197,6 +219,7 @@ RJITTrace >> irInstructions [
 	irInstructions isBlock ifTrue: [ 
 		irInstructions := irInstructions value.
 		irInstructions do: [ :ins | ins link: self. ].
+		self decodeIrMcodeMapping.
  		].
 	^ irInstructions.
 

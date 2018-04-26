@@ -16,7 +16,10 @@ Class {
 		'index',
 		'isPhiOperand',
 		'mode',
-		'trace'
+		'trace',
+		'mcode',
+		'szmcode',
+		'mcodeAddress'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -143,6 +146,7 @@ RJITIRInstruction >> baseShape [
 	| shape |
 	shape := RTBox new width: 50; height: 20; color: self roassalColor; borderColor: Color lightGray; borderWidth: 1.
 	self isSpilledOntoStack ifTrue: [ shape borderColor: Color black; borderWidth: 2 ].
+	szmcode = 0 ifTrue: [ shape borderStyle: #dash ].
 	^ shape
 
 ]
@@ -150,6 +154,11 @@ RJITIRInstruction >> baseShape [
 { #category : #accessing }
 RJITIRInstruction >> constantValue [
 	self shouldBeImplemented.
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> disassemble [
+	^ RJITDisassembler disassemble: mcode address: mcodeAddress.
 ]
 
 { #category : #initialization }
@@ -406,6 +415,16 @@ RJITIRInstruction >> link: aGCtrace [
 ]
 
 { #category : #accessing }
+RJITIRInstruction >> mcode: bytes [
+	mcode := bytes
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> mcodeAddress: address [
+	mcodeAddress := address
+]
+
+{ #category : #accessing }
 RJITIRInstruction >> op1 [
 	^ op1 ifNil: [ op12 ].
 ]
@@ -419,6 +438,8 @@ RJITIRInstruction >> op12 [
 RJITIRInstruction >> op1InlineString [
 	(#(cnew cnewi) includes: opcode) ifTrue: [
 		^ irIns flashback auditLog ctypeName: op1ins op12 ].
+	#sload = opcode ifTrue: [
+		^ '#' , op1 asString ].
 	(op1ins ~= nil and: [ op1ins isConstant]) ifTrue: [ ^ op1ins irRefString ].
 	^ nil
 ]
@@ -437,6 +458,22 @@ RJITIRInstruction >> op2 [
 RJITIRInstruction >> op2InlineString [
 	(#(urefo urefc) includes: opcode) ifTrue: [ 
 		^ '#', op2 asString ].
+	(#(fload fref) includes: opcode) ifTrue: [
+		[ ^ (irIns dwarf valueToName: op2 inEnumerationWith: #IRFL__MAX) asIrFieldName ]
+		  on: NotFound do: [] ].
+	(#(calln calll calls) includes: opcode) ifTrue: [ 
+		[ ^ (irIns dwarf valueToName: op2 inEnumerationWith: #IRCALL__MAX) asIrCallName ]
+		  on: NotFound do: [] ].
+	#fpmath = opcode ifTrue: [ 
+		[ ^ (irIns dwarf valueToName: op2 inEnumerationWith: #IRFPM__MAX) asIrFloatOperationName ]
+		  on: NotFound do: [] ].
+	#sload = opcode ifTrue: [ 
+		^ String streamContents: [ :s |
+			{ 1->$P. 2->$F. 4->$T. 8->$C. 16->$R. 32->$I. } do: [ :a |
+				(op2 bitAt: a key) = 1 ifTrue: [ s nextPut: a value ] ]
+			 ] ].
+	#xload = opcode ifTrue: [ 
+		^ (#(R V RV U RU VU RVU) at: op2+1) asString ].
 	(op2ins ~= nil and: [ op2ins isConstant ]) ifTrue: [ ^ op2ins irRefString ].
 	^ nil
 ]
@@ -476,7 +513,9 @@ RJITIRInstruction >> operandsString [
 RJITIRInstruction >> popupSummary [
 	^ (RJITIRInstruction opcodeSummaries at: opcode ifAbsent: [ '(unknown opcode)' ]) ,
 		Character cr asString,
-		self irString.
+		self irString,
+		Character cr asString, Character cr asString,
+		self disassemble.
 ]
 
 { #category : #initialization }
@@ -566,6 +605,11 @@ RJITIRInstruction >> shape [
 { #category : #initialization }
 RJITIRInstruction >> stackSlot [
 	^ stackSlot
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> szmcode: size [
+	szmcode := size
 ]
 
 { #category : #querying }

@@ -58,7 +58,9 @@ RJITFlashback >> byteAt: byteAddress [
 
 { #category : #accessing }
 RJITFlashback >> bytesAt: anAddress size: size [
-	^ image getBytes: size atAddress: anAddress atTime: time.
+	^ size = 0
+		ifTrue: [ #[] ]
+		ifFalse: [ image getBytes: size atAddress: anAddress atTime: time ].
 
 ]
 

@@ -38,7 +38,7 @@ RJITProcess >> fromPath: aPath [
 	auditPath := path / 'audit.log'.
 	[ dwarfPath isFile and: auditPath isFile ] assertWithDescription:
 		'JIT audit log not found'.
-	auditLog := RJITAuditLog loadFromFileNamed: auditPath pathString withDWARF: (DWARF loadFromFileNamed: dwarfPath pathString).
+	auditLog := RJITAuditLog new loadFromFileNamed: auditPath pathString.
 	auditLog process: self.
 	"Load VMProfile data with progress monitoring."
 	vmprofiles := OrderedCollection new.
