@@ -254,9 +254,9 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		loopInsns := { }.
 	 ].
 	head := RTGroup new addAll: (headInsns collect: #asElement); yourself.
-	loop := RTGroup new addAll: (loopInsns collect: #asElement); yourself.
+	loop := RTGroup new addAll: (loopInsns reject: #isPhi thenCollect: #asElement); yourself.
 	all := RTGroup new addAll: head; addAll: loop; yourself.
-	separator := RTLabel new elementOn: #'LOOP:'.
+	separator := RTLabel new color: Color black; height: 18; elementOn: #'LOOP:'.
 	view := RTView new.
 	view addAll: all; addAll: loop.
 	
@@ -279,8 +279,8 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 	RTEdgeBuilder new
 		view: view;
 		objects: (self irInstructions);
-		shape: (RTLine new width: 5; color: Color red"; attachPoint: RTVerticalAttachPoint");
-		connectFrom: #phiParent.
+		shape: (RTArrowedLine new color: (Color red alpha: 0.5); attachPoint: RTBorderAttachPoint new);
+		connectFrom: #phiChild.
 	StudioDAGLayout new doNotAttachPoint; horizontalGap: 30; on: head.
 	StudioDAGLayout new doNotAttachPoint; horizontalGap: 30; on: loop.
 	loopInsns size > 0 ifTrue: [

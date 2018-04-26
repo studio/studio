@@ -20,7 +20,8 @@ Class {
 		'mcode',
 		'szmcode',
 		'mcodeAddress',
-		'phiParent'
+		'phiParent',
+		'phiChild'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -146,6 +147,7 @@ RJITIRInstruction >> attributes [
 RJITIRInstruction >> baseShape [
 	| shape |
 	shape := RTBox new width: 50; height: 20; color: self roassalColor; borderColor: Color lightGray; borderWidth: 1.
+	szmcode = 0 ifTrue: [ shape borderStyle: #dash ].
 	self isSpilledOntoStack ifTrue: [ shape borderColor: Color black; borderWidth: 2 ].
 	^ shape
 
@@ -174,14 +176,14 @@ RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorInputListingIn: composite [
-	<gtInspectorPresentationOrder: 2>
+	<gtInspectorPresentationOrder: 3>
 	self transitiveInputs irListViewIn: composite title: 'Input List'.
 
 ]
 
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorInputTreeIn: composite [
-	<gtInspectorPresentationOrder: 4>
+	<gtInspectorPresentationOrder: 6>
 	composite roassal2
 		title: 'Input Tree';
 		initializeView: [ trace irTreeViewOfInstructions: self transitiveInputs ].
@@ -189,15 +191,31 @@ RJITIRInstruction >> gtInspectorInputTreeIn: composite [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> gtInspectorRelatedListingIn: composite [
+	<gtInspectorPresentationOrder: 2>
+	self transitiveRelations irListViewIn: composite title: 'Related List'.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorRelatedTreeIn: composite [
+	<gtInspectorPresentationOrder: 5>
+	composite roassal2
+		title: 'Related Tree';
+		initializeView: [ trace irTreeViewOfInstructions: self transitiveRelations ].
+
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> gtInspectorUsesListingIn: composite [
-	<gtInspectorPresentationOrder: 3>
+	<gtInspectorPresentationOrder: 4>
 	self transitiveUses irListViewIn: composite title: 'Uses List'.
 
 ]
 
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorUsesTreeIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	<gtInspectorPresentationOrder: 7>
 	composite roassal2
 		title: 'Uses Tree';
 		initializeView: [ trace irTreeViewOfInstructions: self transitiveUses ].
@@ -304,11 +322,13 @@ RJITIRInstruction >> irString [
 			nextPutAll: ((self type = #nil ifTrue: [ '' ] ifFalse: [ self type ]) padRightTo: 6);
 			space;
 			nextPutAll: (opcode padRightTo: 6).
-		op1ins ifNotNil: [ s space; nextPutAll: (op1ins irRefString padRightTo: 5) ].
-		mode op1mode = #lit ifTrue: [ s space; nextPutAll: '#' , op1 printString ].
-		op2ins ifNotNil: [ s space; nextPutAll: (op2ins irRefString padRightTo: 5) ].
-		mode op2mode = #lit ifTrue: [ s space; nextPutAll: '#' , op2 printString ].
-		].
+		op1ins
+			ifNotNil: [ s space; nextPutAll: (op1ins irRefString padRightTo: 5) ]
+			ifNil: [ self op1InlineString ifNotNil: [ :str | s space; nextPutAll: str ] ].
+		op2ins
+			ifNotNil: [ s space; nextPutAll: (op2ins irRefString padRightTo: 5) ]
+			ifNil: [ self op2InlineString ifNotNil: [ :str | s space; nextPutAll: str ] ].
+	].
  
 ]
 
@@ -419,7 +439,9 @@ RJITIRInstruction >> link: aGCtrace [
 	mode op1mode = #ref ifTrue: [ op1ins := self resolveIR: op1 in: aGCtrace ].
 	mode op2mode = #ref ifTrue: [ op2ins := self resolveIR: op2 in: aGCtrace ].
 	opcode = 'phi' ifTrue: [ 
-		op1ins ifNotNil: #setPhiOperand.
+		op1ins ifNotNil: [
+			op1ins setPhiOperand.
+			op1ins phiChild: op2ins ].
 		op2ins ifNotNil: [
 			op2ins setPhiOperand.
 			op2ins phiParent: op1ins ] ].
@@ -471,10 +493,10 @@ RJITIRInstruction >> op2InlineString [
 		^ '#', op2 asString ].
 	(#(fload fref) includes: opcode) ifTrue: [
 		[ ^ (irIns dwarf valueToName: op2 inEnumerationWith: #IRFL__MAX) asIrFieldName ]
-		  on: NotFound do: [] ].
+		  on: Error do: [] ].
 	(#(calln calll calls) includes: opcode) ifTrue: [ 
 		[ ^ (irIns dwarf valueToName: op2 inEnumerationWith: #IRCALL__MAX) asIrCallName ]
-		  on: NotFound do: [] ].
+		  on: Error do: [] ].
 	#fpmath = opcode ifTrue: [ 
 		[ ^ (irIns dwarf valueToName: op2 inEnumerationWith: #IRFPM__MAX) asIrFloatOperationName ]
 		  on: NotFound do: [] ].
@@ -503,14 +525,15 @@ RJITIRInstruction >> opcode [
 RJITIRInstruction >> operand1String [
 	^ String streamContents: [ :s |
 		op1ins ifNotNil: [ s nextPutAll: (op1ins irRefString padRightTo: 5) ].
-		mode op1mode = #lit ifTrue: [ s space; nextPutAll: '#' , op1 printString ]. ]
+		self op1InlineString ifNotNil: [ :str | ^ s nextPutAll: str ] ]
+	
 ]
 
 { #category : #'as yet unclassified' }
 RJITIRInstruction >> operand2String [
 	^ String streamContents: [ :s |
 		op2ins ifNotNil: [ s nextPutAll: (op2ins irRefString padRightTo: 5) ].
-		mode op2mode = #lit ifTrue: [ s space; nextPutAll: '#' , op2 printString ]. ]
+		self op2InlineString ifNotNil: [ :str | ^ s nextPutAll: str ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -518,6 +541,16 @@ RJITIRInstruction >> operandsString [
 	opcode = #loop ifTrue: [ ^ '-----------------------------------------' ].
 	^ self operand1String , String space, self operand2String.
 
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> phiChild [
+	^ phiChild
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> phiChild: ins [
+	phiChild := ins
 ]
 
 { #category : #accessing }
@@ -638,6 +671,11 @@ RJITIRInstruction >> transitiveInputs [
 	^ trace transitiveInputsOf: self.
 ]
 
+{ #category : #accessing }
+RJITIRInstruction >> transitiveRelations [
+	^ self transitiveInputs union: self transitiveUses
+]
+
 { #category : #querying }
 RJITIRInstruction >> transitiveUses [
 	^ trace transitiveUsesOf: self.
@@ -645,5 +683,11 @@ RJITIRInstruction >> transitiveUses [
 
 { #category : #initialization }
 RJITIRInstruction >> type [
+	^ type
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> typename [
+	type = #pgc ifTrue: [ ^ 'obj' ].
 	^ type
 ]
