@@ -19,7 +19,8 @@ Class {
 		'trace',
 		'mcode',
 		'szmcode',
-		'mcodeAddress'
+		'mcodeAddress',
+		'phiParent'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -146,7 +147,6 @@ RJITIRInstruction >> baseShape [
 	| shape |
 	shape := RTBox new width: 50; height: 20; color: self roassalColor; borderColor: Color lightGray; borderWidth: 1.
 	self isSpilledOntoStack ifTrue: [ shape borderColor: Color black; borderWidth: 2 ].
-	szmcode = 0 ifTrue: [ shape borderStyle: #dash ].
 	^ shape
 
 ]
@@ -262,8 +262,11 @@ RJITIRInstruction >> irRefString [
 				^ proto sourceName, ':', (proto bytecodeLine: 0) asString. ] on: RJITFlashbackDataMissing do: [] ] ].
 	opcode = #kint64 ifTrue: [
 		| v |
-		v := irIns flashback decodeTypeNamed: 'uint64_t' at: irIns address + 8.
-		^ v value asString, 'LL' ].
+		v := irIns flashback decodeTypeNamed: 'int64_t' at: irIns address + 8.
+		^ String streamContents: [ :s |
+			v value >= 0 ifTrue: [ s nextPut: $+ ].
+			s nextPutAll: v asString.
+			v value <= (2 raisedTo: 48) ifTrue: [ s nextPutAll: ' (0x', (v value radix: 16), ')' ] ] ].
 	opcode = #knull ifTrue: [ ^'NULL' ].
 	(#(kptr kkptr) includes: opcode) ifTrue: [
 		| v |
@@ -381,6 +384,12 @@ RJITIRInstruction >> isNop [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> isPhi [
+	^ opcode = #phi
+
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> isSpilledOntoStack [
 	"Return true if the IR value is stored on the stack instead of in a register."
 	^ stackSlot > 0
@@ -411,7 +420,9 @@ RJITIRInstruction >> link: aGCtrace [
 	mode op2mode = #ref ifTrue: [ op2ins := self resolveIR: op2 in: aGCtrace ].
 	opcode = 'phi' ifTrue: [ 
 		op1ins ifNotNil: #setPhiOperand.
-		op2ins ifNotNil: #setPhiOperand. ]
+		op2ins ifNotNil: [
+			op2ins setPhiOperand.
+			op2ins phiParent: op1ins ] ].
 ]
 
 { #category : #accessing }
@@ -507,6 +518,16 @@ RJITIRInstruction >> operandsString [
 	opcode = #loop ifTrue: [ ^ '-----------------------------------------' ].
 	^ self operand1String , String space, self operand2String.
 
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> phiParent [
+	^ phiParent
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> phiParent: ins [
+	phiParent := ins
 ]
 
 { #category : #initialization }

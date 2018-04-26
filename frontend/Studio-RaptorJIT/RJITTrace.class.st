@@ -163,7 +163,6 @@ RJITTrace >> gtInspectorInfoIn: composite [
 					format: #asString;
 					sorted: [ :x :y | x all > y all ];
 					column: 'Profile' evaluated: [ :pt | pt vmprofile name ].
-				"#( all vm mcode gc )"
 				#( interp c igc exit record opt asm head loop ffi jgc ) do: [ :key |
 					tab column: key asString evaluated: key width: 45 ].
 				].
@@ -277,8 +276,13 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		connectFrom: #op1ins;
 		shape: (RTLine new color: Color black trans; attachPoint: RJITOperand2AttachPoint new; yourself);
 		connectFrom: #op2ins.
-	RTDominanceTreeLayout new doNotAttachPoint; on: head.
-	RTDominanceTreeLayout new doNotAttachPoint; on: loop.
+	RTEdgeBuilder new
+		view: view;
+		objects: (self irInstructions);
+		shape: (RTLine new width: 5; color: Color red"; attachPoint: RTVerticalAttachPoint");
+		connectFrom: #phiParent.
+	StudioDAGLayout new doNotAttachPoint; horizontalGap: 30; on: head.
+	StudioDAGLayout new doNotAttachPoint; horizontalGap: 30; on: loop.
 	loopInsns size > 0 ifTrue: [
 		view add: separator.
 		RTVerticalLineLayout on: { head. separator. loop }. ].
