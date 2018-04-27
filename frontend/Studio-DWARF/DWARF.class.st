@@ -38,7 +38,9 @@ DWARF >> enumerationTypeWith: aName [
 { #category : #initialization }
 DWARF >> loadFromBinaryFileNamed: fileName [
 	| res |
-	res := Nix build: 'with import <studio>; dwarfish.elf2json ', fileName.
+	[
+		res := Nix build: 'with import <studio>; dwarfish.elf2json ', fileName.
+	] asJob title: 'Preprocessing DWARF definitions'; run.
 	self loadFromFileNamed: res first.
 
 ]
