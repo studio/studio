@@ -35,7 +35,7 @@ RJITTrace >> asElement [
 	| box |
 	box := RTBox new size: [ :tr | tr numberOfIrInstructions sqrt * 5 ];
 					borderColor: Color black;
-					color: [ :tr | Color red alpha: ((self totalSamples) / self process totalSamples) ].
+					color: [ :tr | Color red alpha: ((self totalSamples) / (Float fmin + self process totalSamples)) ].
 	self isRootTrace ifTrue: [ box borderColor: Color black; borderWidth: 2 ].
 	^ box	+ (RTLabel new color: Color black; text: #traceno) elementOn: self.	
 ]
@@ -200,7 +200,7 @@ RJITTrace >> info [
 		'IR Instructions' -> self numberOfIrInstructions.
 		'Profiler samples' -> ('{1} ({2}%)' format: {
 			self totalSamples.
-			(self totalSamples * 100.0 / self process totalSamples) printShowingDecimalPlaces: 1.
+			(self totalSamples * 100.0 / (Float fmin + self process totalSamples)) printShowingDecimalPlaces: 1.
 		}).
 	}
 ]
@@ -281,8 +281,8 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		objects: (self irInstructions);
 		shape: (RTArrowedLine new color: (Color red alpha: 0.5); attachPoint: RTBorderAttachPoint new);
 		connectFrom: #phiChild.
-	StudioDAGLayout new doNotAttachPoint; horizontalGap: 30; on: head.
-	StudioDAGLayout new doNotAttachPoint; horizontalGap: 30; on: loop.
+	RTTreeLayout on: head.
+	RTTreeLayout on: loop.
 	loopInsns size > 0 ifTrue: [
 		view add: separator.
 		RTVerticalLineLayout on: { head. separator. loop }. ].
