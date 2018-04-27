@@ -76,7 +76,7 @@ rec {
       product = inspect raw;
     };
   # Convenience wrappers
-  run = luaSource: runCode (writeScript "script.lua" luaSource);
+  run = luaSource: runCode (writeTextDir "script.lua" luaSource);
   runTarball = url: runCode (fetchTarball url);
   runFile = runCode;
   runDirectory = runCode;
