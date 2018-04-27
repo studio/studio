@@ -276,13 +276,13 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		connectFrom: #op1ins;
 		shape: (RTLine new color: Color black trans; attachPoint: RJITOperand2AttachPoint new; yourself);
 		connectFrom: #op2ins.
+	RTTreeLayout new doNotAttachPoint; on: head.
+	RTTreeLayout new doNotAttachPoint; on: loop.
 	RTEdgeBuilder new
 		view: view;
 		objects: (self irInstructions);
 		shape: (RTArrowedLine new color: (Color red alpha: 0.5); attachPoint: RTBorderAttachPoint new);
 		connectFrom: #phiChild.
-	RTTreeLayout on: head.
-	RTTreeLayout on: loop.
 	loopInsns size > 0 ifTrue: [
 		view add: separator.
 		RTVerticalLineLayout on: { head. separator. loop }. ].
