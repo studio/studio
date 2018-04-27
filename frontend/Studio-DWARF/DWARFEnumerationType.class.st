@@ -22,7 +22,18 @@ DWARFEnumerationType >> decode: byteArray address: address flashback: flashback 
 { #category : #initialization }
 DWARFEnumerationType >> from: dict via: references [
 	name := dict at: 'name' ifAbsent: [nil].
-	type := references at: (dict at: 'type').
+	(dict includesKey: 'type')
+		ifTrue: [ 
+			type := references at: (dict at: 'type').
+		 ]
+		ifFalse: [
+			"This enumeration does not reference an existing integer type. Synthesize a suitable one."
+			type := DWARFBaseType new from:
+				{
+					'name' -> '(enum auto type)'.
+					'byte_size' -> (dict at: 'byte_size' ifAbsent: 4).
+					'encoding' -> '(signed)'.
+				} asDictionary. ].
 	enumerators :=
 		dict values
 			select: #isDictionary

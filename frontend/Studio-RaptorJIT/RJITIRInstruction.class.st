@@ -16,7 +16,12 @@ Class {
 		'index',
 		'isPhiOperand',
 		'mode',
-		'trace'
+		'trace',
+		'mcode',
+		'szmcode',
+		'mcodeAddress',
+		'phiParent',
+		'phiChild'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -142,6 +147,7 @@ RJITIRInstruction >> attributes [
 RJITIRInstruction >> baseShape [
 	| shape |
 	shape := RTBox new width: 50; height: 20; color: self roassalColor; borderColor: Color lightGray; borderWidth: 1.
+	szmcode = 0 ifTrue: [ shape borderStyle: #dash ].
 	self isSpilledOntoStack ifTrue: [ shape borderColor: Color black; borderWidth: 2 ].
 	^ shape
 
@@ -150,6 +156,11 @@ RJITIRInstruction >> baseShape [
 { #category : #accessing }
 RJITIRInstruction >> constantValue [
 	self shouldBeImplemented.
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> disassemble [
+	^ RJITDisassembler disassemble: mcode address: mcodeAddress.
 ]
 
 { #category : #initialization }
@@ -165,14 +176,14 @@ RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorInputListingIn: composite [
-	<gtInspectorPresentationOrder: 2>
+	<gtInspectorPresentationOrder: 3>
 	self transitiveInputs irListViewIn: composite title: 'Input List'.
 
 ]
 
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorInputTreeIn: composite [
-	<gtInspectorPresentationOrder: 4>
+	<gtInspectorPresentationOrder: 6>
 	composite roassal2
 		title: 'Input Tree';
 		initializeView: [ trace irTreeViewOfInstructions: self transitiveInputs ].
@@ -180,15 +191,31 @@ RJITIRInstruction >> gtInspectorInputTreeIn: composite [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> gtInspectorRelatedListingIn: composite [
+	<gtInspectorPresentationOrder: 2>
+	self transitiveRelations irListViewIn: composite title: 'Related List'.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInspectorRelatedTreeIn: composite [
+	<gtInspectorPresentationOrder: 5>
+	composite roassal2
+		title: 'Related Tree';
+		initializeView: [ trace irTreeViewOfInstructions: self transitiveRelations ].
+
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> gtInspectorUsesListingIn: composite [
-	<gtInspectorPresentationOrder: 3>
+	<gtInspectorPresentationOrder: 4>
 	self transitiveUses irListViewIn: composite title: 'Uses List'.
 
 ]
 
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorUsesTreeIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	<gtInspectorPresentationOrder: 7>
 	composite roassal2
 		title: 'Uses Tree';
 		initializeView: [ trace irTreeViewOfInstructions: self transitiveUses ].
@@ -253,8 +280,11 @@ RJITIRInstruction >> irRefString [
 				^ proto sourceName, ':', (proto bytecodeLine: 0) asString. ] on: RJITFlashbackDataMissing do: [] ] ].
 	opcode = #kint64 ifTrue: [
 		| v |
-		v := irIns flashback decodeTypeNamed: 'uint64_t' at: irIns address + 8.
-		^ v value asString, 'LL' ].
+		v := irIns flashback decodeTypeNamed: 'int64_t' at: irIns address + 8.
+		^ String streamContents: [ :s |
+			v value >= 0 ifTrue: [ s nextPut: $+ ].
+			s nextPutAll: v asString.
+			v value <= (2 raisedTo: 48) ifTrue: [ s nextPutAll: ' (0x', (v value radix: 16), ')' ] ] ].
 	opcode = #knull ifTrue: [ ^'NULL' ].
 	(#(kptr kkptr) includes: opcode) ifTrue: [
 		| v |
@@ -292,11 +322,13 @@ RJITIRInstruction >> irString [
 			nextPutAll: ((self type = #nil ifTrue: [ '' ] ifFalse: [ self type ]) padRightTo: 6);
 			space;
 			nextPutAll: (opcode padRightTo: 6).
-		op1ins ifNotNil: [ s space; nextPutAll: (op1ins irRefString padRightTo: 5) ].
-		mode op1mode = #lit ifTrue: [ s space; nextPutAll: '#' , op1 printString ].
-		op2ins ifNotNil: [ s space; nextPutAll: (op2ins irRefString padRightTo: 5) ].
-		mode op2mode = #lit ifTrue: [ s space; nextPutAll: '#' , op2 printString ].
-		].
+		op1ins
+			ifNotNil: [ s space; nextPutAll: (op1ins irRefString padRightTo: 5) ]
+			ifNil: [ self op1InlineString ifNotNil: [ :str | s space; nextPutAll: str ] ].
+		op2ins
+			ifNotNil: [ s space; nextPutAll: (op2ins irRefString padRightTo: 5) ]
+			ifNil: [ self op2InlineString ifNotNil: [ :str | s space; nextPutAll: str ] ].
+	].
  
 ]
 
@@ -372,6 +404,12 @@ RJITIRInstruction >> isNop [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> isPhi [
+	^ opcode = #phi
+
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> isSpilledOntoStack [
 	"Return true if the IR value is stored on the stack instead of in a register."
 	^ stackSlot > 0
@@ -401,8 +439,22 @@ RJITIRInstruction >> link: aGCtrace [
 	mode op1mode = #ref ifTrue: [ op1ins := self resolveIR: op1 in: aGCtrace ].
 	mode op2mode = #ref ifTrue: [ op2ins := self resolveIR: op2 in: aGCtrace ].
 	opcode = 'phi' ifTrue: [ 
-		op1ins ifNotNil: #setPhiOperand.
-		op2ins ifNotNil: #setPhiOperand. ]
+		op1ins ifNotNil: [
+			op1ins setPhiOperand.
+			op1ins phiChild: op2ins ].
+		op2ins ifNotNil: [
+			op2ins setPhiOperand.
+			op2ins phiParent: op1ins ] ].
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> mcode: bytes [
+	mcode := bytes
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> mcodeAddress: address [
+	mcodeAddress := address
 ]
 
 { #category : #accessing }
@@ -419,6 +471,8 @@ RJITIRInstruction >> op12 [
 RJITIRInstruction >> op1InlineString [
 	(#(cnew cnewi) includes: opcode) ifTrue: [
 		^ irIns flashback auditLog ctypeName: op1ins op12 ].
+	#sload = opcode ifTrue: [
+		^ '#' , op1 asString ].
 	(op1ins ~= nil and: [ op1ins isConstant]) ifTrue: [ ^ op1ins irRefString ].
 	^ nil
 ]
@@ -437,6 +491,22 @@ RJITIRInstruction >> op2 [
 RJITIRInstruction >> op2InlineString [
 	(#(urefo urefc) includes: opcode) ifTrue: [ 
 		^ '#', op2 asString ].
+	(#(fload fref) includes: opcode) ifTrue: [
+		[ ^ (irIns dwarf valueToName: op2 inEnumerationWith: #IRFL__MAX) asIrFieldName ]
+		  on: Error do: [] ].
+	(#(calln calll calls) includes: opcode) ifTrue: [ 
+		[ ^ (irIns dwarf valueToName: op2 inEnumerationWith: #IRCALL__MAX) asIrCallName ]
+		  on: Error do: [] ].
+	#fpmath = opcode ifTrue: [ 
+		[ ^ (irIns dwarf valueToName: op2 inEnumerationWith: #IRFPM__MAX) asIrFloatOperationName ]
+		  on: NotFound do: [] ].
+	#sload = opcode ifTrue: [ 
+		^ String streamContents: [ :s |
+			{ 1->$P. 2->$F. 4->$T. 8->$C. 16->$R. 32->$I. } do: [ :a |
+				(op2 bitAt: a key) = 1 ifTrue: [ s nextPut: a value ] ]
+			 ] ].
+	#xload = opcode ifTrue: [ 
+		^ (#(R V RV U RU VU RVU) at: op2+1) asString ].
 	(op2ins ~= nil and: [ op2ins isConstant ]) ifTrue: [ ^ op2ins irRefString ].
 	^ nil
 ]
@@ -455,14 +525,15 @@ RJITIRInstruction >> opcode [
 RJITIRInstruction >> operand1String [
 	^ String streamContents: [ :s |
 		op1ins ifNotNil: [ s nextPutAll: (op1ins irRefString padRightTo: 5) ].
-		mode op1mode = #lit ifTrue: [ s space; nextPutAll: '#' , op1 printString ]. ]
+		self op1InlineString ifNotNil: [ :str | ^ s nextPutAll: str ] ]
+	
 ]
 
 { #category : #'as yet unclassified' }
 RJITIRInstruction >> operand2String [
 	^ String streamContents: [ :s |
 		op2ins ifNotNil: [ s nextPutAll: (op2ins irRefString padRightTo: 5) ].
-		mode op2mode = #lit ifTrue: [ s space; nextPutAll: '#' , op2 printString ]. ]
+		self op2InlineString ifNotNil: [ :str | ^ s nextPutAll: str ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -472,11 +543,33 @@ RJITIRInstruction >> operandsString [
 
 ]
 
+{ #category : #accessing }
+RJITIRInstruction >> phiChild [
+	^ phiChild
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> phiChild: ins [
+	phiChild := ins
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> phiParent [
+	^ phiParent
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> phiParent: ins [
+	phiParent := ins
+]
+
 { #category : #initialization }
 RJITIRInstruction >> popupSummary [
 	^ (RJITIRInstruction opcodeSummaries at: opcode ifAbsent: [ '(unknown opcode)' ]) ,
 		Character cr asString,
-		self irString.
+		self irString,
+		Character cr asString, Character cr asString,
+		self disassemble.
 ]
 
 { #category : #initialization }
@@ -568,9 +661,19 @@ RJITIRInstruction >> stackSlot [
 	^ stackSlot
 ]
 
+{ #category : #accessing }
+RJITIRInstruction >> szmcode: size [
+	szmcode := size
+]
+
 { #category : #querying }
 RJITIRInstruction >> transitiveInputs [
 	^ trace transitiveInputsOf: self.
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> transitiveRelations [
+	^ self transitiveInputs union: self transitiveUses
 ]
 
 { #category : #querying }
@@ -580,5 +683,11 @@ RJITIRInstruction >> transitiveUses [
 
 { #category : #initialization }
 RJITIRInstruction >> type [
+	^ type
+]
+
+{ #category : #accessing }
+RJITIRInstruction >> typename [
+	type = #pgc ifTrue: [ ^ 'obj' ].
 	^ type
 ]

@@ -12,6 +12,7 @@
       timeliner = super.callPackage ./backend/timeliner {};
       vmprofiler = super.callPackage ./backend/vmprofiler {};
       dwarfish = super.callPackage ./backend/dwarfish {};
+      disasm = super.callPackage ./backend/disasm {};
     })
 ]
 

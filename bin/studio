@@ -37,10 +37,10 @@ runstudio() {
   cmd="$2"
   export TMPDIR=$(mktemp -d)
   trap "rm -rf $TMPDIR" EXIT
-  nix-shell $nixopts --run "$cmd" -E - <<EOF
+  nix-shell $nixopts --run "STUDIO_PATH=$studio $cmd" -E - <<EOF
     with import $studio;
     runCommandNoCC "studio" {
-      nativeBuildInputs = [ nixUnstable xorg.xauth perl $attr ];
+      nativeBuildInputs = [ nixUnstable xorg.xauth perl disasm $attr ];
     } ""
 EOF
 }

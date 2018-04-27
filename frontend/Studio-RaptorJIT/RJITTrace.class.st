@@ -35,7 +35,7 @@ RJITTrace >> asElement [
 	| box |
 	box := RTBox new size: [ :tr | tr numberOfIrInstructions sqrt * 5 ];
 					borderColor: Color black;
-					color: [ :tr | Color red alpha: ((self totalSamples) / self process totalSamples) ].
+					color: [ :tr | Color red alpha: ((self totalSamples) / (Float fmin + self process totalSamples)) ].
 	self isRootTrace ifTrue: [ box borderColor: Color black; borderWidth: 2 ].
 	^ box	+ (RTLabel new color: Color black; text: #traceno) elementOn: self.	
 ]
@@ -48,6 +48,27 @@ RJITTrace >> bytecodes [
 { #category : #accessing }
 RJITTrace >> children [
 	^ self process traces select: [ :tr | tr parent = self ]
+]
+
+{ #category : #'instance creation' }
+RJITTrace >> decodeIrMcodeMapping [
+	| szirmcode mcodeAddr mcodeOffset flashback nbytes index |
+	flashback := gctrace flashback.
+	szirmcode := gctrace szirmcode asInteger.
+	mcodeAddr := gctrace mcode asInteger.
+	"First value is size of trace head (before first instruction)"
+	mcodeOffset := (flashback decodeTypeNamed: #uint16_t at: szirmcode) value.
+	index := 2.
+	self irInstructions do: [ :ins |
+		nbytes := (flashback decodeTypeNamed: #uint16_t at: szirmcode + index) value.
+		Transcript show: 'nbytes: ', nbytes asString; cr.
+		ins mcode: (flashback bytesAt: mcodeAddr + mcodeOffset size: nbytes).
+		ins szmcode: nbytes.
+		ins mcodeAddress: mcodeAddr + mcodeOffset.
+		index := index + 2. "next uint16_t"
+		mcodeOffset := mcodeOffset + nbytes.
+	].
+
 ]
 
 { #category : #accessing }
@@ -81,6 +102,7 @@ RJITTrace >> from: aGCtrace withExistingTraces: traces [
 	link := traces detect: [ :tr | tr traceno = gctrace link ] ifNone: [ nil ].
 	linktype := (dwarf valueToName: gctrace linktype inEnumerationWith: 'LJ_TRLINK_NONE') asLinkTypeName.
 	start := gctrace startpc.
+
 ]
 
 { #category : #'gt-inspector-extension' }
@@ -141,7 +163,6 @@ RJITTrace >> gtInspectorInfoIn: composite [
 					format: #asString;
 					sorted: [ :x :y | x all > y all ];
 					column: 'Profile' evaluated: [ :pt | pt vmprofile name ].
-				"#( all vm mcode gc )"
 				#( interp c igc exit record opt asm head loop ffi jgc ) do: [ :key |
 					tab column: key asString evaluated: key width: 45 ].
 				].
@@ -179,7 +200,7 @@ RJITTrace >> info [
 		'IR Instructions' -> self numberOfIrInstructions.
 		'Profiler samples' -> ('{1} ({2}%)' format: {
 			self totalSamples.
-			(self totalSamples * 100.0 / self process totalSamples) printShowingDecimalPlaces: 1.
+			(self totalSamples * 100.0 / (Float fmin + self process totalSamples)) printShowingDecimalPlaces: 1.
 		}).
 	}
 ]
@@ -197,6 +218,7 @@ RJITTrace >> irInstructions [
 	irInstructions isBlock ifTrue: [ 
 		irInstructions := irInstructions value.
 		irInstructions do: [ :ins | ins link: self. ].
+		self decodeIrMcodeMapping.
  		].
 	^ irInstructions.
 
@@ -232,9 +254,9 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		loopInsns := { }.
 	 ].
 	head := RTGroup new addAll: (headInsns collect: #asElement); yourself.
-	loop := RTGroup new addAll: (loopInsns collect: #asElement); yourself.
+	loop := RTGroup new addAll: (loopInsns reject: #isPhi thenCollect: #asElement); yourself.
 	all := RTGroup new addAll: head; addAll: loop; yourself.
-	separator := RTLabel new elementOn: #'LOOP:'.
+	separator := RTLabel new color: Color black; height: 18; elementOn: #'LOOP:'.
 	view := RTView new.
 	view addAll: all; addAll: loop.
 	
@@ -254,8 +276,13 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		connectFrom: #op1ins;
 		shape: (RTLine new color: Color black trans; attachPoint: RJITOperand2AttachPoint new; yourself);
 		connectFrom: #op2ins.
-	RTDominanceTreeLayout new doNotAttachPoint; on: head.
-	RTDominanceTreeLayout new doNotAttachPoint; on: loop.
+	RTTreeLayout new doNotAttachPoint; on: head.
+	RTTreeLayout new doNotAttachPoint; on: loop.
+	RTEdgeBuilder new
+		view: view;
+		objects: (self irInstructions);
+		shape: (RTArrowedLine new color: (Color red alpha: 0.5); attachPoint: RTBorderAttachPoint new);
+		connectFrom: #phiChild.
 	loopInsns size > 0 ifTrue: [
 		view add: separator.
 		RTVerticalLineLayout on: { head. separator. loop }. ].
