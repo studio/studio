@@ -39,7 +39,7 @@ DWARF >> enumerationTypeWith: aName [
 DWARF >> loadFromBinaryFileNamed: fileName [
 	| res |
 	[
-		res := Nix build: 'with import <studio>; dwarfish.elf2json ', fileName.
+		res := Nix build: 'with import <studio>; dwarfish.elf2json ', fileName
 	] asJob title: 'Preprocessing DWARF definitions'; run.
 	self loadFromFileNamed: res first.
 
@@ -47,8 +47,10 @@ DWARF >> loadFromBinaryFileNamed: fileName [
 
 { #category : #initialization }
 DWARF >> loadFromByteArray: array [
-	| tmp |
-	tmp := FileReference newTempFilePrefix: 'dwarf-' suffix: '.dwo'.
+	| tmpdir hash tmp |
+	hash := (SHA256 hashMessage: array) hex.
+	tmpdir := FileLocator temp asFileReference.
+	tmp := tmpdir / ('dwarf-',hash,'.dwo').
 	tmp writeStream binary nextPutAll: array; close.
 	self loadFromBinaryFileNamed: tmp pathString.
 ]
