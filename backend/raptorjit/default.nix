@@ -20,8 +20,7 @@ rec {
   raptorjit = llvmPackages_4.stdenv.mkDerivation {
     name = "raptorjit-auditlog";
     nativeBuildInputs = [ gcc luajit ];
-    src = /home/luke/git/raptorjit;
-    srcx = fetchFromGitHub {
+    src = fetchFromGitHub {
       owner = "lukego";
       repo = "raptorjit";
       rev = "a5222e7a1e720807052125f545974da913a80db8";
