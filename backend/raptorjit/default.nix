@@ -17,7 +17,7 @@
 with pkgs; with builtins; with stdenv;
 
 rec {
-  raptorjit = llvmPackages_4.stdenv.mkDerivation {
+  raptorjit = stdenv.mkDerivation {
     name = "raptorjit-auditlog";
     nativeBuildInputs = [ gcc luajit ];
     src = fetchFromGitHub {
@@ -76,7 +76,7 @@ rec {
       product = inspect raw;
     };
   # Convenience wrappers
-  run = luaSource: runCode (writeScript "script.lua" luaSource);
+  run = luaSource: runCode (writeTextDir "script.lua" luaSource);
   runTarball = url: runCode (fetchTarball url);
   runFile = runCode;
   runDirectory = runCode;
