@@ -20,11 +20,12 @@ rec {
   raptorjit = llvmPackages_4.stdenv.mkDerivation {
     name = "raptorjit-auditlog";
     nativeBuildInputs = [ gcc luajit ];
-    src = fetchFromGitHub {
+    src = /home/luke/git/raptorjit;
+    srcx = fetchFromGitHub {
       owner = "lukego";
       repo = "raptorjit";
-      rev = "840643881d676459f1c1d77dbd41600b682f8d56";
-      sha256 = "0mhs89kxf45jjy6rwkjblq22jjg9phficlmr7l8rfdx70k4mass4";
+      rev = "a5222e7a1e720807052125f545974da913a80db8";
+      sha256 = "0kh13x25hclcd699689cr156qicww4cscmcm99qga8shhx5q9acv";
     };
     installPhase = ''
       install -D src/raptorjit $out/bin/raptorjit
