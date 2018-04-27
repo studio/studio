@@ -121,11 +121,12 @@ RJITAuditLog >> loadFromFileNamed: fileName [
 		stream := ReadStream on: log.
 		mp := MpDecoder on: stream.
 		count := 1.
-		[  mp atEnd ] whileFalse: [
+		[ [  mp atEnd ] whileFalse: [
 			job title: 'Reading audit.log record #', count asString.
 			self addRecord: mp next.
 			count := count + 1.
 			job progress: stream position / log size. ]
+		] on: Error do: [ :e | UIManager default inform: 'Finishing at msgpack error: ', e asString ].
 	] asJob run.
 	UIManager default inform: 'Loaded ', events size asString, ' RaptorJIT events (auditlog)'.
 ]
