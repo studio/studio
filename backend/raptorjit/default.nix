@@ -23,8 +23,8 @@ rec {
     src = fetchFromGitHub {
       owner = "lukego";
       repo = "raptorjit";
-      rev = "840643881d676459f1c1d77dbd41600b682f8d56";
-      sha256 = "0mhs89kxf45jjy6rwkjblq22jjg9phficlmr7l8rfdx70k4mass4";
+      rev = "92955dc8387c4980ebbc0656347fcc74d7ac2f04";
+      sha256 = "02jljk5nvgkqlz24cg98lipz2k2vxzlahch9a9fg93r3bi18pi9c";
     };
     installPhase = ''
       install -D src/raptorjit $out/bin/raptorjit
