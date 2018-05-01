@@ -28,7 +28,6 @@ rec {
     };
     installPhase = ''
       install -D src/raptorjit $out/bin/raptorjit
-      install -D src/lj_dwarf.dwo $out/lib/raptorjit.dwo
     '';
     enableParallelBuilding = true;  # Do 'make -j'
     dontStrip = true;
@@ -54,20 +53,24 @@ rec {
       fi
       mkdir -p $out/vmprofile
       find . -name '*.vmprofile' -exec cp {} $out/vmprofile \;
-      cp ${raptorjit}/lib/raptorjit.dwo $out/
     '';
   inspect = jit:
-    runCommand "inspect" {
+      runCommand "inspect" {
         inherit jit;
-        dwarfjson = dwarfish.elf2json (toPath "${jit}/raptorjit.dwo");
       }
       ''
         mkdir -p $out/.studio
+        mkdir $out/vmprofile
         cat > $out/.studio/product-info.yaml <<EOF
         type: raptorjit
         EOF
-        cp -r $jit/* $out/
-        cp $dwarfjson $out/raptorjit-dwarf.json
+        if [ -d $jit ]; then
+          find $jit -name audit.log -exec cp -n {} $out/audit.log \;
+          find $jit -name '*.vmprofile' -exec cp {} $out/vmprofile/ \;
+        else
+          # assume it's an audit.log file
+          cp $jit $out/audit.log
+        fi
       '';
   # Run RaptorJIT code and product a Studio product.
   runCode = fileOrDirectory:
