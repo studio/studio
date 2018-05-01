@@ -36,7 +36,7 @@ RJITProcess >> fromPath: aPath [
 	path := aPath.
 	dwarfPath := path / 'raptorjit-dwarf.json'.
 	auditPath := path / 'audit.log'.
-	[ dwarfPath isFile and: auditPath isFile ] assertWithDescription:
+	[ auditPath isFile ] assertWithDescription:
 		'JIT audit log not found'.
 	auditLog := RJITAuditLog new loadFromFileNamed: auditPath pathString.
 	auditLog process: self.
@@ -148,12 +148,14 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 
 { #category : #accessing }
 RJITProcess >> totalSamples [
+	vmprofiles isEmpty ifTrue: [ ^0 ].
 	^ vmprofiles sum: #total
 
 ]
 
 { #category : #accessing }
-RJITProcess >> totalSamplesFor: trace [ 
+RJITProcess >> totalSamplesFor: trace [
+	vmprofiles ifEmpty: [ ^0 ]. 
 	^ vmprofiles sum: [ :p | (p trace: trace) all]
 ]
 
