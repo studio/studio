@@ -1,26 +1,30 @@
 # Studio
 
-Studio is a debugger for the data produced by complex applications.
-Studio imports dense and "messy" data in an application's own native
-formats, then it applies all the tools that are needed to extract
-useful information, and finally it presents the results in an
+Studio is an interactive software diagnostics environment.
+
+Studio imports dense and "messy" diagnostic data in an application's
+own native formats, then it applies all the tools that are needed to
+extract useful information, and finally it presents the results in an
 interactive graphical user interface.
 
 ### Getting Started
 
-How to download and run:
+Studio runs on Linux/x86. You can run it anywhere (server, VM, docker,
+etc) and access the GUI with VNC.
+
+Here is how to download and run Studio:
 
 ```shell
-$ curl https://nixos.org/nix/install | sh    # Get nix
-$ git clone https://github.com/studio/studio # Get studio
-$ studio/run vnc                             # to start GUI as VNC server
+$ curl https://nixos.org/nix/install | sh    # Get nix package manager
+$ git clone https://github.com/studio/studio # Get Studio
+$ studio/run vnc                             # Start GUI as VNC server
 ```
 
 Optional extras:
 
-```
-$ git checkout next      # to try development version
-$ studio/run x11         # to start GUI as X11 client
+```shell
+$ git checkout next            # Switch to development version
+$ studio/run x11               # Start GUI directly as X11 client
 ```
 
 Script you can enter to get some example data:
