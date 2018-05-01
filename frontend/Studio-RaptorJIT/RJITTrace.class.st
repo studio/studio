@@ -33,7 +33,7 @@ RJITTrace >> allChildren [
 { #category : #'gt-inspector-extension' }
 RJITTrace >> asElement [
 	| box |
-	box := RTBox new size: [ :tr | tr numberOfIrInstructions sqrt * 5 ];
+	box := RTBox new size: [ :tr | tr numberOfHeadIrInstructions sqrt * 5 ];
 					borderColor: Color black;
 					color: [ :tr | Color red alpha: ((self totalSamples) / (Float fmin + self process totalSamples)) ].
 	self isRootTrace ifTrue: [ box borderColor: Color black; borderWidth: 2 ].
@@ -243,7 +243,7 @@ RJITTrace >> irTreeView [
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> irTreeViewOfInstructions: insns [
-	| headInsns loopInsns view head loop all separator popup |
+	| headInsns loopInsns view head loop all separator popup layoutEdges |
 	self hasLoop ifTrue: [
 		| loopindex |
 		loopindex := self loop index.
@@ -258,8 +258,8 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 	all := RTGroup new addAll: head; addAll: loop; yourself.
 	separator := RTLabel new color: Color black; height: 18; elementOn: #'LOOP:'.
 	view := RTView new.
-	view addAll: all; addAll: loop.
-	
+	view addAll: all.
+
 	popup := RTPopup new
 		text: #popupSummary;
 		alphaPopupBackground: 1.0;
@@ -276,7 +276,8 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		connectFrom: #op1ins;
 		shape: (RTLine new color: Color black trans; attachPoint: RJITOperand2AttachPoint new; yourself);
 		connectFrom: #op2ins.
-	RTTreeLayout new doNotAttachPoint; on: head.
+	layoutEdges := RTElement edgesForLongTree: all.
+	RTTreeLayout new doNotAttachPoint; userDefinedEdges: layoutEdges; on: head.
 	RTTreeLayout new doNotAttachPoint; on: loop.
 	RTEdgeBuilder new
 		view: view;
@@ -339,6 +340,11 @@ RJITTrace >> loop [
 { #category : #initializing }
 RJITTrace >> loopInstructions [
 	^ self irInstructions copyAfter: self loop.
+]
+
+{ #category : #initializing }
+RJITTrace >> numberOfHeadIrInstructions [
+	^ self headInstructions size.
 ]
 
 { #category : #initializing }
