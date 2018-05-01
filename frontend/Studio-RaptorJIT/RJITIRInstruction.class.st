@@ -293,6 +293,7 @@ RJITIRInstruction >> irRefString [
 	].
 	opcode = #kint ifTrue: [ ^ (op12 sign = -1 ifTrue: ['-'] ifFalse: ['+']) , op12 printString ].
 	opcode = #kslot ifTrue: [  op1ins ifNotNil: [ ^ op1ins irRefString ] ].
+	opcode = #knum ifTrue: [ ^ (irIns flashback decodeTypeNamed: 'double' at: irIns address + 8) asString ].
 	"XXX NYI"
 	^ '<' , type , '>'
 ]
@@ -319,7 +320,7 @@ RJITIRInstruction >> irString [
 			nextPutAll: (self isGuardedAssertion ifTrue: '>' ifFalse: ' ');
 			nextPutAll: (isPhiOperand ifTrue: '+' ifFalse: ' ');
 			space;
-			nextPutAll: ((self type = #nil ifTrue: [ '' ] ifFalse: [ self type ]) padRightTo: 6);
+			nextPutAll: (self typename padRightTo: 6);
 			space;
 			nextPutAll: (opcode padRightTo: 6).
 		op1ins
@@ -688,6 +689,9 @@ RJITIRInstruction >> type [
 
 { #category : #accessing }
 RJITIRInstruction >> typename [
+	type = #nil ifTrue: [ ^ '' ].
+	type = #num ifTrue: [ ^ 'float' ].
 	type = #pgc ifTrue: [ ^ 'obj' ].
+	type = #p64 ifTrue: [ ^ 'ptr' ].
 	^ type
 ]
