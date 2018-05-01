@@ -7,7 +7,8 @@ Class {
 		'dwarf',
 		'traces',
 		'irModes',
-		'ctypes'
+		'ctypes',
+		'process'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -16,6 +17,17 @@ Class {
 RJITAuditLog class >> loadFromFileNamed: fileName withDWARF: dwarf [
 	^self new dwarf: dwarf; loadFromFileNamed: fileName.
 
+]
+
+{ #category : #decoding }
+RJITAuditLog >> addBlob: dict [
+	(dict at: 'name') = 'lj_dwarf.dwo' ifTrue: [ 
+		self addDWARF: (dict at: 'data') ].
+]
+
+{ #category : #accessing }
+RJITAuditLog >> addDWARF: byteArray [
+	self dwarf: (DWARF new loadFromByteArray: byteArray)
 ]
 
 { #category : #initialization }
@@ -46,6 +58,7 @@ RJITAuditLog >> addRecord: dict [
    type := dict at: 'type'.
    type = 'event' ifTrue:  [ self addEvent: dict ].
    type = 'memory' ifTrue: [ self addMemory: dict ].
+	type = 'blob' ifTrue: [ self addBlob: dict ].
 ]
 
 { #category : #visualization }
@@ -108,11 +121,12 @@ RJITAuditLog >> loadFromFileNamed: fileName [
 		stream := ReadStream on: log.
 		mp := MpDecoder on: stream.
 		count := 1.
-		[  mp atEnd ] whileFalse: [
+		[ [  mp atEnd ] whileFalse: [
 			job title: 'Reading audit.log record #', count asString.
 			self addRecord: mp next.
 			count := count + 1.
 			job progress: stream position / log size. ]
+		] on: Error do: [ :e | UIManager default inform: 'Finishing at msgpack error: ', e asString ].
 	] asJob run.
 	UIManager default inform: 'Loaded ', events size asString, ' RaptorJIT events (auditlog)'.
 ]
@@ -127,6 +141,16 @@ RJITAuditLog >> makeEventFrom: dict [
 	event = 'new_ctypeid' ifTrue: [ ^RJITNewCTypeIDEvent new from: dict flashback: flashback ].
    ^RJITUnknownEvent new from: dict flashback: flashback.
 
+]
+
+{ #category : #accessing }
+RJITAuditLog >> process [
+	^ process
+]
+
+{ #category : #accessing }
+RJITAuditLog >> process: aRJITProcess [ 
+	process := aRJITProcess
 ]
 
 { #category : #visualization }

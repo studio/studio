@@ -38,7 +38,8 @@ RJITProcess >> fromPath: aPath [
 	auditPath := path / 'audit.log'.
 	[ dwarfPath isFile and: auditPath isFile ] assertWithDescription:
 		'JIT audit log not found'.
-	auditLog := RJITAuditLog loadFromFileNamed: auditPath pathString withDWARF: (DWARF loadFromFileNamed: dwarfPath pathString).
+	auditLog := RJITAuditLog new loadFromFileNamed: auditPath pathString.
+	auditLog process: self.
 	"Load VMProfile data with progress monitoring."
 	vmprofiles := OrderedCollection new.
 	(path / 'vmprofile') children
@@ -50,7 +51,7 @@ RJITProcess >> fromPath: aPath [
 
 { #category : #accessing }
 RJITProcess >> gtInspectorEventsIn: composite [
-	<gtInspectorPresentationOrder: 2>
+	<gtInspectorPresentationOrder: 6>
 	composite fastList
 		title: 'Events';
 		display: [ self auditLog events reverse ];
@@ -67,9 +68,37 @@ RJITProcess >> gtInspectorFilesIn: composite [
 
 ]
 
+{ #category : #accessing }
+RJITProcess >> gtInspectorTraceListIn: composite [
+	<gtInspectorPresentationOrder: 1>
+	composite fastTable
+		title: 'Trace List';
+		display: [ self auditLog traces ];
+		column: 'Nr' evaluated: [ :tr | tr traceno asString ] width: 50 tags: nil sortedBy: #traceno descending;
+		column: 'Parent' evaluated: #parentname width: 50 tags: nil sortedBy: [ :a :b |
+			| an bn |
+			an := a parent ifNil: 0 ifNotNil: #traceno.
+			bn := b parent ifNil: 0 ifNotNil: #traceno.
+			an < bn ];
+		column: 'Link' evaluated: #linkname width: 80;
+		column: 'Samples' evaluated: #totalSamples width: 80 tags: nil sortedBy: [ :a :b | (self totalSamplesFor: a) > (self totalSamplesFor: b) ];
+		column: 'Start line' evaluated: #startLine width: 800;
+		installExportToCSV.
+
+]
+
+{ #category : #accessing }
+RJITProcess >> gtInspectorTraceMapIn: composite [
+	<gtInspectorPresentationOrder: 2>
+	composite roassal2
+		title: 'Trace Map';
+		initializeView: [ self traceMapView ].
+
+]
+
 { #category : #'instance creation' }
 RJITProcess >> gtInspectorVMProfilesIn: composite [
-	<gtInspectorPresentationOrder: 1>
+	<gtInspectorPresentationOrder: 5>
 	| w percent |
 	w := 50. "width of numeric columns"
 	^ composite tabulator
@@ -105,7 +134,7 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 					sorted: [ :x :y | x samples > y samples ];
 					column: 'Trace' evaluated: #traceno width: 160;
 					column: 'Samples' evaluated: #samples width: 60;
-					column: 'Link' evaluated: #linktype width: 60;
+					column: 'Link' evaluated: #linkname width: 60;
 					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w;
 					column: 'VM' evaluated: (percent value: #vmPercent) width: w;
 					column: 'GC' evaluated: (percent value: #gcPercent) width: w;
@@ -115,6 +144,61 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 			t transmit toOutsidePort: #selection; from: #traces port: #selection transformed: #trace.
 			].
 
+]
+
+{ #category : #accessing }
+RJITProcess >> totalSamples [
+	^ vmprofiles sum: #total
+
+]
+
+{ #category : #accessing }
+RJITProcess >> totalSamplesFor: trace [ 
+	^ vmprofiles sum: [ :p | (p trace: trace) all]
+]
+
+{ #category : #visualization }
+RJITProcess >> traceMapView [
+	| shape roots rootElems rootBoxes view popup |
+	view := RTView new.
+
+"	roots := {((self traces select: #isRootTrace) select: [ :tr | tr children size > 3 ]) atRandom}."
+
+	popup := (RTPopup new
+		text: #printString;
+		alphaPopupBackground: 1.0;
+		borderColor: Color black;
+		backgroundColor: Color white).
+
+	roots := self traces select: #isRootTrace.
+	rootBoxes := (RTBox new color: Color transparent; borderWidth: 1) elementsOn: (roots collect: [ :tr | tr ]).
+	view addAll: rootBoxes.
+	RTNest new for: rootBoxes add: [ :group :tr |
+		| traces elements edges |
+		traces := tr withAllChildren.
+		elements := traces collect: #asElement.
+		group addAll: elements.
+		group @ popup.
+		edges := RTEdgeBuilder new
+						view: group;
+						objects: traces;
+						shape: (RTLine new);
+						connectToAll: #children.
+		RTHorizontalTreeLayout on: elements edges: edges.
+		].
+
+	RTVerticalLineLayout new on: rootBoxes.
+
+	view @ RTZoomableBoxView.
+	view @ RTDoubleScrollBar.
+
+	^ view
+
+]
+
+{ #category : #accessing }
+RJITProcess >> traces [
+	^ auditLog traces
 ]
 
 { #category : #visualization }

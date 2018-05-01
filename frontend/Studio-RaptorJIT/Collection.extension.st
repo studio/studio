@@ -9,6 +9,7 @@ Collection >> irListViewIn: composite title: aTitle [
 		column: 'Num' evaluated: #irRefString width: 40;
 		column: 'Loc' evaluated: #irRegisterString width: 40;
 		column: 'Flags' evaluated: #irFlagsString width: 40;
+		column: 'Type' evaluated: #typename width: 40;
 		column: 'Opcode' evaluated: #opcode width: 50;
 		column: 'Operands' evaluated: #operandsString width: 1000;
 		addAction: [

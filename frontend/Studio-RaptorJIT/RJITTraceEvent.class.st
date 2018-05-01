@@ -19,7 +19,8 @@ RJITTraceEvent >> gcTraceWithExistingTraces: traces [
 
 { #category : #'gt-inspector-extension' }
 RJITTraceEvent >> gtInspectorIRTreeIn: composite [
-	<gtInspectorPresentationOrder: 7>
+	"<gtInspectorPresentationOrder: 7>"
+	"XXX Failing with a decoding error. Have to troubleshoot before enabling this view."
 	self trace gtInspectorIRTreeIn: composite.
 ]
 

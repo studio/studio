@@ -20,6 +20,58 @@ Class {
 }
 
 { #category : #accessing }
+RJITTrace >> allChildren [
+	| set children |
+	set := Set new.
+	children := self children.
+	children do: [ :c | set addAll: c allChildren ].
+	set addAll: children.
+	^ set.
+
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> asElement [
+	| box |
+	box := RTBox new size: [ :tr | tr numberOfIrInstructions sqrt * 5 ];
+					borderColor: Color black;
+					color: [ :tr | Color red alpha: ((self totalSamples) / (Float fmin + self process totalSamples)) ].
+	self isRootTrace ifTrue: [ box borderColor: Color black; borderWidth: 2 ].
+	^ box	+ (RTLabel new color: Color black; text: #traceno) elementOn: self.	
+]
+
+{ #category : #'as yet unclassified' }
+RJITTrace >> bytecodes [
+	self shouldBeImplemented.
+]
+
+{ #category : #accessing }
+RJITTrace >> children [
+	^ self process traces select: [ :tr | tr parent = self ]
+]
+
+{ #category : #'instance creation' }
+RJITTrace >> decodeIrMcodeMapping [
+	| szirmcode mcodeAddr mcodeOffset flashback nbytes index |
+	flashback := gctrace flashback.
+	szirmcode := gctrace szirmcode asInteger.
+	mcodeAddr := gctrace mcode asInteger.
+	"First value is size of trace head (before first instruction)"
+	mcodeOffset := (flashback decodeTypeNamed: #uint16_t at: szirmcode) value.
+	index := 2.
+	self irInstructions do: [ :ins |
+		nbytes := (flashback decodeTypeNamed: #uint16_t at: szirmcode + index) value.
+		Transcript show: 'nbytes: ', nbytes asString; cr.
+		ins mcode: (flashback bytesAt: mcodeAddr + mcodeOffset size: nbytes).
+		ins szmcode: nbytes.
+		ins mcodeAddress: mcodeAddr + mcodeOffset.
+		index := index + 2. "next uint16_t"
+		mcodeOffset := mcodeOffset + nbytes.
+	].
+
+]
+
+{ #category : #accessing }
 RJITTrace >> exitno [
 	^ exitno
 ]
@@ -50,11 +102,12 @@ RJITTrace >> from: aGCtrace withExistingTraces: traces [
 	link := traces detect: [ :tr | tr traceno = gctrace link ] ifNone: [ nil ].
 	linktype := (dwarf valueToName: gctrace linktype inEnumerationWith: 'LJ_TRLINK_NONE') asLinkTypeName.
 	start := gctrace startpc.
+
 ]
 
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorBytecodesIn: composite [
-	<gtInspectorPresentationOrder: 1>
+	<gtInspectorPresentationOrder: 2>
 	jitState ifNil: [ ^nil ].
 	jitState gtInspectorBytecodesIn: composite.
 
@@ -88,6 +141,34 @@ RJITTrace >> gtInspectorIRTreeIn: composite [
 
 ]
 
+{ #category : #accessing }
+RJITTrace >> gtInspectorInfoIn: composite [
+	<gtInspectorPresentationOrder: 1>
+	composite tabulator
+		title: 'Info';
+		with: [ :t |
+			t row: #info; row: #profile.
+			t transmit to: #info; andShow: [ :a |
+				a fastTable
+					title: 'Trace Attributes';
+					display: [ self info ];
+					column: 'Name' evaluated: #key width: 100;
+					column: 'Value' evaluated: #value width: 600.
+				].
+			t transmit to: #profile; andShow: [ :a |
+				| tab |
+				tab := a fastTable 
+					title: 'Profiler Samples';
+					display: [ self process vmprofiles collect: [ :p | p trace: self ] ];
+					format: #asString;
+					sorted: [ :x :y | x all > y all ];
+					column: 'Profile' evaluated: [ :pt | pt vmprofile name ].
+				#( interp c igc exit record opt asm head loop ffi jgc ) do: [ :key |
+					tab column: key asString evaluated: key width: 45 ].
+				].
+	].
+]
+
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorJITIn: composite [
 	<gtInspectorPresentationOrder: 5>
@@ -108,6 +189,23 @@ RJITTrace >> headInstructions [
 ]
 
 { #category : #accessing }
+RJITTrace >> info [
+	^{
+		'Summary' -> self printString.
+		'TraceNo' -> traceno.
+		'Root' -> (root = self ifTrue: [ '(self)' ] ifFalse: [ root ]).
+		'Parent' -> parent.
+		'Link' -> (link ifNil: linktype).
+		'Start Line' -> self startLine.
+		'IR Instructions' -> self numberOfIrInstructions.
+		'Profiler samples' -> ('{1} ({2}%)' format: {
+			self totalSamples.
+			(self totalSamples * 100.0 / (Float fmin + self process totalSamples)) printShowingDecimalPlaces: 1.
+		}).
+	}
+]
+
+{ #category : #accessing }
 RJITTrace >> irConstants [
 	irConstants isBlock ifTrue: [
 		irConstants := irConstants value.
@@ -120,6 +218,7 @@ RJITTrace >> irInstructions [
 	irInstructions isBlock ifTrue: [ 
 		irInstructions := irInstructions value.
 		irInstructions do: [ :ins | ins link: self. ].
+		self decodeIrMcodeMapping.
  		].
 	^ irInstructions.
 
@@ -155,9 +254,9 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		loopInsns := { }.
 	 ].
 	head := RTGroup new addAll: (headInsns collect: #asElement); yourself.
-	loop := RTGroup new addAll: (loopInsns collect: #asElement); yourself.
+	loop := RTGroup new addAll: (loopInsns reject: #isPhi thenCollect: #asElement); yourself.
 	all := RTGroup new addAll: head; addAll: loop; yourself.
-	separator := RTLabel new elementOn: #'LOOP:'.
+	separator := RTLabel new color: Color black; height: 18; elementOn: #'LOOP:'.
 	view := RTView new.
 	view addAll: all; addAll: loop.
 	
@@ -177,8 +276,13 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		connectFrom: #op1ins;
 		shape: (RTLine new color: Color black trans; attachPoint: RJITOperand2AttachPoint new; yourself);
 		connectFrom: #op2ins.
-	RTDominanceTreeLayout new doNotAttachPoint; on: head.
-	RTDominanceTreeLayout new doNotAttachPoint; on: loop.
+	RTTreeLayout new doNotAttachPoint; on: head.
+	RTTreeLayout new doNotAttachPoint; on: loop.
+	RTEdgeBuilder new
+		view: view;
+		objects: (self irInstructions);
+		shape: (RTArrowedLine new color: (Color red alpha: 0.5); attachPoint: RTBorderAttachPoint new);
+		connectFrom: #phiChild.
 	loopInsns size > 0 ifTrue: [
 		view add: separator.
 		RTVerticalLineLayout on: { head. separator. loop }. ].
@@ -215,6 +319,14 @@ RJITTrace >> link [
 ]
 
 { #category : #accessing }
+RJITTrace >> linkname [
+	^linktype = #root
+		ifTrue: [ '->', link traceno asString ]
+		ifFalse: linktype.
+
+]
+
+{ #category : #accessing }
 RJITTrace >> linktype [
 	^ linktype
 ]
@@ -237,6 +349,24 @@ RJITTrace >> numberOfIrInstructions [
 { #category : #accessing }
 RJITTrace >> parent [
 	^parent
+]
+
+{ #category : #accessing }
+RJITTrace >> parentname [
+	^ parent ifNil: [ '' ] ifNotNil: [ parent traceno asString , '/' , exitno asString ].
+]
+
+{ #category : #printing }
+RJITTrace >> printOn: aStream [
+	aStream nextPutAll: 'trace '.
+	aStream nextPutAll: traceno asString.
+	self isSideTrace ifTrue: [ aStream nextPutAll: '/' , self parentname ].
+	aStream nextPutAll: ' from ', self startLine.
+]
+
+{ #category : #accessing }
+RJITTrace >> process [
+	^ gctrace flashback auditLog process
 ]
 
 { #category : #initializing }
@@ -299,6 +429,12 @@ RJITTrace >> startPrototype [
 ]
 
 { #category : #accessing }
+RJITTrace >> totalSamples [
+	^ self process totalSamplesFor: self.
+
+]
+
+{ #category : #accessing }
 RJITTrace >> traceno [
 	^ traceno
 ]
@@ -328,4 +464,10 @@ RJITTrace >> transitiveUsesOf: startIns [
 			uses add: ins ].
 	].
 	^ uses asArray sort: [ :a :b | a index < b index ]
+]
+
+{ #category : #accessing }
+RJITTrace >> withAllChildren [
+	^ self allChildren add: self; yourself.
+
 ]
