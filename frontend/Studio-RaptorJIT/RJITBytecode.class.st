@@ -72,3 +72,10 @@ RJITBytecode >> sourceLine [
 		ifCurtailed: [ ^'?' ].
 
 ]
+
+{ #category : #initialization }
+RJITBytecode >> sourceName [
+	prototype ifNil: [ ^ '' ].
+	^ prototype sourceName.
+
+]
