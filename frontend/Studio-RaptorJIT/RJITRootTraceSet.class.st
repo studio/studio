@@ -10,6 +10,11 @@ Class {
 }
 
 { #category : #accessing }
+RJITRootTraceSet >> gcPercent [
+	^ self percentOf: #gc.
+]
+
+{ #category : #accessing }
 RJITRootTraceSet >> location [
 	| root |
 	root := traces detect: #isRootTrace ifNone: [ ^'?' ].
@@ -23,6 +28,12 @@ RJITRootTraceSet >> location: aLocation [
 ]
 
 { #category : #accessing }
+RJITRootTraceSet >> mcodePercent [
+	^ self percentOf: #mcode.
+
+]
+
+{ #category : #accessing }
 RJITRootTraceSet >> numberOfRootTraces [
 	^ traces count: #isRootTrace.
 
@@ -32,6 +43,19 @@ RJITRootTraceSet >> numberOfRootTraces [
 RJITRootTraceSet >> numberOfSideTraces [
 	^ traces count: #isSideTrace.
 
+]
+
+{ #category : #accessing }
+RJITRootTraceSet >> percentOf: aSelector [ 
+	| total acc |
+	total := 0.
+	acc := 0.
+	traces do: [ :tr |
+		| p |
+		p := profile trace: tr.
+		total := total + p all.
+		acc := acc + (p perform: aSelector). ].
+	^ acc * 100.0 / (total + Float fmin).
 ]
 
 { #category : #accessing }
@@ -69,4 +93,9 @@ RJITRootTraceSet >> traces [
 { #category : #accessing }
 RJITRootTraceSet >> traces: aCollection [ 
 	traces := aCollection
+]
+
+{ #category : #accessing }
+RJITRootTraceSet >> vmPercent [
+	^ self percentOf: #vm.
 ]

@@ -124,6 +124,9 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 					sorted: [ :x :y | x samples > y samples ];
 					column: 'Location' evaluated: #location width: 240;
 					column: 'Samples' evaluated: #samples width: 60;
+					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w;
+					column: 'VM' evaluated: (percent value: #vmPercent) width: w;
+					column: 'GC' evaluated: (percent value: #gcPercent) width: w;
 					column: '#Root' evaluated: #numberOfRootTraces width: w;
 					column: '#Side' evaluated: #numberOfSideTraces width: w. ].
 			t transmit from: #locations; to: #traces; andShow: [ :a |
