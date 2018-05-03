@@ -160,6 +160,7 @@ let
       exec ${tigervnc}/bin/vncserver \
         "$@" \
         -name "Studio" \
+        -fg \
         -autokill \
         -xstartup ${ratpoisonScript} \
         -SecurityTypes None

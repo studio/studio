@@ -14,7 +14,7 @@ error() {
 [ $(uname -s) = "Linux" ]  || (error "error: 'uname -s' is not Linux")
 
 # Check that nix is available
-if ! type nix-build; then
+if ! type nix-build &>/dev/null; then
     cat <<EOF
 command not found: nix-build
 
