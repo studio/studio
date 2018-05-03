@@ -1,35 +1,38 @@
 # Studio
 
-Studio is a debugger for the data produced by complex applications.
-Studio imports dense and "messy" data in an application's own native
-formats, then it applies all the tools that are needed to extract
-useful information, and finally it presents the results in an
+Studio is an interactive software diagnostics environment.
+
+Studio imports dense and "messy" diagnostic data in an application's
+own native formats, then it applies all the tools that are needed to
+extract useful information, and finally it presents the results in an
 interactive graphical user interface.
 
-### TLDR
+### Getting Started
 
-Get up and running on Linux:
+Studio runs on Linux/x86. You can run it anywhere (server, VM, docker,
+etc) and access the GUI with VNC.
+
+Here is how to download and run Studio:
 
 ```shell
-$ curl https://nixos.org/nix/install | sh    # Get nix
-$ git clone https://github.com/studio/studio # Get studio
-$ cd studio
-$ git checkout next      # to try development version
-$ bin/studio vnc         # to start GUI as VNC server
-$ bin/studio x11         # to start GUI as X11 client
+$ curl https://nixos.org/nix/install | sh    # Get nix package manager
+$ git clone https://github.com/studio/studio # Get Studio
+$ studio/run vnc                             # Start GUI as VNC server
 ```
 
-Script to load some interesting example data:
+Optional extras:
+
+```shell
+$ git checkout next            # Switch to development version
+$ studio/run x11               # Start GUI directly as X11 client
+```
+
+Script you can enter to get some example data:
 
 ```
 with import <studio>;
 raptorjit.runTarball https://github.com/lukego/rj-vmprof-bench/archive/master.tar.gz
 ```
-
-### RTFM
-
-See the current manual for the [master](https://hydra.snabb.co/job/lukego/studio-manual/studio-manual-html/latest/download-by-type/file/Manual) release branch or
-the [next](https://hydra.snabb.co/job/lukego/studio-manual-next/studio-manual-html/latest/download-by-type/file/Manual) development branch.
 
 ----
 
