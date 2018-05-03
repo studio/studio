@@ -105,6 +105,21 @@ RJITTrace >> from: aGCtrace withExistingTraces: traces [
 
 ]
 
+{ #category : #accessing }
+RJITTrace >> functionContour [
+	| curdepth |
+	^ String streamContents: [ :s |
+		jitState bytecodes select: [ :bc | bc opcode isNotNil ] thenDo: [ :bc |
+			curdepth ~= bc framedepth ifTrue: [
+				curdepth := bc framedepth.
+				s
+					nextPutAll: ('*' repeat: bc framedepth + 1);
+					nextPutAll: ' ';
+					nextPutAll: bc sourceLine;
+					nextPut: Character cr.
+				 ] ] ].
+]
+
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorBytecodesIn: composite [
 	<gtInspectorPresentationOrder: 2>
@@ -147,7 +162,7 @@ RJITTrace >> gtInspectorInfoIn: composite [
 	composite tabulator
 		title: 'Info';
 		with: [ :t |
-			t row: #info; row: #profile.
+			t row: #info; row: #contour.
 			t transmit to: #info; andShow: [ :a |
 				a fastTable
 					title: 'Trace Attributes';
@@ -155,18 +170,11 @@ RJITTrace >> gtInspectorInfoIn: composite [
 					column: 'Name' evaluated: #key width: 100;
 					column: 'Value' evaluated: #value width: 600.
 				].
-			t transmit to: #profile; andShow: [ :a |
-				| tab |
-				tab := a fastTable 
-					title: 'Profiler Samples';
-					display: [ self process vmprofiles collect: [ :p | p trace: self ] ];
-					format: #asString;
-					sorted: [ :x :y | x all > y all ];
-					column: 'Profile' evaluated: [ :pt | pt vmprofile name ].
-				#( interp c igc exit record opt asm head loop ffi jgc ) do: [ :key |
-					tab column: key asString evaluated: key width: 45 ].
+			t transmit to: #contour; andShow: [ :a |
+				a text
+					title: 'Call Stack Contour';
+					display: [ self functionContour ] ]
 				].
-	].
 ]
 
 { #category : #'gt-inspector-extension' }
@@ -175,6 +183,22 @@ RJITTrace >> gtInspectorJITIn: composite [
 	composite fastList 
 		title: 'JIT';
 		display: [ self jitEvents ].
+
+]
+
+{ #category : #accessing }
+RJITTrace >> gtInspectorProfileIn: composite [
+	<gtInspectorPresentationOrder: 6>
+	| tab |
+	tab := composite fastTable 
+		title: 'Profile';
+		display: [ self process vmprofiles collect: [ :p | p trace: self ] ];
+		format: #asString;
+			sorted: [ :x :y | x all > y all ];
+			column: 'Profile' evaluated: [ :pt | pt vmprofile name ].
+	#( interp c igc exit record opt asm head loop ffi jgc ) do: [ :key |
+		tab column: key asString evaluated: key width: 45 ].
+
 
 ]
 
