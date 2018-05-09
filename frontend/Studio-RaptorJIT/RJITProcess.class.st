@@ -187,7 +187,7 @@ RJITProcess >> traceMapView [
 		edges := RTEdgeBuilder new
 						view: group;
 						objects: traces;
-						shape: (RTLine new);
+						shape: (RTLine new color: Color black);
 						connectToAll: #children.
 		RTHorizontalTreeLayout on: elements edges: edges.
 		].

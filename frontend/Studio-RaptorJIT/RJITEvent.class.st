@@ -12,7 +12,7 @@ Class {
 { #category : #accessing }
 RJITEvent >> endSourceLine [
 	self numberOfBytecodes = 0 ifTrue: [ ^'?' ].
-	^ self jitState bytecodes last sourceLine.
+	^ self jitState bytecodes ifEmpty: [ '?' ] ifNotEmpty: [ :bc | bc last sourceLine ].
 ]
 
 { #category : #accessing }

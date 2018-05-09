@@ -87,8 +87,10 @@ RJITFlashback >> decodeArrayOfTypeNamed: typename at: anAddress elements: elems 
 
 { #category : #accessing }
 RJITFlashback >> decodeCStringAt: anAddress [
-	^ (self decodeStringAt: anAddress size: 1024) copyUpTo: 0 asCharacter.
-
+	| size |
+	size := 0.
+	[ (self byteAt: anAddress + size) = 0 ] whileFalse: [ size := size + 1 ].
+	^ self decodeStringAt: anAddress size: size.
 ]
 
 { #category : #decoding }
