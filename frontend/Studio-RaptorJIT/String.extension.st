@@ -41,3 +41,9 @@ String >> asLinkTypeName [
 	^ (self withoutPrefix: 'LJ_TRLINK_') asLowercase asSymbol.
 
 ]
+
+{ #category : #'*Studio-RaptorJIT' }
+String >> luaModuleName [
+	^ self asPath basenameWithoutExtension: 'lua'.
+
+]

@@ -166,11 +166,19 @@ RJITIRInstruction >> disassemble [
 { #category : #initialization }
 RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 	<gtInspectorPresentationOrder: 1>
-	composite table
+	composite tabulator
 		title: 'Info';
-		display: [ self attributes ];
-		column: 'Key' evaluated: #key width: 100;
-		column: 'Value' evaluated: #value.
+		with: [ :t |
+			t row: #element; row: #details.
+			t transmit to: #element; andShow: [ :a |
+				a roassal2
+					title: 'Instruction View';
+					initializeView: [ RTView new add: self asElement ] ].
+			t transmit to: #details; andShow: [ :a |
+				a text
+					title: 'Details';
+					display: [ self popupSummary ] ].
+		]
 
 ]
 
