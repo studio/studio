@@ -118,14 +118,16 @@ ConfigurationOfStudio >> baseline01: spec [
 			repository: 'github://studio/studio:master/frontend'.
 		
 		spec
-			package: 'Studio-extensions' with: [
+			package: 'Studio-Extension' with: [
 				spec requires: #('Roassal2') ];
 			package: 'Studio-Nix' with: [
 				spec requires: #('Studio-extensions' 'NeoJSON' 'CommandShell') ];
 			package: 'Studio-DWARF' with: [
 				spec requires: #('Studio-extensions' 'NeoJSON') ];
 			package: 'Studio-RaptorJIT' with: [
-				spec requires: #('Studio-extensions' 'Studio-DWARF' 'Roassal2' 'MessagePack') ].
+				spec requires: #('Studio-extensions' 'Studio-DWARF' 'Roassal2' 'MessagePack') ];
+			package: 'Studio-UI' with: [ 
+				spec requires: #('Studio-RaptorJIT') ].
 
 		spec project: 'NeoJSON' with: [
 			spec
