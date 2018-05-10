@@ -75,14 +75,9 @@ RJITProcess >> gtInspectorTraceListIn: composite [
 		title: 'Trace List';
 		display: [ self auditLog traces ];
 		column: 'Nr' evaluated: [ :tr | tr traceno asString ] width: 50 tags: nil sortedBy: #traceno descending;
-		column: 'Parent' evaluated: #parentname width: 50 tags: nil sortedBy: [ :a :b |
-			| an bn |
-			an := a parent ifNil: 0 ifNotNil: #traceno.
-			bn := b parent ifNil: 0 ifNotNil: #traceno.
-			an < bn ];
 		column: 'Link' evaluated: #linkname width: 80;
 		column: 'Samples' evaluated: #totalSamples width: 80 tags: nil sortedBy: [ :a :b | (self totalSamplesFor: a) > (self totalSamplesFor: b) ];
-		column: 'Start line' evaluated: #startLine width: 800;
+		column: 'Summary' evaluated: #printString width: 800;
 		installExportToCSV.
 
 ]
