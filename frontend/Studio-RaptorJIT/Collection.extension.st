@@ -6,6 +6,7 @@ Collection >> irListViewIn: composite title: aTitle [
 	composite fastTable 
 		title: aTitle;
 		display: self;
+		sorted: [ :a :b | a index < b index ];
 		column: 'Num' evaluated: #irRefString width: 40;
 		column: 'Loc' evaluated: #irRegisterString width: 40;
 		column: 'Flags' evaluated: #irFlagsString width: 40;
