@@ -37,9 +37,12 @@ let
     repo := '${../../frontend}' asFileReference.
     (FileSystem disk childrenAt: repo) do: [ :path |
       | packageName reader |
-      packageName := path basenameWithoutExtension.
-      reader := (TonelReader on: repo fileName: packageName).
-      reader version load. ].
+      path asFileReference entries ifNotEmpty: [
+        packageName := path basenameWithoutExtension.
+        Transcript show: 'Loading package: ', packageName; cr.
+        reader := (TonelReader on: repo fileName: packageName).
+        reader version load. ].
+      ].
 
     "Load additional patches to the image."
     '${./patches}' asFileReference entries do: [ :entry |
