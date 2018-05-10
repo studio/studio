@@ -479,7 +479,7 @@ RJITIRInstruction >> op12 [
 { #category : #accessing }
 RJITIRInstruction >> op1InlineString [
 	(#(cnew cnewi) includes: opcode) ifTrue: [
-		^ irIns flashback auditLog ctypeName: op1ins op12 ].
+		^ '''', (irIns flashback auditLog ctypeName: op1ins op12), '''' ].
 	#sload = opcode ifTrue: [
 		^ '#' , op1 asString ].
 	(op1ins ~= nil and: [ op1ins isConstant]) ifTrue: [ ^ op1ins irRefString ].
