@@ -121,11 +121,11 @@ ConfigurationOfStudio >> baseline01: spec [
 			package: 'Studio-Extension' with: [
 				spec requires: #('Roassal2') ];
 			package: 'Studio-Nix' with: [
-				spec requires: #('Studio-extensions' 'NeoJSON' 'CommandShell') ];
+				spec requires: #('Studio-Extension' 'NeoJSON' 'CommandShell') ];
 			package: 'Studio-DWARF' with: [
-				spec requires: #('Studio-extensions' 'NeoJSON') ];
+				spec requires: #('Studio-Extension' 'NeoJSON') ];
 			package: 'Studio-RaptorJIT' with: [
-				spec requires: #('Studio-extensions' 'Studio-DWARF' 'Roassal2' 'MessagePack') ];
+				spec requires: #('Studio-Extension' 'Studio-DWARF' 'Roassal2' 'MessagePack') ];
 			package: 'Studio-UI' with: [ 
 				spec requires: #('Studio-RaptorJIT') ].
 
