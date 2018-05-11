@@ -113,10 +113,14 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 					title: 'Profiler datasets (VMProfile)';
 					display: #vmprofiles;
 					column: 'Profile' evaluated: #name width: 100;
-					column: 'Samples' evaluated: #total width: 60;
-					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w;
-					column: 'VM' evaluated: (percent value: #vmPercent) width: w;
-					column: 'GC' evaluated: (percent value: #gcPercent) width: w.	].
+					column: 'Samples' evaluated: #total width: 60
+						tags: nil sortedBy: [ :x :y | x total > y total ];
+					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w
+						tags: nil sortedBy: [ :x :y | x mcode > y mcode ];
+					column: 'VM' evaluated: (percent value: #vmPercent) width: w
+						tags: nil sortedBy: [ :x :y | x vm > y vm ];
+					column: 'GC' evaluated: (percent value: #gcPercent) width: w
+						tags: nil sortedBy: [ :x :y | x gc > y gc.	] ].
 			t transmit from: #profiles; to: #locations; andShow: [ :a |
 				a fastTable
 					title: 'Source code locations of root traces that are hot in the selected profile';
