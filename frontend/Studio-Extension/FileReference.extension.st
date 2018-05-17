@@ -1,6 +1,6 @@
 Extension { #name : #FileReference }
 
-{ #category : #'*Studio-Extensions' }
+{ #category : #'*Studio-Extension' }
 FileReference >> gtInspectorStudioProductIn: composite [
 	<gtInspectorPresentationOrder: 0>
 	| productInfo dwarfJson auditLog |

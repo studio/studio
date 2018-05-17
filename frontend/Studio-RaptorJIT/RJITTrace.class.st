@@ -30,19 +30,31 @@ RJITTrace >> allChildren [
 
 ]
 
-{ #category : #'gt-inspector-extension' }
-RJITTrace >> asElement [
-	| box |
-	box := RTBox new size: [ :tr | tr numberOfHeadIrInstructions sqrt * 5 ];
-					borderColor: Color black;
-					color: [ :tr | Color red alpha: ((self totalSamples) / (Float fmin + self process totalSamples)) ].
-	self isRootTrace ifTrue: [ box borderColor: Color black; borderWidth: 2 ].
-	^ box	+ (RTLabel new color: Color black; text: #traceno) elementOn: self.	
+{ #category : #accessing }
+RJITTrace >> ancestorFunctionContour [
+	parent ifNil: [ ^ '' ] ifNotNil: [ 
+		^ parent ancestorFunctionContour ,
+			'Parent trace ', parent traceno asString, String cr, 
+			parent functionContour, String cr. ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> asElement [
+	| base |
+	base := self hasLoop ifTrue: [ RTEllipse new ] ifFalse: [ RTBox new ].
+	base size: [ :tr |
+		| area |
+		area := tr numberOfHeadIrInstructions * 10.
+		self hasLoop ifTrue: [ 2 * (area / Float pi) sqrt ] ifFalse: [ area sqrt ]].
+	base borderColor: Color black;
+			color: [ :tr | Color red alpha: ((self totalSamples) / (Float fmin + self process totalSamples)) ].
+	self isRootTrace ifTrue: [ base borderColor: Color black; borderWidth: 2 ].
+	^ base	+ (RTLabel new color: Color black; text: #traceno) elementOn: self.	
+]
+
+{ #category : #initialization }
 RJITTrace >> bytecodes [
-	self shouldBeImplemented.
+	^ jitState bytecodes
 ]
 
 { #category : #accessing }
@@ -105,11 +117,35 @@ RJITTrace >> from: aGCtrace withExistingTraces: traces [
 
 ]
 
+{ #category : #accessing }
+RJITTrace >> functionContour [
+	| curdepth |
+	^ String streamContents: [ :s |
+		jitState bytecodes select: [ :bc | bc opcode isNotNil ] thenDo: [ :bc |
+			curdepth ~= bc framedepth ifTrue: [
+				curdepth := bc framedepth.
+				s
+					nextPutAll: ('    ' repeat: bc framedepth + 1);
+					nextPutAll: ' ';
+					nextPutAll: bc sourceLine;
+					nextPut: Character cr.
+				 ] ] ].
+]
+
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorBytecodesIn: composite [
 	<gtInspectorPresentationOrder: 2>
 	jitState ifNil: [ ^nil ].
 	jitState gtInspectorBytecodesIn: composite.
+
+]
+
+{ #category : #accessing }
+RJITTrace >> gtInspectorContourIn: composite [
+	<gtInspectorPresentationOrder: 2>
+	composite text
+		title: 'Contour';
+		display: [ self ownFunctionContour ].
 
 ]
 
@@ -141,40 +177,40 @@ RJITTrace >> gtInspectorIRTreeIn: composite [
 
 ]
 
-{ #category : #accessing }
-RJITTrace >> gtInspectorInfoIn: composite [
-	<gtInspectorPresentationOrder: 1>
-	composite tabulator
-		title: 'Info';
-		with: [ :t |
-			t row: #info; row: #profile.
-			t transmit to: #info; andShow: [ :a |
-				a fastTable
-					title: 'Trace Attributes';
-					display: [ self info ];
-					column: 'Name' evaluated: #key width: 100;
-					column: 'Value' evaluated: #value width: 600.
-				].
-			t transmit to: #profile; andShow: [ :a |
-				| tab |
-				tab := a fastTable 
-					title: 'Profiler Samples';
-					display: [ self process vmprofiles collect: [ :p | p trace: self ] ];
-					format: #asString;
-					sorted: [ :x :y | x all > y all ];
-					column: 'Profile' evaluated: [ :pt | pt vmprofile name ].
-				#( interp c igc exit record opt asm head loop ffi jgc ) do: [ :key |
-					tab column: key asString evaluated: key width: 45 ].
-				].
-	].
-]
-
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorJITIn: composite [
 	<gtInspectorPresentationOrder: 5>
 	composite fastList 
 		title: 'JIT';
 		display: [ self jitEvents ].
+
+]
+
+{ #category : #accessing }
+RJITTrace >> gtInspectorProfileIn: composite [
+	<gtInspectorPresentationOrder: 6>
+	| tab |
+	tab := composite fastTable 
+		title: 'Profile';
+		display: [ self process vmprofiles collect: [ :p | p trace: self ] ];
+		format: #asString;
+			sorted: [ :x :y | x all > y all ];
+			column: 'Profile' evaluated: [ :pt | pt vmprofile name ].
+	#( interp c igc exit record opt asm head loop ffi jgc ) do: [ :key |
+		tab column: key asString evaluated: key width: 45 ].
+
+
+]
+
+{ #category : #accessing }
+RJITTrace >> gtInspectorSummaryIn: composite [
+	<gtInspectorPresentationOrder: 1>
+	composite fastTable
+		title: 'Summary';
+		display: [ self info ];
+		selectionTransformation: #value;
+		column: 'Name' evaluated: #key width: 100;
+		column: 'Value' evaluated: #value width: 600.
 
 ]
 
@@ -191,13 +227,14 @@ RJITTrace >> headInstructions [
 { #category : #accessing }
 RJITTrace >> info [
 	^{
-		'Summary' -> self printString.
-		'TraceNo' -> traceno.
-		'Root' -> (root = self ifTrue: [ '(self)' ] ifFalse: [ root ]).
-		'Parent' -> parent.
-		'Link' -> (link ifNil: linktype).
-		'Start Line' -> self startLine.
-		'IR Instructions' -> self numberOfIrInstructions.
+		'Self' -> self.
+		'Parent' -> (parent ifNil: ['-']).
+		'Link' -> (link ifNil: [ self linkname ]).
+		'Root' -> (root = self ifTrue: [ '(self)' ] ifFalse: [ root = parent ifTrue: [ '(parent)' ] ifFalse: [ root ] ]).
+		'---' -> '---'.
+		'Parent Exit' -> (parent ifNil: [ '-' ] ifNotNil: [ exitno ]).
+		'# Bytecode insns' -> self bytecodes size.
+		'# IR insns' -> self numberOfIrInstructions.
 		'Profiler samples' -> ('{1} ({2}%)' format: {
 			self totalSamples.
 			(self totalSamples * 100.0 / (Float fmin + self process totalSamples)) printShowingDecimalPlaces: 1.
@@ -278,7 +315,7 @@ RJITTrace >> irTreeViewOfInstructions: insns [
 		connectFrom: #op2ins.
 	layoutEdges := RTElement edgesForLongTree: all.
 	RTTreeLayout new doNotAttachPoint; userDefinedEdges: layoutEdges; on: head.
-	RTTreeLayout new doNotAttachPoint; on: loop.
+	RTTreeLayout new doNotAttachPoint; "userDefinedEdges: layoutEdges;" on: loop.
 	RTEdgeBuilder new
 		view: view;
 		objects: (self irInstructions);
@@ -353,6 +390,12 @@ RJITTrace >> numberOfIrInstructions [
 ]
 
 { #category : #accessing }
+RJITTrace >> ownFunctionContour [
+	^ 'Trace ', self traceno asString, String cr, self functionContour.
+
+]
+
+{ #category : #accessing }
 RJITTrace >> parent [
 	^parent
 ]
@@ -366,8 +409,16 @@ RJITTrace >> parentname [
 RJITTrace >> printOn: aStream [
 	aStream nextPutAll: 'trace '.
 	aStream nextPutAll: traceno asString.
-	self isSideTrace ifTrue: [ aStream nextPutAll: '/' , self parentname ].
-	aStream nextPutAll: ' from ', self startLine.
+	"self isSideTrace ifTrue: [ aStream nextPutAll: ' (' , self parentname, ')' ]."
+	aStream nextPutAll: (self hasLoop ifTrue: [ ' loop at ' ] ifFalse: [ ' patch from ' ]).
+	aStream nextPutAll: self startLineShort.
+	self hasLoop ifFalse: [ 
+		aStream nextPutAll: ' to '.
+		aStream nextPutAll:
+			(link
+				ifNil: [ self linkname ]
+				ifNotNil: [ link bytecodes first sourceLineShort. ]) ]
+
 ]
 
 { #category : #accessing }
@@ -420,11 +471,13 @@ RJITTrace >> start [
 
 { #category : #accessing }
 RJITTrace >> startLine [
-	| pt line chunk |
-	pt := [ self startPrototype ] on: RJITFlashbackDataMissing do: [ ^ '?' ].
-	chunk := [ pt sourceName ] on: RJITFlashbackDataMissing do: [ ^ '?' ].
-	line := [ pt programCounterLine: self start ] on: RJITFlashbackDataMissing do: [ ^ chunk ].
-	^ chunk , ':' , line asString.
+	^ self startPrototype sourcePC: self start.
+
+]
+
+{ #category : #accessing }
+RJITTrace >> startLineShort [
+	^ self startPrototype sourcePCShort: gctrace startpc.
 
 ]
 

@@ -75,14 +75,9 @@ RJITProcess >> gtInspectorTraceListIn: composite [
 		title: 'Trace List';
 		display: [ self auditLog traces ];
 		column: 'Nr' evaluated: [ :tr | tr traceno asString ] width: 50 tags: nil sortedBy: #traceno descending;
-		column: 'Parent' evaluated: #parentname width: 50 tags: nil sortedBy: [ :a :b |
-			| an bn |
-			an := a parent ifNil: 0 ifNotNil: #traceno.
-			bn := b parent ifNil: 0 ifNotNil: #traceno.
-			an < bn ];
 		column: 'Link' evaluated: #linkname width: 80;
 		column: 'Samples' evaluated: #totalSamples width: 80 tags: nil sortedBy: [ :a :b | (self totalSamplesFor: a) > (self totalSamplesFor: b) ];
-		column: 'Start line' evaluated: #startLine width: 800;
+		column: 'Summary' evaluated: #printString width: 800;
 		installExportToCSV.
 
 ]
@@ -113,10 +108,14 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 					title: 'Profiler datasets (VMProfile)';
 					display: #vmprofiles;
 					column: 'Profile' evaluated: #name width: 100;
-					column: 'Samples' evaluated: #total width: 60;
-					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w;
-					column: 'VM' evaluated: (percent value: #vmPercent) width: w;
-					column: 'GC' evaluated: (percent value: #gcPercent) width: w.	].
+					column: 'Samples' evaluated: #total width: 60
+						tags: nil sortedBy: [ :x :y | x total > y total ];
+					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w
+						tags: nil sortedBy: [ :x :y | x mcode > y mcode ];
+					column: 'VM' evaluated: (percent value: #vmPercent) width: w
+						tags: nil sortedBy: [ :x :y | x vm > y vm ];
+					column: 'GC' evaluated: (percent value: #gcPercent) width: w
+						tags: nil sortedBy: [ :x :y | x gc > y gc.	] ].
 			t transmit from: #profiles; to: #locations; andShow: [ :a |
 				a fastTable
 					title: 'Source code locations of root traces that are hot in the selected profile';
@@ -124,6 +123,9 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 					sorted: [ :x :y | x samples > y samples ];
 					column: 'Location' evaluated: #location width: 240;
 					column: 'Samples' evaluated: #samples width: 60;
+					column: 'Mcode' evaluated: (percent value: #mcodePercent) width: w;
+					column: 'VM' evaluated: (percent value: #vmPercent) width: w;
+					column: 'GC' evaluated: (percent value: #gcPercent) width: w;
 					column: '#Root' evaluated: #numberOfRootTraces width: w;
 					column: '#Side' evaluated: #numberOfSideTraces width: w. ].
 			t transmit from: #locations; to: #traces; andShow: [ :a |
@@ -184,7 +186,7 @@ RJITProcess >> traceMapView [
 		edges := RTEdgeBuilder new
 						view: group;
 						objects: traces;
-						shape: (RTLine new);
+						shape: (RTLine new color: Color black);
 						connectToAll: #children.
 		RTHorizontalTreeLayout on: elements edges: edges.
 		].
