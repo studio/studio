@@ -36,6 +36,7 @@ runstudio() {
   attr="$1"
   cmd="$2"
   export TMPDIR=$(mktemp -d)
+  chmod 755 $TMPDIR
   trap "rm -rf $TMPDIR" EXIT
   nix-shell $nixopts --run "STUDIO_PATH=$studio $cmd" -E - <<EOF
     with import $studio;
@@ -52,11 +53,14 @@ case "$1" in
     x11)
         runstudio studio.studio-x11 studio-x11
         ;;
+    cache)
+        runstudio "studio.studio-x11 studio.studio-vnc" "echo 'Cache retrieved...'"
+        ;;
     test)
         runstudio studio.studio-test studio-test
         ;;
     *)
-        error "Usage: studio <vnc|x11|test>"
+        error "Usage: studio <vnc|x11|cache|test>"
         ;;
 esac
 
