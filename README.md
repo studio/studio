@@ -20,6 +20,15 @@ $ git clone https://github.com/studio/studio # Get Studio
 $ studio/run vnc                             # Start GUI as VNC server
 ```
 
+And in a docker container:
+
+```shell
+$ git clone https://github.com/studio/studio      # Get Studio
+$ docker build -t studio studio                   # Build docker image from local git repo
+$ docker run -d -p 127.0.0.1:5901:5901 studio vnc # Run studio in the background in VNC mode, listening on localhost:5901
+$ vncviewer 127.0.0.1:5901                        # Connect to studio using TigerVNC
+```
+
 Optional extras:
 
 ```shell
