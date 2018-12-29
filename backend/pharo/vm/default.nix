@@ -7,10 +7,10 @@ stdenv.mkDerivation rec {
   name = "pharo";
   version = "git.${revision}";
   src = fetchFromGitHub {
-    owner = "pharo-project";
-    repo = "pharo-vm";
+    owner = "OpenSmalltalk";
+    repo = "opensmalltalk-vm";
     rev = revision;
-    sha256 = "0dkiy5fq1xn2n93cwf767xz24c01ic0wfw94jk9nvn7pmcfj7m62";
+    sha256 = "1mypjp9vddmcni6qz7768gra793jjx7b5k4z80kp51radl9kw075";
   };
   patches = [
     ./0001-sqUnixHeartbeat.c-Remove-warning-about-thread-priori.patch
@@ -21,9 +21,9 @@ stdenv.mkDerivation rec {
   # The build would usually generate this automatically using
   # opensmalltalk-vm/.git_filters/RevDateURL.smudge but that script
   # is too impure to run from nix.
-  revision = "6a63f68a3dd4deb7c17dd2c7ac6e4dd4b0b6d937";
+  revision = "968ed91bdf3ac95a8e624560b30415c070b320e2";
   source-date = "Tue May 30 19:41:27 2017 -0700.1";
-  source-url  = "https://github.com/pharo-project/pharo-vm";
+  source-url  = "https://github.com/OpenSmalltalk/opensmalltalk-vm";
 
   # Shared data (for the sources file)
   pharo-share = import ./share.nix { inherit stdenv fetchurl unzip runCommand; };
@@ -51,7 +51,7 @@ stdenv.mkDerivation rec {
 
   # VM sources require some patching before build.
   prePatch = ''
-    patchShebangs build.linux32x86
+    patchShebangs build.linux64x64
     # Fix hard-coded path to /bin/rm in a script
     sed -i -e 's:/bin/rm:rm:' platforms/unix/config/mkmf
     # Fill in mandatory metadata about the VM source version
