@@ -13,6 +13,7 @@
       vmprofiler = super.callPackage ./backend/vmprofiler {};
       dwarfish = super.callPackage ./backend/dwarfish {};
       disasm = super.callPackage ./backend/disasm {};
+      Moz2D = super.callPackage ./backend/Moz2D {};
     })
 ]
 

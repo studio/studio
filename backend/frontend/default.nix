@@ -29,6 +29,13 @@ let
     sha256 = "08hjh3qldh5h1rgjk9pqx56d2zwn34j79gh44d9vcgw8vxvdkgaz";
   };
 
+  pharo70rc1-image = fetchImageZip rec {
+    name = "pharo70rc1-image";
+    version = "70rc1";
+    url = "http://files.pharo.org/image/70/Pharo7.0.0-rc1.build.1435.sha.4cd23cf.arch.64bit.zip";
+    sha256 = "1qkgycdw2kr63cihghfa7kiabg64j75a4ccdpzvmxnw0amnnxwn3";
+  };
+
   # Script to update and customize the image for Studio.
   loadSmalltalkScript = writeScript "studio-load-smalltalk-script.st" ''
     | repo window |
@@ -63,13 +70,13 @@ let
   studio-image = runCommand "studio-image"
     { nativeBuildInputs = [ pharo ]; }
     ''
-      cp ${base-image}/* .
+      cp ${pharo70rc1-image}/* .
       chmod +w pharo.image
       chmod +w pharo.changes
-      pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript}
+      #pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript}
       mkdir $out
-      cp new.image $out/pharo.image
-      cp new.changes $out/pharo.changes
+      cp pharo.image $out/pharo.image
+      cp pharo.changes $out/pharo.changes
     '';
 
   studio-inspector-screenshot = { name, object, view, width ? 640, height ? 480 }:
