@@ -3,6 +3,7 @@
 with pkgs; with stdenv.lib;
 
 let libs = [
+  Moz2D
   SDL2
   alsaLib
   cairo
@@ -10,8 +11,11 @@ let libs = [
   freetype
   glib
   libGLU_combined
+  libgcc
   libgit2
   libssh2
+  libstdcxx5
+  openssl
   libuuid
   openssl
   pango
@@ -115,9 +119,11 @@ stdenv.mkDerivation rec {
     cat > "$out/bin/pharo" <<EOF
     #!/bin/sh
     set -f
-    LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$libs" exec $out/pharo "\$@"
+    export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$libs"
+    exec $out/pharo "\$@"
     EOF
-    chmod +x "$out/bin/pharo"
+    sed -e 's;exec ;${gdb}/bin/gdb ;' < $out/bin/pharo > $out/bin/pharo.gdb
+    chmod +x $out/bin/pharo*
     ln -s ${libgit2}/lib/libgit2.so* "$out/"
   '';
 
@@ -130,5 +136,5 @@ stdenv.mkDerivation rec {
   # http://forum.world.st/OSProcess-fork-issue-with-Debian-built-VM-td4947326.html
   #
   # (stack protection is disabled above for gcc 4.8 compatibility.)
-  nativeBuildInputs = [ bash unzip glibc openssl gcc48 ] ++ libs;
+  nativeBuildInputs = [ bash unzip glibc openssl gcc5 ] ++ libs;
 }

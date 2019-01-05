@@ -1,4 +1,4 @@
-# 
+# Moz2D package for the Firefox graphics routines needed for Pharo.
 { pkgs ? import ../../nix/pkgs.nix {} }:
 
 with pkgs; with stdenv;
@@ -12,7 +12,7 @@ let
 in
 
 mkDerivation {
-  name = "libmoz2d-dev";
+  name = "Moz2D";
   src = fetchFromGitHub {
     owner = "syrel";
     repo = "Moz2D";
@@ -28,18 +28,24 @@ mkDerivation {
     # cmake available during build (but not used for this derivation)
     PATH=$PATH:${cmake}/bin
     sh ./build.sh --arch x86_64
+    mkdir -p $out/lib
+    # Prevent runtime error due to depending on both gtk2 and gtk3
+    patchelf --debug --remove-needed libgtk-3.so.0 build/libMoz2D.so
+    cp build/libMoz2D.so $out/lib/
   '';
-  buildInputs = [
+  nativeBuildInputs = [
     atk
     autoconf213
     cairo
     fontconfig
     freetype
+    gcc5
     gdk_pixbuf
     glib
     gnome2.GConf
-    gtk2
     gtk3
+    gtk3-x11
+    gtk2
     libGL
     libpulseaudio
     nodejs
