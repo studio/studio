@@ -73,7 +73,6 @@ RJITTrace >> decodeIrMcodeMapping [
 	index := 2.
 	self irInstructions do: [ :ins |
 		nbytes := (flashback decodeTypeNamed: #uint16_t at: szirmcode + index) value.
-		Transcript show: 'nbytes: ', nbytes asString; cr.
 		ins mcode: (flashback bytesAt: mcodeAddr + mcodeOffset size: nbytes).
 		ins szmcode: nbytes.
 		ins mcodeAddress: mcodeAddr + mcodeOffset.
@@ -250,6 +249,12 @@ RJITTrace >> irConstants [
 	^ irConstants
 ]
 
+{ #category : #'text dump' }
+RJITTrace >> irDump [
+	^ 'Trace ' , traceno asString, ' IR', String cr, self irListing.
+
+]
+
 { #category : #initializing }
 RJITTrace >> irInstructions [
 	irInstructions isBlock ifTrue: [ 
@@ -379,6 +384,45 @@ RJITTrace >> loopInstructions [
 	^ self irInstructions copyAfter: self loop.
 ]
 
+{ #category : #'text dump' }
+RJITTrace >> mcodeDump [
+	^ 'Trace ' , traceno asString, ' mcode', String cr, self mcodeListing.
+
+]
+
+{ #category : #'as yet unclassified' }
+RJITTrace >> mcodeListing [
+	| disasm batches processes |
+	"Disassemble each IR instruction with a separate subprocess (objdump).
+	Do this in parallel to mask the latency of spawning subprocesses.
+	Work in fixed-size batches to avoid spawning too many subprocesses at once."
+	disasm := Dictionary new.
+	batches := self irInstructionsNoNop groupedBy: [ :i | i index // 100 ].
+	batches do: [ :batch |
+		processes := batch collect: [ :i |
+			[ disasm at: i put: i disassemble ] fork ].
+		[ processes allSatisfy: #isTerminated ] whileFalse: [ 
+			(Delay forMilliseconds: 10) wait ]
+	].
+	^ String streamContents: [ :s |
+		self irInstructionsNoNop do: [ :i |
+			| mcode firstmcode |
+			mcode := (disasm at: i) lines.
+			firstmcode := mcode ifEmpty: [ '' ] ifNotEmpty: [ mcode first ].
+			s
+				nextPutAll: (firstmcode padRightTo: 54);
+				nextPutAll: ' | ';
+				nextPutAll: i irString;
+				cr.
+			mcode allButFirstDo: [ :nextmcode |
+				s
+					nextPutAll: (nextmcode padRightTo: 54);
+					nextPutAll: ' |';
+					cr. ]
+			]
+		].
+]
+
 { #category : #initializing }
 RJITTrace >> numberOfHeadIrInstructions [
 	^ self headInstructions size.
@@ -485,6 +529,20 @@ RJITTrace >> startLineShort [
 RJITTrace >> startPrototype [
 	^ gctrace flashback decodeGCprotoAt: gctrace startpt.
 
+]
+
+{ #category : #'text dump' }
+RJITTrace >> textDumpInDirectory: dir [ 
+	dir ensureCreateDirectory.
+	dir dumpStudioFile: 'name.txt' with: [ :s |
+		s text. s nextPutAll: self asString withUnixLineEndings ].
+	dir dumpStudioFile: 'ir.txt' with: [ :s | 
+		s text. s nextPutAll: self irDump withUnixLineEndings ].
+	dir dumpStudioFile: 'mcode.txt' with: [ :s | 
+		s text. s nextPutAll: self mcodeDump withUnixLineEndings ].
+	dir dumpStudioFile: 'contour.txt' with: [ :s | 
+		s text. s nextPutAll: self ownFunctionContour withUnixLineEndings ]
+	
 ]
 
 { #category : #accessing }

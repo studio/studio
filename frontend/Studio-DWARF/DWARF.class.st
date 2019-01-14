@@ -53,6 +53,7 @@ DWARF >> loadFromByteArray: array [
 	tmp := tmpdir / ('dwarf-',hash,'.dwo').
 	tmp writeStream binary nextPutAll: array; close.
 	self loadFromBinaryFileNamed: tmp pathString.
+
 ]
 
 { #category : #initialization }

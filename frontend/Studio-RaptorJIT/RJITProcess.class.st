@@ -33,11 +33,11 @@ RJITProcess >> dwarf: aDWARF [
 { #category : #'instance creation' }
 RJITProcess >> fromPath: aPath [
 	| dwarfPath auditPath |
-	path := aPath.
+	path := aPath asFileReference.
 	dwarfPath := path / 'raptorjit-dwarf.json'.
 	auditPath := path / 'audit.log'.
 	[ auditPath isFile ] assertWithDescription:
-		'JIT audit log not found'.
+		'JIT audit log not found in ', path asString.
 	auditLog := RJITAuditLog new loadFromFileNamed: auditPath pathString.
 	auditLog process: self.
 	"Load VMProfile data with progress monitoring."
@@ -145,6 +145,15 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 					allExpanded. ].
 			t transmit toOutsidePort: #selection; from: #traces port: #selection transformed: #trace.
 			].
+
+]
+
+{ #category : #'text dump' }
+RJITProcess >> textDumpInDirectory: aFileReferenceOrPath [
+	| dir |
+	dir := aFileReferenceOrPath asFileReference.
+	dir ensureDeleteAll; ensureCreateDirectory.
+	self traces do: [ :trace | trace textDumpInDirectory: dir / trace traceno asString ].
 
 ]
 
