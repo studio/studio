@@ -153,7 +153,11 @@ RJITProcess >> textDumpInDirectory: aFileReferenceOrPath [
 	| dir |
 	dir := aFileReferenceOrPath asFileReference.
 	dir ensureDeleteAll; ensureCreateDirectory.
-	self traces do: [ :trace | trace textDumpInDirectory: dir / trace traceno asString ].
+	Transcript show: 'Dumping traces: '.
+	self traces do: [ :trace |
+		Transcript show: trace traceno asString, ' '; flush.
+		trace textDumpInDirectory: dir / trace traceno asString ].
+	Transcript cr.
 
 ]
 

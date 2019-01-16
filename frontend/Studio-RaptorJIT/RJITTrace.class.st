@@ -14,7 +14,10 @@ Class {
 		'linktype',
 		'start',
 		'jitState',
-		'nins'
+		'nins',
+		'mcode',
+		'mcodeAddress',
+		'mcodeInstructions'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -64,10 +67,12 @@ RJITTrace >> children [
 
 { #category : #'instance creation' }
 RJITTrace >> decodeIrMcodeMapping [
-	| szirmcode mcodeAddr mcodeOffset flashback nbytes index |
+	| szirmcode mcodeAddr mcodeOffset flashback nbytes index szmcode |
 	flashback := gctrace flashback.
 	szirmcode := gctrace szirmcode asInteger.
+	szmcode := gctrace szmcode asInteger.
 	mcodeAddr := gctrace mcode asInteger.
+	self mcode: (flashback bytesAt: mcodeAddr size: szmcode) address: mcodeAddr.
 	"First value is size of trace head (before first instruction)"
 	mcodeOffset := (flashback decodeTypeNamed: #uint16_t at: szirmcode) value.
 	index := 2.
@@ -79,6 +84,15 @@ RJITTrace >> decodeIrMcodeMapping [
 		index := index + 2. "next uint16_t"
 		mcodeOffset := mcodeOffset + nbytes.
 	].
+
+]
+
+{ #category : #disassemble }
+RJITTrace >> disassembleFrom: startAddr to: endAddr [ 
+	| lines |
+	lines := self mcodeInstructions select: [ :i | i key >= startAddr and: i key < endAddr ]
+										thenCollect: #value.
+	^ String cr join: lines.
 
 ]
 
@@ -251,7 +265,7 @@ RJITTrace >> irConstants [
 
 { #category : #'text dump' }
 RJITTrace >> irDump [
-	^ 'Trace ' , traceno asString, ' IR', String cr, self irListing.
+	^ self printString, String cr, self irListing.
 
 ]
 
@@ -384,30 +398,40 @@ RJITTrace >> loopInstructions [
 	^ self irInstructions copyAfter: self loop.
 ]
 
+{ #category : #'instance creation' }
+RJITTrace >> mcode: anArray address: anAddress [
+	mcode := anArray.
+	mcodeAddress := anAddress.
+
+]
+
 { #category : #'text dump' }
 RJITTrace >> mcodeDump [
-	^ 'Trace ' , traceno asString, ' mcode', String cr, self mcodeListing.
+	^ self printString, String cr, self mcodeListing.
+
+]
+
+{ #category : #'instance creation' }
+RJITTrace >> mcodeInstructions [
+	"Answer an ordered collection of address->disasssembly associations.
+	The result has one entry per machine instruction, with the address giving the
+	address of the instruction and the disassembly being a line of text from
+	the disassembler."
+	mcodeInstructions ifNil: [
+		| disasm |
+		disasm := RJITDisassembler disassemble: mcode address: mcodeAddress.
+		mcodeInstructions := disasm lines collect: [ :line |
+			(Integer readFrom: line base: 16) -> line. ] ].
+	^ mcodeInstructions
 
 ]
 
 { #category : #'as yet unclassified' }
 RJITTrace >> mcodeListing [
-	| disasm batches processes |
-	"Disassemble each IR instruction with a separate subprocess (objdump).
-	Do this in parallel to mask the latency of spawning subprocesses.
-	Work in fixed-size batches to avoid spawning too many subprocesses at once."
-	disasm := Dictionary new.
-	batches := self irInstructionsNoNop groupedBy: [ :i | i index // 100 ].
-	batches do: [ :batch |
-		processes := batch collect: [ :i |
-			[ disasm at: i put: i disassemble ] fork ].
-		[ processes allSatisfy: #isTerminated ] whileFalse: [ 
-			(Delay forMilliseconds: 10) wait ]
-	].
 	^ String streamContents: [ :s |
 		self irInstructionsNoNop do: [ :i |
 			| mcode firstmcode |
-			mcode := (disasm at: i) lines.
+			mcode := i disassemble lines.
 			firstmcode := mcode ifEmpty: [ '' ] ifNotEmpty: [ mcode first ].
 			s
 				nextPutAll: (firstmcode padRightTo: 54);
@@ -435,7 +459,7 @@ RJITTrace >> numberOfIrInstructions [
 
 { #category : #accessing }
 RJITTrace >> ownFunctionContour [
-	^ 'Trace ', self traceno asString, String cr, self functionContour.
+	^ self printString, String cr, self functionContour.
 
 ]
 
