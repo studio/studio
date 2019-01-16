@@ -156,8 +156,17 @@ RJITProcess >> textDumpInDirectory: aFileReferenceOrPath [
 	Transcript show: 'Dumping traces: '.
 	self traces do: [ :trace |
 		Transcript show: trace traceno asString, ' '; flush.
-		trace textDumpInDirectory: dir / trace traceno asString ].
+		trace textDumpInDirectory: dir / 'trace' / trace traceno asString ].
 	Transcript cr.
+	self vmprofiles
+		ifEmpty: [ 
+			Transcript show: '(No vmprofile data found)'; cr. ]
+		ifNotEmpty: [
+			Transcript show: 'Dumping vmprofiles: '.
+			self vmprofiles do: [ :prof |
+				Transcript show: prof name, ' '; flush.
+				prof textDumpInDirectory: dir / 'vmprofile'. ].
+			Transcript cr. ].
 
 ]
 

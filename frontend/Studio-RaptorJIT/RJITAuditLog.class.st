@@ -127,7 +127,7 @@ RJITAuditLog >> loadFromFileNamed: fileName [
 			self addRecord: mp next.
 			count := count + 1.
 			job progress: stream position / log size.
-			(stream position * 100.0 / log size) floor > percent ifTrue: [ 
+			((stream position * 100.0 / log size) floor / 5) floor > (percent / 5) floor ifTrue: [ 
 				percent := (stream position * 100.0 / log size) floor.
 				Transcript show: ('Reading audit.log progress: {1}% ({2} events)'
 										format: { percent. count. }); cr. ]
