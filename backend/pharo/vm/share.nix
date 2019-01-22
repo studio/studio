@@ -12,4 +12,6 @@ runCommand "pharo-share-1.0"
   ''
     mkdir -p $out/lib
     unzip $sources60Zip -d $out/lib/
+    cp ${../../frontend/Pharo7.0-32bit-14a515b.sources} $out/lib/
+    cp ${../../frontend/Pharo7.0-32bit-362a6cd.sources} $out/lib/
   ''

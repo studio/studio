@@ -36,9 +36,14 @@ let
     sha256 = "1qkgycdw2kr63cihghfa7kiabg64j75a4ccdpzvmxnw0amnnxwn3";
   };
 
+  handmade-gt-image = ./Studio-base.zip;
+
   # Script to update and customize the image for Studio.
   loadSmalltalkScript = writeScript "studio-load-smalltalk-script.st" ''
     | repo window |
+
+    "Disable cache to prevent access to path that is not available."
+    MCCacheRepository uniqueInstance disable.
 
     "Force reload of all Studio packages from local sources."
     repo := '${../../frontend}' asFileReference.
@@ -68,21 +73,23 @@ let
   # Studio image that includes the exact code in this source tree.
   # Built by refreshing the base image.
   studio-image = runCommand "studio-image"
-    { nativeBuildInputs = [ pharo ]; }
+    { nativeBuildInputs = [ pharo unzip xvfb_run ]; }
     ''
-      cp ${pharo70rc1-image}/* .
+      unzip ${handmade-gt-image}
+      cp Studio.image pharo.image
+      cp Studio.changes pharo.changes
       chmod +w pharo.image
       chmod +w pharo.changes
-      #pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript}
+      xvfb-run pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript}
       mkdir $out
-      cp pharo.image $out/pharo.image
-      cp pharo.changes $out/pharo.changes
+      cp new.image $out/pharo.image
+      cp new.changes $out/pharo.changes
     '';
 
   studio-inspector-screenshot = { name, object, view, width ? 640, height ? 480 }:
     runCommand "studio-screenshot-${name}.png"
       {
-        nativeBuildInputs = [ pharo ];
+        nativeBuildInputs = [ pharo xvfb_run ];
         smalltalkScript = writeScript "studio-screenshot.st"
           ''
             | __window __object __morph __presentations |
@@ -112,7 +119,7 @@ let
       ''
         cp ${studio-image}/* .
         chmod +w pharo.image pharo.changes
-        pharo --nodisplay pharo.image st --quit $smalltalkScript
+        xvfb-run pharo --nodisplay pharo.image st --quit $smalltalkScript
         mkdir $out
         cp screenshot.png $out/${name}.png
       '';
@@ -129,6 +136,7 @@ let
       cp ${studio-image}/pharo.changes pharo-$version.changes
       chmod +w pharo-$version.image
       chmod +w pharo-$version.changes
+      cp ${pharo.pharo-share}/lib/*.sources .
       echo pharo-$version.image
     '';
   };
@@ -198,7 +206,7 @@ let
       text = ''
         #!${stdenv.shell}
         image=$(${studio-get-image}/bin/studio-get-image)
-        timeout 600 \
+        timeout 600 ${xvfb_run}/bin/xvfb-run \
           ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-test-script}
       '';
   };

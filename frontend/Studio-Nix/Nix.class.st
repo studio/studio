@@ -24,7 +24,7 @@ Nix class >> command: commandLine [
 	| process stdout stderr out err |
 	stdout := WriteStream on: String new.
 	stderr := WriteStream on: String new.
-	process := PipeableOSProcess command: 'NIX_PATH=studio=', self studioNixPath, ' ', commandLine.
+	process := PipeableOSProcess command: 'LD_LIBRARY_PATH= NIX_PATH=studio=', self studioNixPath, ' ', commandLine.
 	process close.
 	[  process isComplete ] whileFalse: [ 
 		process updateErrorPipelineStream.

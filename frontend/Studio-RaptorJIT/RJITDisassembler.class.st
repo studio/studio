@@ -13,7 +13,7 @@ RJITDisassembler class >> disassemble: byteArray [
 RJITDisassembler class >> disassemble: byteArray address: address [
 	| tmp proc |
 	tmp := FileReference newTempFilePrefix: 'mcode' suffix: '.bin'.
-	tmp writeStream binary nextPutAll: byteArray asByteArray; close.
+	tmp binaryWriteStream nextPutAll: byteArray asByteArray; close.
 	proc := PipeableOSProcess command: 'disasm ', tmp fullName, ' 0x', (address radix: 16).
 	^ proc output.
 

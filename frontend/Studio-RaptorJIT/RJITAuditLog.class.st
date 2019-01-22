@@ -117,7 +117,7 @@ RJITAuditLog >> loadFromFileNamed: fileName [
 		job title: 'Reading audit.log into memory'.
 		events := OrderedCollection new.
 		"Read into memory."
-		log := fileName asFileReference binaryReadStream contentsOfEntireFile.
+		log := fileName asFileReference binaryReadStream contents.
 		stream := ReadStream on: log.
 		mp := MpDecoder on: stream.
 		count := 1.
@@ -126,7 +126,7 @@ RJITAuditLog >> loadFromFileNamed: fileName [
 			self addRecord: mp next.
 			count := count + 1.
 			job progress: stream position / log size. ]
-		] on: Error do: [ :e | UIManager default inform: 'Finishing at msgpack error: ', e asString ].
+		] value. "on: Error do: [ :e | UIManager default inform: 'Finishing at msgpack error: ', e asString ]."
 	] asJob run.
 	UIManager default inform: 'Loaded ', events size asString, ' RaptorJIT events (auditlog)'.
 ]

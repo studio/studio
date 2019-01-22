@@ -119,8 +119,7 @@ stdenv.mkDerivation rec {
     cat > "$out/bin/pharo" <<EOF
     #!/bin/sh
     set -f
-    export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$libs"
-    exec $out/pharo "\$@"
+    LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$libs" exec $out/pharo "\$@"
     EOF
     sed -e 's;exec ;${gdb}/bin/gdb ;' < $out/bin/pharo > $out/bin/pharo.gdb
     chmod +x $out/bin/pharo*

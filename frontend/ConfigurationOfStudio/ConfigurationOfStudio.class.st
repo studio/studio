@@ -117,6 +117,7 @@ ConfigurationOfStudio >> baseline01: spec [
 			blessing: #baseline;
 			repository: 'github://studio/studio:master/frontend'.
 		
+"
 		spec
 			package: 'Studio-extensions' with: [
 				spec requires: #('Roassal2') ];
@@ -126,6 +127,7 @@ ConfigurationOfStudio >> baseline01: spec [
 				spec requires: #('Studio-extensions' 'NeoJSON') ];
 			package: 'Studio-RaptorJIT' with: [
 				spec requires: #('Studio-extensions' 'Studio-DWARF' 'Roassal2' 'MessagePack') ].
+"
 
 		spec project: 'NeoJSON' with: [
 			spec
@@ -150,10 +152,10 @@ ConfigurationOfStudio >> baseline01: spec [
 				versionString: #'stable';
 				className: #ConfigurationOfMessagePack;
 				repository: 'http://smalltalkhub.com/mc/MasashiUmezawa/MessagePack/main'. ].
-
+"
 		spec baseline: 'Tonel' with:
 			[ spec repository: 'github://pharo-vcs/tonel' ].
-
+"
 		spec baseline: 'PetitParser2' with:
 			[ spec repository: 'github://kursjan/petitparser2' ].
 
