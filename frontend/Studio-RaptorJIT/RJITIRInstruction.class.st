@@ -160,7 +160,8 @@ RJITIRInstruction >> constantValue [
 
 { #category : #initialization }
 RJITIRInstruction >> disassemble [
-	^ RJITDisassembler disassemble: mcode address: mcodeAddress.
+	^ trace disassembleFrom: mcodeAddress to: mcodeAddress + mcode size.
+
 ]
 
 { #category : #initialization }

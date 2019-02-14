@@ -113,6 +113,27 @@ RJITVMProfile >> process: aRaptorJITProcess [
 	process := aRaptorJITProcess.
 ]
 
+{ #category : #'text dump' }
+RJITVMProfile >> textDumpInDirectory: dir [
+	| tracelist sep |
+	sep := ' | '.
+	tracelist := self traces select: [ :tr | tr all > 0 ].
+	tracelist sort: [ :a :b | a all > b all ].
+	dir asFileReference dumpStudioFile: (self name, '.txt') with: [ :s |
+		#(Samples MCode VM GC) do: [ :col |
+			s nextPutAll: (col padRightTo: 8), sep. ].
+		s nextPutAll: 'Trace'.
+		s lf.
+		tracelist do: [ :tr |
+			s nextPutAll: (tr all asString padLeftTo: 8), sep.
+			{  tr mcodePercent. tr vmPercent. tr gcPercent } do: [ :pct |
+				s nextPutAll: ((pct printShowingDecimalPlaces: 1), '%' padLeftTo: 6), '  ', sep ].
+			s nextPutAll: (process traces detect: [ :trace | trace traceno = tr id ]) printString.
+			s lf.
+		 ]
+	].
+]
+
 { #category : #'accessing-data' }
 RJITVMProfile >> total [
 	^ (traces collect: #all) sum.
@@ -122,6 +143,11 @@ RJITVMProfile >> total [
 { #category : #'accessing-data' }
 RJITVMProfile >> trace: tr [
 	^ traces detect: [ :profile | profile id = tr traceno ].
+]
+
+{ #category : #'accessing-data' }
+RJITVMProfile >> traces [
+	^ traces
 ]
 
 { #category : #'accessing-data' }

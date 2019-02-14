@@ -43,7 +43,11 @@ Nix class >> command: commandLine [
 	stderr nextPutAll: err.
 	self showProgress: out.
 	self showProgress: err.
-	process succeeded ifFalse: [ NixError new messageText: stderr contents asByteArray utf8Decoded; signal ].
+	process succeeded ifFalse: [ 
+		| reason |
+		reason := stderr contents asByteArray utf8Decoded.
+		Transcript show: 'Nix error:'; cr; show: reason.
+		NixError new messageText: reason; signal ].
 	^ stdout contents.
 
 ]
