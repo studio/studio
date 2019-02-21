@@ -1,3 +1,8 @@
+"
+I represent the cold state of a RaptorJIT process that finished executing.
+
+I provide access to logs and diagnostic data.
+"
 Class {
 	#name : #RJITProcess,
 	#superclass : #Object,
@@ -47,6 +52,15 @@ RJITProcess >> fromPath: aPath [
 			vmprofiles add: (RJITVMProfile loadFromFileNamed: vmprofile pathString name: vmprofile basenameWithoutExtension process: self) ]
 		displayingProgress: [ :x | 'Loading VMProfile: ', x base ].
 	UIManager default inform: 'Loaded ', vmprofiles size asString, ' RaptorJIT profiles'.
+]
+
+{ #category : #'instance creation' }
+RJITProcess >> gtHotTracesFor: aView [
+	<gtView>
+	| profiles |
+	profiles := self traceProfiles sort: [ :a :b | a all > b all ].
+	^ (profiles subjectViewTitled: 'Hot traces' translated subjectName: 'Trace' translated onView: aView) priority: 15.
+
 ]
 
 { #category : #accessing }
@@ -148,6 +162,24 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 
 ]
 
+{ #category : #'instance creation' }
+RJITProcess >> gtProfileFor: aView [
+	<gtView>
+	^ self profile gtProfileFor: aView
+
+]
+
+{ #category : #printing }
+RJITProcess >> printOn: aStream [
+	aStream nextPutAll: 'a RaptorJIT process'.
+
+]
+
+{ #category : #accessing }
+RJITProcess >> profile [
+	^ RJITProfile of: self aggregating: (self vmprofiles collect: #profile)
+]
+
 { #category : #accessing }
 RJITProcess >> totalSamples [
 	vmprofiles isEmpty ifTrue: [ ^0 ].
@@ -201,6 +233,15 @@ RJITProcess >> traceMapView [
 ]
 
 { #category : #accessing }
+RJITProcess >> traceProfiles [
+	| traceVMProfiles |
+	traceVMProfiles := self vmprofiles collect: #traceProfiles.
+	^RJITProfileList withAll: (self traces collect: [ :trace |
+		RJITProfile of: trace aggregating: (traceVMProfiles collect: [ :ps | ps at: trace traceno + 1 ]) ]).
+
+]
+
+{ #category : #accessing }
 RJITProcess >> traces [
 	^ auditLog traces
 ]
@@ -236,7 +277,7 @@ RJITProcess >> visualizeTraces: traces withProfile: profile [
 
 { #category : #accessing }
 RJITProcess >> vmProfile: aVMProfile named: name [ 
-	vmprofiles ifNil: [ vmprofiles := Dictionary new. ].
+	vmprofiles ifNil: [ vmprofiles := RJITProcessProfile new. ].
 	vmprofiles at: name put: aVMProfile.
 
 ]

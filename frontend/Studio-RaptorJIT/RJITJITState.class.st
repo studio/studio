@@ -42,6 +42,13 @@ RJITJITState >> from: aJitState [
 ]
 
 { #category : #accessing }
+RJITJITState >> gtBytecodesFor: aView [
+	<gtView>
+	^ self bytecodeRecordLog gtBytecodesFor: aView.
+
+]
+
+{ #category : #accessing }
 RJITJITState >> gtInspectorBytecodesIn: composite [
 	<gtInspectorPresentationOrder: 5>
 	self bytecodeRecordLog gtInspectorBytecodesIn: composite.
@@ -50,6 +57,7 @@ RJITJITState >> gtInspectorBytecodesIn: composite [
 
 { #category : #initialization }
 RJITJITState >> isFinal [
+	Transcript show: jitState final printString.
 	^ jitState final ~= 0.
 ]
 

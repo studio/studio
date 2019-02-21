@@ -164,6 +164,13 @@ RJITIRInstruction >> disassemble [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> gtInputsListingIn: aView [
+	<gtView>
+	^ (self transitiveInputs irColumnedListViewIn: aView title: 'Inputs' translated) priority: 11.
+
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
 	<gtInspectorPresentationOrder: 1>
 	composite tabulator
@@ -227,6 +234,20 @@ RJITIRInstruction >> gtInspectorUsesTreeIn: composite [
 	composite roassal2
 		title: 'Uses Tree';
 		initializeView: [ trace irTreeViewOfInstructions: self transitiveUses ].
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtRelatedListingIn: aView [
+	<gtView>
+	^ (self transitiveRelations irColumnedListViewIn: aView title: 'Related' translated) priority: 10.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtUsesListingIn: aView [
+	<gtView>
+	^ (self transitiveUses irColumnedListViewIn: aView title: 'Uses' translated) priority: 12.
 
 ]
 
@@ -682,7 +703,7 @@ RJITIRInstruction >> transitiveInputs [
 
 { #category : #accessing }
 RJITIRInstruction >> transitiveRelations [
-	^ self transitiveInputs union: self transitiveUses
+	^ (self transitiveInputs union: self transitiveUses) sort: [ :a :b | a index < b index ]
 ]
 
 { #category : #querying }

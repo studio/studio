@@ -10,33 +10,25 @@ let
       inherit name version;
       sourceRoot = ".";
       src = fetchurl {
-        inherit url sha256;
+        inherit name url sha256;
       };
       nativeBuildInputs = [ unzip ];
       installPhase = ''
         mkdir $out
         cp *.image $out/pharo.image
         cp *.changes $out/pharo.changes
+        cp *.sources $out/
       '';
     };
 
   # Pharo image that includes all external dependencies.
   # Built on Inria CI (Jenkins) with Metacello to install Studio.
   base-image = fetchImageZip rec {
-    name = "studio-base-image-${version}";
-    version = "32";
-    url = "https://ci.inria.fr/pharo-contribution/job/Studio/default/${version}/artifact/Studio.zip";
-    sha256 = "08hjh3qldh5h1rgjk9pqx56d2zwn34j79gh44d9vcgw8vxvdkgaz";
+    name = "studio-base-image-${version}.zip";
+    version = "0.5.13";
+    url = "https://drive.google.com/uc?export=download&id=1Lb-2soLTZQnt1atdj4y2qCZUHDDLh6QE";
+    sha256 = "0q5ji8ahnprnb9bh6qgkhmllcrsm029w6q1d5lx58ps7k5bqc81f";
   };
-
-  pharo70rc1-image = fetchImageZip rec {
-    name = "pharo70rc1-image";
-    version = "70rc1";
-    url = "http://files.pharo.org/image/70/Pharo7.0.0-rc1.build.1435.sha.4cd23cf.arch.64bit.zip";
-    sha256 = "1qkgycdw2kr63cihghfa7kiabg64j75a4ccdpzvmxnw0amnnxwn3";
-  };
-
-  handmade-gt-image = ./Studio-base.zip;
 
   # Script to update and customize the image for Studio.
   loadSmalltalkScript = writeScript "studio-load-smalltalk-script.st" ''
@@ -64,10 +56,16 @@ let
     "Setup desktop"
     Pharo3Theme beCurrent. "light theme"
     World closeAllWindowsDiscardingChanges.
-    StudioInspector open openFullscreen.
 
     "Save image"
-    Smalltalk saveAs: 'new'.
+    (Smalltalk saveAs: 'new')
+      ifTrue: [
+        "Run in resumed image on startup."
+        GtInspector openOnPlayBook:
+          (Gt2Document forFile: Studio dir / 'doc' / 'Studio.pillar').
+        SystemWindow topWindow openFullscreen.
+      ].
+
   '';
 
   # Studio image that includes the exact code in this source tree.
@@ -75,9 +73,9 @@ let
   studio-image = runCommand "studio-image"
     { nativeBuildInputs = [ pharo unzip xvfb_run ]; }
     ''
-      unzip ${handmade-gt-image}
-      cp Studio.image pharo.image
-      cp Studio.changes pharo.changes
+      cp ${base-image}/*.image pharo.image
+      cp ${base-image}/*.changes pharo.changes
+      cp ${base-image}/*.sources .
       chmod +w pharo.image
       chmod +w pharo.changes
       xvfb-run pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript}

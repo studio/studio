@@ -1,0 +1,37 @@
+! Running RaptorJIT code
+
+Here are some examples of how to run Lua code in the RaptorJIT virtual machine and inspect the resulting logs.
+
+Run a snippet of Lua code:
+
+[[[
+RaptorJIT eval: '
+for i = 1, 1000000000 do
+  x = i
+end
+'
+]]]
+
+Run a Lua source file:
+
+[[[
+RaptorJIT run: '/dir/foo.lua'
+]]]
+
+Run *.lua at the top-level of a directory:
+
+[[[
+RaptorJIT run: '/some/dir'
+]]]
+
+Unpack and run *.lua from a tarball:
+
+[[[
+RaptorJIT run: '/dir/foo.tar.gz'
+]]]
+
+Download, unpack, and run *.lua from a tarball:
+
+[[[
+RaptorJIT run: 'http://example.com/foo.tar.gz'
+]]]

@@ -132,6 +132,23 @@ RJITTrace >> functionContour [
 				 ] ] ].
 ]
 
+{ #category : #accessing }
+RJITTrace >> gtContourFor: aView [
+	<gtView>
+	^aView textEditor
+		title: 'Contour';
+		priority: 5;
+		text: [ (self printString, String cr, self functionContour) asRopedText ].
+
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> gtIRListingFor: aView [
+	<gtView>
+	^ self irInstructionsNoNop irColumnedListViewIn: aView title: 'IR List'.
+
+]
+
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtInspectorBytecodesIn: composite [
 	<gtInspectorPresentationOrder: 2>
@@ -143,9 +160,10 @@ RJITTrace >> gtInspectorBytecodesIn: composite [
 { #category : #accessing }
 RJITTrace >> gtInspectorContourIn: composite [
 	<gtInspectorPresentationOrder: 2>
-	composite text
+	composite textEditor
 		title: 'Contour';
-		display: [ self ownFunctionContour ].
+		display: [
+			self printString asRopedText italic, String cr, self functionContour ].
 
 ]
 
@@ -211,6 +229,23 @@ RJITTrace >> gtInspectorSummaryIn: composite [
 		selectionTransformation: #value;
 		column: 'Name' evaluated: #key width: 100;
 		column: 'Value' evaluated: #value width: 600.
+
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> gtJITFor: aView [
+	<gtView>
+	^aView list
+		title: 'JIT Events';
+		priority: 25;
+		items: [ self jitEvents ].
+
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> gtProfileFor: aView [
+	<gtView>
+	^ self profile gtProfileFor: aView
 
 ]
 
@@ -391,7 +426,7 @@ RJITTrace >> numberOfIrInstructions [
 
 { #category : #accessing }
 RJITTrace >> ownFunctionContour [
-	^ 'Trace ', self traceno asString, String cr, self functionContour.
+	^ self printString, String cr, self functionContour.
 
 ]
 
@@ -424,6 +459,11 @@ RJITTrace >> printOn: aStream [
 { #category : #accessing }
 RJITTrace >> process [
 	^ gctrace flashback auditLog process
+]
+
+{ #category : #accessing }
+RJITTrace >> profile [
+	^ self process traceProfiles detect: [ :profile | profile subject = self ]
 ]
 
 { #category : #initializing }

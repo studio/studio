@@ -128,19 +128,20 @@ ConfigurationOfStudio >> baseline01: spec [
 			package: 'Studio-RaptorJIT' with: [
 				spec requires: #('Studio-extensions' 'Studio-DWARF' 'Roassal2' 'MessagePack') ].
 "
-
+"
 		spec project: 'NeoJSON' with: [
 			spec
 				className: #ConfigurationOfNeoJSON;
 				versionString: #'stable';
 				repository: 'http://smalltalkhub.com/mc/Pharo/MetaRepoForPharo40/main/' ].
-			
+"
+"
 		spec project: 'Roassal2' with: [
 			spec
 				versionString: #'stable';
 				className: #ConfigurationOfRoassal2;
 				repository: 'http://www.smalltalkhub.com/mc/ObjectProfile/Roassal2/main' ].
-
+"
 		spec project: 'CommandShell' with: [ 
 			spec
 				versionString: #'stable';
@@ -156,9 +157,10 @@ ConfigurationOfStudio >> baseline01: spec [
 		spec baseline: 'Tonel' with:
 			[ spec repository: 'github://pharo-vcs/tonel' ].
 "
+"
 		spec baseline: 'PetitParser2' with:
 			[ spec repository: 'github://kursjan/petitparser2' ].
-
+"
 		].
 ]
 

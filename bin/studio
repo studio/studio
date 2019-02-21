@@ -30,7 +30,7 @@ fi
 # Run studio
 #
 
-nixopts="--pure -j 10"
+nixopts="--pure -j 10 --show-trace"
 
 runstudio() {
   attr="$1"
