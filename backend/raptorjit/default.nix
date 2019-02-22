@@ -83,4 +83,5 @@ rec {
   runTarball = url: runCode (fetchTarball url);
   runFile = runCode;
   runDirectory = runCode;
+  inspectUrl = url: inspect (fetchTarball url);
 }

@@ -16,3 +16,34 @@ RaptorJIT class >> eval: luaSource [
 		RJITProcess new fromPath: build firstOutput
 	] ensure: [ tmpdir ensureDeleteAll ].
 ]
+
+{ #category : #running }
+RaptorJIT class >> inspectBuild: build [
+	^ RJITProcess new fromPath: build firstOutput
+]
+
+{ #category : #running }
+RaptorJIT class >> load: aPath [
+	| ref expr |
+	ref := aPath asFileReference.
+	expr := 'with import <studio>; raptorjit.inspect ', ref pathString.
+	^ self inspectBuild: (NixBuild onCode: expr).
+
+]
+
+{ #category : #running }
+RaptorJIT class >> runPath: aPath [
+	| ref expr |
+	ref := aPath asFileReference.
+	expr := 'with import <studio>; raptorjit.runCode ', ref pathString.
+	^ self inspectBuild: (NixBuild onCode: expr).
+
+]
+
+{ #category : #running }
+RaptorJIT class >> runUrl: aURL [
+	| expr |
+	expr := 'with import <studio>; raptorjit.runURL "', aURL, '"'.
+	^ self inspectBuild: (NixBuild onCode: expr).
+
+]

@@ -15,23 +15,17 @@ end
 Run a Lua source file:
 
 [[[
-RaptorJIT run: '/dir/foo.lua'
+RaptorJIT runPath: '/dir/foo.lua'
 ]]]
 
 Run *.lua at the top-level of a directory:
 
 [[[
-RaptorJIT run: '/some/dir'
-]]]
-
-Unpack and run *.lua from a tarball:
-
-[[[
-RaptorJIT run: '/dir/foo.tar.gz'
+RaptorJIT runPath: '/some/dir'
 ]]]
 
 Download, unpack, and run *.lua from a tarball:
 
 [[[
-RaptorJIT run: 'http://example.com/foo.tar.gz'
+RaptorJIT runURL: 'http://example.com/foo.tar.gz'
 ]]]
