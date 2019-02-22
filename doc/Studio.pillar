@@ -1,0 +1,16 @@
+! Welcome to Studio!
+
+This is an interactive "playbook" that will show you how to interactively inspect your diagnostic data. The text includes "live" elements such as code snippets to edit and run, buttons to press, and visual objects to manpulate. The text also includes hyperlinks to related playbooks: clicking on these will inspect them in a new pane on the right-hand-side of this one.
+
+(These playbooks contain snippets of Smalltalk code that you need to edit and run. Sorry about that. In the future these will be replaced by custom widgets for entering code, filenames, URLs, etc. You can read more about all of this in ${inputFile:path=Evolution-of-Studio.pillar}$.)
+
+!!! RaptorJIT
+
+Studio loads and analyzes diagnostic data from the RaptorJIT Lua virtual machine.
+
+Run Lua code and inspect its execution with ${inputFile:path=Running-RaptorJIT.pillar}$.
+
+Inspect diagnostic data that was produced separately with ${inputFile:path=Inspecting-RaptorJIT.pillar}$.
+
+Learn about the RaptorJIT diagnostic data formats and how Studio uses them at ${inputFile:path=About-RaptorJIT-Support.pillar}$.
+
