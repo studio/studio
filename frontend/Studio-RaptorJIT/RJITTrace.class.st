@@ -445,7 +445,7 @@ RJITTrace >> printOn: aStream [
 	aStream nextPutAll: 'trace '.
 	aStream nextPutAll: traceno asString.
 	"self isSideTrace ifTrue: [ aStream nextPutAll: ' (' , self parentname, ')' ]."
-	aStream nextPutAll: (self hasLoop ifTrue: [ ' loop at ' ] ifFalse: [ ' patch from ' ]).
+	aStream nextPutAll: (self hasLoop ifTrue: [ ' loop at ' ] ifFalse: [ ' line from ' ]).
 	aStream nextPutAll: self startLineShort.
 	self hasLoop ifFalse: [ 
 		aStream nextPutAll: ' to '.
