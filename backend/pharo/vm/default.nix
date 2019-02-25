@@ -31,13 +31,12 @@ let libs = [
 stdenv.mkDerivation rec {
   name = "pharo";
   version = "git.${revision}";
-  src = cleanSource /home/luke/git/opensmalltalk-vm;
-#  src = fetchFromGitHub {
-#    owner = "lukego";
-#    repo = "opensmalltalk-vm";
-#    rev = revision;
-#    sha256 = "0v97qmwvr6k5iqx2yax4i5f7g2z9q6b3f2ym483pykhc167969cl";
-#  };
+  src = fetchFromGitHub {
+    owner = "studio";
+    repo = "opensmalltalk-vm";
+    rev = revision;
+    sha256 = "0v97qmwvr6k5iqx2yax4i5f7g2z9q6b3f2ym483pykhc167969cl";
+  };
   patches = [
     ./0001-sqUnixHeartbeat.c-Remove-warning-about-thread-priori.patch
   ];
