@@ -32,6 +32,14 @@ RaptorJIT class >> load: aPath [
 ]
 
 { #category : #running }
+RaptorJIT class >> loadUrl: aUrl [
+	| expr |
+	expr := 'with import <studio>; raptorjit.inspect (fetchTarball "', aUrl, '")'.
+	^ self inspectBuild: (NixBuild onCode: expr).
+
+]
+
+{ #category : #running }
 RaptorJIT class >> runPath: aPath [
 	| ref expr |
 	ref := aPath asFileReference.
@@ -46,4 +54,9 @@ RaptorJIT class >> runUrl: aURL [
 	expr := 'with import <studio>; raptorjit.runURL "', aURL, '"'.
 	^ self inspectBuild: (NixBuild onCode: expr).
 
+]
+
+{ #category : #testing }
+RaptorJIT class >> test [
+	^ RJITExamples all collect: #test.
 ]

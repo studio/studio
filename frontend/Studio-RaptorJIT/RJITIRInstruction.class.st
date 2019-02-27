@@ -696,6 +696,15 @@ RJITIRInstruction >> szmcode: size [
 	szmcode := size
 ]
 
+{ #category : #testing }
+RJITIRInstruction >> test [
+	^{
+		self gtInputsListingIn: GtPhlowView empty.
+		self gtRelatedListingIn: GtPhlowView empty.
+		self gtUsesListingIn: GtPhlowView empty.
+	}.
+]
+
 { #category : #querying }
 RJITIRInstruction >> transitiveInputs [
 	^ trace transitiveInputsOf: self.

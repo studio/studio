@@ -65,7 +65,7 @@ RJITProcess >> gtHotTracesFor: aView [
 
 { #category : #accessing }
 RJITProcess >> gtInspectorEventsIn: composite [
-	<gtInspectorPresentationOrder: 6>
+	"<gtInspectorPresentationOrder: 6>"
 	composite fastList
 		title: 'Events';
 		display: [ self auditLog events reverse ];
@@ -77,14 +77,14 @@ RJITProcess >> gtInspectorEventsIn: composite [
 
 { #category : #accessing }
 RJITProcess >> gtInspectorFilesIn: composite [
-	<gtInspectorPresentationOrder: 9>
+	"<gtInspectorPresentationOrder: 9>"
 	path gtInspectorItemsIn: composite.
 
 ]
 
 { #category : #accessing }
 RJITProcess >> gtInspectorTraceListIn: composite [
-	<gtInspectorPresentationOrder: 1>
+	"<gtInspectorPresentationOrder: 1>"
 	composite fastTable
 		title: 'Trace List';
 		display: [ self auditLog traces ];
@@ -98,7 +98,7 @@ RJITProcess >> gtInspectorTraceListIn: composite [
 
 { #category : #accessing }
 RJITProcess >> gtInspectorTraceMapIn: composite [
-	<gtInspectorPresentationOrder: 2>
+	"<gtInspectorPresentationOrder: 2>"
 	composite roassal2
 		title: 'Trace Map';
 		initializeView: [ self traceMapView ].
@@ -107,7 +107,7 @@ RJITProcess >> gtInspectorTraceMapIn: composite [
 
 { #category : #'instance creation' }
 RJITProcess >> gtInspectorVMProfilesIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	"<gtInspectorPresentationOrder: 5>"
 	| w percent |
 	w := 50. "width of numeric columns"
 	^ composite tabulator
@@ -178,6 +178,15 @@ RJITProcess >> printOn: aStream [
 { #category : #accessing }
 RJITProcess >> profile [
 	^ RJITProfile of: self aggregating: (self vmprofiles collect: #profile)
+]
+
+{ #category : #testing }
+RJITProcess >> test [
+	^{
+		self gtHotTracesFor: GtPhlowView empty.
+		self gtProfileFor: GtPhlowView empty.
+		self traces collect: #test.
+	}.
 ]
 
 { #category : #accessing }

@@ -65,13 +65,13 @@ Nix class >> instantiate: expression [
 	| tmp |
 	tmp := FileReference newTempFilePrefix: 'eval-' suffix: '.nix'.
 	tmp writeStream nextPutAll: expression; cr; close.
-	[ ^ (self command: 'nix-instantiate ', tmp pathString) lines ]
+	[ ^ (self command: 'nix-instantiate --show-trace ', tmp pathString) lines ]
 		ensure: [ tmp delete ].
 ]
 
 { #category : #'instance creation' }
 Nix class >> realize: deriv [
-	^(self command: 'nix-store --realize ', deriv) lines.
+	^(self command: 'nix-store --show-trace --realize ', deriv) lines.
 ]
 
 { #category : #private }

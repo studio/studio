@@ -73,7 +73,6 @@ RJITTrace >> decodeIrMcodeMapping [
 	index := 2.
 	self irInstructions do: [ :ins |
 		nbytes := (flashback decodeTypeNamed: #uint16_t at: szirmcode + index) value.
-		Transcript show: 'nbytes: ', nbytes asString; cr.
 		ins mcode: (flashback bytesAt: mcodeAddr + mcodeOffset size: nbytes).
 		ins szmcode: nbytes.
 		ins mcodeAddress: mcodeAddr + mcodeOffset.
@@ -149,17 +148,17 @@ RJITTrace >> gtIRListingFor: aView [
 
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorBytecodesIn: composite [
-	<gtInspectorPresentationOrder: 2>
+	"<gtInspectorPresentationOrder: 2>"
 	jitState ifNil: [ ^nil ].
 	jitState gtInspectorBytecodesIn: composite.
 
 ]
 
-{ #category : #accessing }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorContourIn: composite [
-	<gtInspectorPresentationOrder: 2>
+	"<gtInspectorPresentationOrder: 2>"
 	composite textEditor
 		title: 'Contour';
 		display: [
@@ -167,46 +166,46 @@ RJITTrace >> gtInspectorContourIn: composite [
 
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorDWARFIn: composite [
-	<gtInspectorPresentationOrder: 6>
+	"<gtInspectorPresentationOrder: 6>"
 	^ gctrace dwarfValue gtInspectorDWARFIn: composite.
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorGCTraceIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	"<gtInspectorPresentationOrder: 5>"
 "	^ gctrace dwarfValue gtInspectorDWARFIn: composite."
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorIRListingIn: composite [
-	<gtInspectorPresentationOrder: 3>
+	"<gtInspectorPresentationOrder: 3>"
 	self irInstructionsNoNop irListViewIn: composite title: 'IR List'.
 
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorIRTreeIn: composite [
-	<gtInspectorPresentationOrder: 4>
+	"<gtInspectorPresentationOrder: 4>"
 	composite roassal2
 		title: 'IR Tree';
 		initializeView: [ self irTreeView ].
 
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorJITIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	"<gtInspectorPresentationOrder: 5>"
 	composite fastList 
 		title: 'JIT';
 		display: [ self jitEvents ].
 
 ]
 
-{ #category : #accessing }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorProfileIn: composite [
-	<gtInspectorPresentationOrder: 6>
+	"<gtInspectorPresentationOrder: 6>"
 	| tab |
 	tab := composite fastTable 
 		title: 'Profile';
@@ -220,9 +219,9 @@ RJITTrace >> gtInspectorProfileIn: composite [
 
 ]
 
-{ #category : #accessing }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorSummaryIn: composite [
-	<gtInspectorPresentationOrder: 1>
+	"<gtInspectorPresentationOrder: 1>"
 	composite fastTable
 		title: 'Summary';
 		display: [ self info ];
@@ -524,6 +523,17 @@ RJITTrace >> startLineShort [
 { #category : #accessing }
 RJITTrace >> startPrototype [
 	^ gctrace flashback decodeGCprotoAt: gctrace startpt.
+
+]
+
+{ #category : #testing }
+RJITTrace >> test [
+	^ { 
+		self gtIRListingFor: GtPhlowView empty.
+		self gtJITFor: GtPhlowView empty.
+		self gtProfileFor: GtPhlowView empty.
+		self irInstructions collect: #test.
+	}
 
 ]
 
