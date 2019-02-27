@@ -38,11 +38,11 @@ RJITProcess >> dwarf: aDWARF [
 { #category : #'instance creation' }
 RJITProcess >> fromPath: aPath [
 	| dwarfPath auditPath |
-	path := aPath.
+	path := aPath asFileReference.
 	dwarfPath := path / 'raptorjit-dwarf.json'.
 	auditPath := path / 'audit.log'.
 	[ auditPath isFile ] assertWithDescription:
-		'JIT audit log not found'.
+		'JIT audit log not found in ', path asString.
 	auditLog := RJITAuditLog new loadFromFileNamed: auditPath pathString.
 	auditLog process: self.
 	"Load VMProfile data with progress monitoring."
@@ -187,6 +187,28 @@ RJITProcess >> test [
 		self gtProfileFor: GtPhlowView empty.
 		self traces collect: #test.
 	}.
+]
+
+{ #category : #'text dump' }
+RJITProcess >> textDumpInDirectory: aFileReferenceOrPath [
+	| dir |
+	dir := aFileReferenceOrPath asFileReference.
+	dir ensureDeleteAll; ensureCreateDirectory.
+	Transcript show: 'Dumping traces: '.
+	self traces do: [ :trace |
+		Transcript show: trace traceno asString, ' '; flush.
+		trace textDumpInDirectory: dir / 'trace' / trace traceno asString ].
+	Transcript cr.
+	self vmprofiles
+		ifEmpty: [ 
+			Transcript show: '(No vmprofile data found)'; cr. ]
+		ifNotEmpty: [
+			Transcript show: 'Dumping vmprofiles: '.
+			self vmprofiles do: [ :prof |
+				Transcript show: prof name, ' '; flush.
+				prof textDumpInDirectory: dir / 'vmprofile'. ].
+			Transcript cr. ].
+
 ]
 
 { #category : #accessing }

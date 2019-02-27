@@ -34,11 +34,11 @@ nixopts="--pure -j 10 --show-trace"
 
 runstudio() {
   attr="$1"
-  cmd="$2"
+  shift
   export TMPDIR=$(mktemp -d)
   chmod 755 $TMPDIR
   trap "rm -rf $TMPDIR" EXIT
-  nix-shell $nixopts --run "STUDIO_PATH=$studio $cmd" -E - <<EOF
+  nix-shell $nixopts --run "STUDIO_PATH=$studio $*" -E - <<EOF
     with import $studio;
     runCommandNoCC "studio" {
       nativeBuildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run $attr ];
@@ -58,6 +58,13 @@ case "$1" in
         ;;
     test)
         runstudio studio.studio-test studio-test
+        ;;
+    decode)
+        if [ $# != 3 ]; then
+            echo "Usage: studio decode <input> <output>" >&2
+            exit 1
+        fi
+        runstudio studio.studio-decode studio-decode "$2" "$3"
         ;;
     *)
         error "Usage: studio <vnc|x11|cache|test>"

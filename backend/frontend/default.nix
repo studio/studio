@@ -135,7 +135,7 @@ let
       chmod +w pharo-$version.image
       chmod +w pharo-$version.changes
       cp ${pharo.pharo-share}/lib/*.sources .
-      echo pharo-$version.image
+      realpath "pharo-$version.image"
     '';
   };
 
@@ -201,19 +201,46 @@ let
           ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-test-script}
       '';
   };
+
+  studio-decode =
+    # Script to decode binary data into a more usable format.
+    let studio-decode-script = writeScript "studio-decode-script.st" ''
+        | env input output |
+        env := OSProcess thisOSProcess environment.
+        input := (env at: #STUDIO_DECODE_INPUT) asFileReference.
+        output := (env at: #STUDIO_DECODE_OUTPUT) asFileReference.
+        Transcript show: 'Studio decoding from ', input printString, ' to ', output printString; cr.
+        Studio decodeFrom: input to: output.
+        Transcript show: 'Finished.'; cr.
+      ''; in
+      writeTextFile {
+        name = "studio-decode-${studio-version}";
+        destination = "/bin/studio-decode";
+        executable = true;
+        text = ''
+          #!${stdenv.shell}
+          if [ $# != 2 ]; then
+            echo "usage: <input> <output>"
+            exit 1
+          fi
+          export STUDIO_DECODE_INPUT=$1
+          export STUDIO_DECODE_OUTPUT=$2
+          image=$(${studio-get-image}/bin/studio-get-image)
+          timeout 600 \
+            ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-decode-script}
+        '';
+  };
 in
   
 {
   # main package collection for 'nix-env -i'
-  studio = { inherit studio-x11 studio-vnc studio-test tigervnc; };
+  studio = { inherit studio-x11 studio-vnc studio-test studio-decode tigervnc; };
   # individual packages
   studio-gui = studio-x11;           # deprecated
   studio-gui-vnc = studio-vnc;       # deprecated
   studio-base-image = base-image;
   studio-image = studio-image;
   inherit studio-inspector-screenshot;
-  inherit studio-x11 studio-vnc studio-test;
-
-
+  inherit studio-x11 studio-vnc studio-test studio-decode;
 }
 

@@ -112,7 +112,7 @@ RJITAuditLog >> irOperandModes [
 
 { #category : #initialization }
 RJITAuditLog >> loadFromFileNamed: fileName [
-	| log mp stream count |
+	| log mp stream count percent |
 	[ :job |
 		job title: 'Reading audit.log into memory'.
 		events := OrderedCollection new.
@@ -121,12 +121,18 @@ RJITAuditLog >> loadFromFileNamed: fileName [
 		stream := ReadStream on: log.
 		mp := MpDecoder on: stream.
 		count := 1.
+		percent := 0.
 		[ [  mp atEnd ] whileFalse: [
 			job title: 'Reading audit.log record #', count asString.
 			self addRecord: mp next.
 			count := count + 1.
-			job progress: stream position / log size. ]
-		] value. "on: Error do: [ :e | UIManager default inform: 'Finishing at msgpack error: ', e asString ]."
+			job progress: stream position / log size.
+			((stream position * 100.0 / log size) floor / 5) floor > (percent / 5) floor ifTrue: [ 
+				percent := (stream position * 100.0 / log size) floor.
+				Transcript show: ('Reading audit.log progress: {1}% ({2} events)'
+										format: { percent. count. }); cr. ]
+			]
+		] on: Error do: [ :e | UIManager default inform: 'Finishing at msgpack error: ', e asString ].
 	] asJob run.
 	UIManager default inform: 'Loaded ', events size asString, ' RaptorJIT events (auditlog)'.
 ]
