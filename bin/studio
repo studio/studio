@@ -41,7 +41,7 @@ runstudio() {
   nix-shell $nixopts --run "STUDIO_PATH=$studio $cmd" -E - <<EOF
     with import $studio;
     runCommandNoCC "studio" {
-      nativeBuildInputs = [ nixUnstable xorg.xauth perl disasm $attr ];
+      nativeBuildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run $attr ];
     } ""
 EOF
 }
