@@ -146,7 +146,6 @@ let
     executable = true;
     text = ''
       #!${stdenv.shell}
-      export STUDIO_PATH=''${STUDIO_PATH:-${../..}}
       image=$(${studio-get-image}/bin/studio-get-image)
       ${pharo}/bin/pharo $image "$@"
     '';
