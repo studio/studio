@@ -11,7 +11,7 @@ script:
 - nix-env -if https://github.com/cachix/cachix/tarball/master --extra-substituters https://cachix.cachix.org --trusted-public-keys 'cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
   cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM='
 - cachix use studio
-- cachix authkey $authkey
+- cachix authtoken $authtoken
 - cachix push studio --watch-store &
 - nix-build -j2 | cachix push studio
 - . /home/travis/.nix-profile/etc/profile.d/nix.sh && bin/studio test
