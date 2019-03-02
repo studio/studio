@@ -1,5 +1,16 @@
-language: bash
-dist: trusty
+os:
+- linux
+language: nix
 sudo: required
-install: curl https://nixos.org/nix/install | sh
-script: . /home/travis/.nix-profile/etc/profile.d/nix.sh && bin/studio test && test -f studio-test.png
+before_script:
+- sudo mount -o remount,exec,size=4G,mode=755 /run/user || true
+- sudo mkdir -p /etc/nix
+- echo "trusted-users = root $USER" | sudo tee -a /etc/nix/nix.conf
+- sudo launchctl kickstart -k system/org.nixos.nix-daemon || true
+script:
+- nix-env -if https://github.com/cachix/cachix/tarball/master --extra-substituters https://cachix.cachix.org --trusted-public-keys 'cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+  cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM='
+- cachix use studio
+- cachix push studio --watch-store &
+- nix-build -j2 | cachix push studio
+- . /home/travis/.nix-profile/etc/profile.d/nix.sh && bin/studio test
