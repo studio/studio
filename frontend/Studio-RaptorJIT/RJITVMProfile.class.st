@@ -116,6 +116,13 @@ RJITVMProfile >> process: aRaptorJITProcess [
 	process := aRaptorJITProcess.
 ]
 
+{ #category : #'accessing-data' }
+RJITVMProfile >> profile [
+	profile ifNil: [ profile := RJITProfile of: self aggregating: self traceProfiles ].
+	^ profile
+
+]
+
 { #category : #'text dump' }
 RJITVMProfile >> textDumpInDirectory: dir [
 	| tracelist sep |
@@ -135,13 +142,6 @@ RJITVMProfile >> textDumpInDirectory: dir [
 			s lf.
 		 ]
 	].
-]
-
-{ #category : #'accessing-data' }
-RJITVMProfile >> profile [
-	profile ifNil: [ profile := RJITProfile of: self aggregating: self traceProfiles ].
-	^ profile
-
 ]
 
 { #category : #'accessing-data' }

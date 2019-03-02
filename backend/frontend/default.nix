@@ -230,6 +230,12 @@ let
             ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-decode-script}
         '';
   };
+  # Environment for nix-shell
+  studio-env = runCommandNoCC "studio" {
+      nativeBuildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run binutils
+                            binutils gnugrep
+                            studio-x11 studio-vnc studio-test studio-decode ];
+    } "";
 in
   
 {
@@ -240,6 +246,7 @@ in
   studio-gui-vnc = studio-vnc;       # deprecated
   studio-base-image = base-image;
   studio-image = studio-image;
+  studio-env = studio-env;
   inherit studio-inspector-screenshot;
   inherit studio-x11 studio-vnc studio-test studio-decode;
 }

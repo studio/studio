@@ -18,23 +18,43 @@ RaptorJIT class >> eval: luaSource [
 ]
 
 { #category : #running }
-RaptorJIT class >> inspectBuild: build [
-	^ RJITProcess new fromPath: build firstOutput
+RaptorJIT class >> inspect: aPath [
+	^ RJITProcess new fromPath: aPath parent
 ]
 
 { #category : #running }
-RaptorJIT class >> load: aPath [
-	| ref expr |
-	ref := aPath asFileReference.
-	expr := 'with import <studio>; raptorjit.inspect ', ref pathString.
-	^ self inspectBuild: (NixBuild onCode: expr).
+RaptorJIT class >> inspectAll: aPath [
+	| paths logs progress num |
+	paths := aPath allChildrenMatching: 'audit.log'.
+	progress := 0.
+	num := paths size.
+	[  :job |
+		job title: 'Reading logs' translated.
+		logs := paths collect: [ :log |
+			| shortPath |
+			shortPath := (GtFileUtility fileNameOf: log parent relativeTo: aPath).
+			job title: ('Reading log {1}/{2}: {3}' format: { progress + 1. num. shortPath. }).
+			job progress: progress / num.
+			progress := progress + 1.			(self inspect: log) name: shortPath.
+			 ]
+		 ] asJob run.
+	^ (SnabbProcessList withAll: logs) sorted: [ :a :b | a name < b name ]
+]
 
+{ #category : #running }
+RaptorJIT class >> inspectBuild: build [
+	^ self load: build firstOutput
+]
+
+{ #category : #running }
+RaptorJIT class >> load: arg1 [
+	^ self inspectAll: arg1
 ]
 
 { #category : #running }
 RaptorJIT class >> loadUrl: aUrl [
 	| expr |
-	expr := 'with import <studio>; raptorjit.inspect (fetchTarball "', aUrl, '")'.
+	expr := 'with import <studio>; raptorjit.inspectUrl "', aUrl, '"'.
 	^ self inspectBuild: (NixBuild onCode: expr).
 
 ]

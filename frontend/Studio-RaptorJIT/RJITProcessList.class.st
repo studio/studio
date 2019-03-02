@@ -6,6 +6,9 @@ I make the processes easy to compare and inspect.
 Class {
 	#name : #RJITProcessList,
 	#superclass : #OrderedCollection,
+	#instVars : [
+		'path'
+	],
 	#category : #'Studio-RaptorJIT'
 }
 
@@ -19,6 +22,21 @@ RJITProcessList >> gtProcessesFor: aView [
 ]
 
 { #category : #accessing }
+RJITProcessList >> path [
+	^ path
+]
+
+{ #category : #accessing }
+RJITProcessList >> path: aPath [
+	path := aPath
+]
+
+{ #category : #accessing }
 RJITProcessList >> profiles [
 	^ RJITProfileList withAll: (self collect: #profile).
+]
+
+{ #category : #testing }
+RJITProcessList >> test [
+	^ self collect: #test
 ]

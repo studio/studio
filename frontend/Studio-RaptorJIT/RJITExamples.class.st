@@ -35,6 +35,12 @@ RJITExamples class >> url [
 ]
 
 { #category : #internal }
+RJITExamples class >> vita2018 [
+	^ RaptorJIT loadUrl: 'https://github.com/studio/example-data/raw/master/snabb/vita-2018.tar.xz'
+
+]
+
+{ #category : #internal }
 RJITExamples >> process [
 	process ifNil: [ process :=  self class load. ].
 	^ process.

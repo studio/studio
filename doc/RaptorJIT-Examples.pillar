@@ -1,0 +1,16 @@
+! RaptorJIT examples
+
+Studio has some standard examples of RaptorJIT process diagnostic data. These serve both as demonstrations and as test cases.
+
+Here is one from Snabb's "snabbmark basic1" synthetic benchmark:
+
+[[[
+RJITExamples snabbmarkBasic1
+]]]
+
+Here is one from the Vita VPN application based on Snabb:
+
+[[[
+RJITExamples vita2018
+]]]
+

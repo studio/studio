@@ -32,6 +32,13 @@ rec {
     enableParallelBuilding = true;  # Do 'make -j'
     dontStrip = true;
   };
+  # Like fetchTarball but more robust/forgiving of broken symlinks
+  getTarball = url:
+    runCommand "gettarball" { src = fetchurl url; } ''
+      mkdir $out
+      cd $out
+      tar xf $src
+    '';
   evalTarball = url: evalCode (fetchTarball url);
   evalCode = source:
     runCommand "raptorjit-eval-code"
@@ -54,34 +61,16 @@ rec {
       mkdir -p $out/vmprofile
       find . -name '*.vmprofile' -exec cp {} $out/vmprofile \;
     '';
-  inspect = jit:
-      runCommand "inspect" {
-        inherit jit;
-      }
-      ''
-        mkdir -p $out/.studio
-        mkdir $out/vmprofile
-        cat > $out/.studio/product-info.yaml <<EOF
-        type: raptorjit
-        EOF
-        if [ -d $jit ]; then
-          find $jit -name audit.log -exec cp -n {} $out/audit.log \;
-          find $jit -name '*.vmprofile' -exec cp {} $out/vmprofile/ \;
-        else
-          # assume it's an audit.log file
-          cp $jit $out/audit.log
-        fi
-      '';
   # Run RaptorJIT code and product a Studio product.
   runCode = fileOrDirectory:
     rec {
       raw = evalCode fileOrDirectory;
-      product = inspect raw;
+      product = raw;
     };
   # Convenience wrappers
   run = luaSource: runCode (writeTextDir "script.lua" luaSource);
-  runTarball = url: runCode (fetchTarball url);
+  runTarball = url: runCode (getTarball url);
   runFile = runCode;
   runDirectory = runCode;
-  inspectUrl = url: inspect (fetchTarball url);
+  inspectUrl = url: getTarball url;
 }

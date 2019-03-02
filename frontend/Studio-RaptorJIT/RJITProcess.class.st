@@ -10,7 +10,8 @@ Class {
 		'dwarf',
 		'auditLog',
 		'vmprofiles',
-		'path'
+		'path',
+		'name'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -169,9 +170,26 @@ RJITProcess >> gtProfileFor: aView [
 
 ]
 
+{ #category : #accessing }
+RJITProcess >> label: arg1 [
+	self shouldBeImplemented
+]
+
+{ #category : #accessing }
+RJITProcess >> name [
+	^ name
+]
+
+{ #category : #accessing }
+RJITProcess >> name: aName [
+	name := aName
+]
+
 { #category : #printing }
 RJITProcess >> printOn: aStream [
-	aStream nextPutAll: 'a RaptorJIT process'.
+	(self name isNil or: [ name size = 0 ])
+		ifTrue: [ super printOn: aStream ]
+		ifFalse: [ aStream nextPutAll: self class name, ' ', self name ].
 
 ]
 

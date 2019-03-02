@@ -12,5 +12,7 @@ Run Lua code and inspect its execution with ${inputFile:path=Running-RaptorJIT.p
 
 Inspect diagnostic data that was produced separately with ${inputFile:path=Inspecting-RaptorJIT.pillar}$.
 
+Try some standard example data with ${inputFile:path=RaptorJIT-Examples.pillar}$.
+
 Learn about the RaptorJIT diagnostic data formats and how Studio uses them at ${inputFile:path=About-RaptorJIT-Support.pillar}$.
 
