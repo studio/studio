@@ -234,7 +234,7 @@ let
       nativeBuildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run binutils
                             binutils gnugrep
                             studio-x11 studio-vnc studio-test studio-decode ];
-    } "";
+    } "echo ok > $out";
 in
   
 {
