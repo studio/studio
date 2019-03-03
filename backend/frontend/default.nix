@@ -233,6 +233,7 @@ let
   studio-env = runCommandNoCC "studio" {
       buildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run binutils
                       binutils gnugrep
+                      dwarfish.binutils
                       studio-x11 studio-vnc studio-test studio-decode ];
     } "echo ok > $out";
 in

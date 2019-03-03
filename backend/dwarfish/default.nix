@@ -34,5 +34,6 @@ rec {
                                            buildInputs = [ python pyyaml ]; } ''
     python ${./yaml2json.py} < $yaml > $out
   '';
+  binutils = readelf;
 }
 
