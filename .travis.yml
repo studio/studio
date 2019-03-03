@@ -19,7 +19,6 @@ script:
 - cachix use studio
 - cachix authtoken $authtoken
 - nix-build -j2 -A studio-env . | cachix push studio
-- . /home/travis/.nix-profile/etc/profile.d/nix.sh && bin/studio test
 - docker build -t studioproject/studio .
 - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-- if [ docker run -t studioproject/studio test ]; then docker push studioproject/studio; fi
+- if docker run -t studioproject/studio test; then docker push studioproject/studio; else exit 1; fi
