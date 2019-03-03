@@ -51,8 +51,9 @@ DWARF >> loadFromByteArray: array [
 	hash := (SHA256 hashMessage: array) hex.
 	tmpdir := FileLocator temp asFileReference.
 	tmp := tmpdir / ('dwarf-',hash,'.dwo').
-	tmp writeStream binary nextPutAll: array; close.
+	tmp binaryWriteStream nextPutAll: array; close.
 	self loadFromBinaryFileNamed: tmp pathString.
+
 ]
 
 { #category : #initialization }

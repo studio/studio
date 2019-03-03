@@ -21,6 +21,36 @@ RJITEvent >> flashback: aFlashback [
 ]
 
 { #category : #accessing }
+RJITEvent >> gtBytecodesFor: aView [
+	<gtView>
+	self jitState ifNil: [ ^nil ].
+	^ self jitState gtBytecodesFor: aView.
+
+]
+
+{ #category : #accessing }
+RJITEvent >> gtInfoFor: aView [
+	<gtView>
+	| aList |
+	aList := aView columnedList
+		title: 'Info' translated;
+		priority: 10;
+		items: [ self info ].
+
+	aList column 
+		title: 'Name' translated;
+		matchParent;
+		item: [ :item :index | item key ].
+		
+	aList column
+		title: 'Value' translated;
+		matchParent;
+		item: [ :item :index | item value ].
+
+	^ aList
+]
+
+{ #category : #accessing }
 RJITEvent >> gtInspectorBytecodesIn: composite [
 	<gtInspectorPresentationOrder: 1>
 	self jitState ifNil: [ ^nil ].
@@ -51,10 +81,10 @@ RJITEvent >> info [
 	info := OrderedCollection new.
 	self jitState ifNotNil: [
 		self jitState bytecodes size > 0 ifTrue: [ 
-			info add: 'start' -> self startSourceLine.
-			info add: 'end'   -> self endSourceLine.
+			info add: 'Start' -> self startSourceLine.
+			info add: 'End'   -> self endSourceLine.
 		].
-		info add: '#bytecodes' -> self numberOfBytecodes.
+		info add: 'Bytecode count' -> self numberOfBytecodes.
 	 ].
 	^ info
 ]

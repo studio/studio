@@ -1,0 +1,27 @@
+! Inspecting RaptorJIT data
+
+Here are some examples of how to load existing RaptorJIT data for inspection.
+
+RaptorJIT data always has the same format: one or more directories containing the file audit.log and optionally one or more *.vmprofile datasets (which will be found recursively in subdirectories.)
+
+Load diagnostic data from a local directory:
+
+[[[
+RaptorJIT load: '/some/dir'
+]]]
+
+Load diagnostic data from a tarball (same format as directory):
+
+[[[
+RaptorJIT load: '/dir/foo.tar.gz'
+]]]
+
+Download and load diagnostic data from a tarball URL:
+
+[[[
+RaptorJIT load: 'http://example.com/foo.tar.gz'
+]]]
+
+
+
+

@@ -1,0 +1,14 @@
+! Evolution of Studio
+
+Studio is an extensible interactive software diagnostics framework.
+
+Studio is a young project and is still evolving quickly. Here is an overview of where it came from, where it is now, and where it is going next.
+
+The first major version of Studio opened to a blank text area where the user would enter a Nix expression. This expression would then be evaluated behind the scenes to produce data to inspect. This interface was quite general but also fairly user-hostile.
+
+This is the second major version of Studio. The interface is now based on "playbooks" from the GToolkit user interface framework (based on Pharo Smalltalk.) Playbooks are text files with a markdown-like syntax to include interactive graphical objects and code to run. As a user you now have to edit and run snippets of Smalltalk code. This is not especially user-friendly either, but it is an improvement over writing Nix expressions from scratch.
+
+Incremental improvements coming down the pipeline include replacing Smalltalk snippets with appropriate widgets and support for proper rendering on "retina" (hi-dpi) displays.
+
+
+

@@ -22,7 +22,8 @@ Class {
 		'jgc',
 		'ffi',
 		'traceInterp',
-		'traces'
+		'traceProfiles',
+		'profile'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -38,7 +39,7 @@ RJITVMProfile class >> loadFromFileNamed: filename name: aName process: aProcess
 
 { #category : #'accessing-data' }
 RJITVMProfile >> gc [
-	^ (traces collect: #gc) sum.
+	^ (traceProfiles collect: #gc) sum.
 
 ]
 
@@ -63,12 +64,14 @@ RJITVMProfile >> loadFromFileNamed: aFilename [
 	[ (data unsignedLongAt: 1) = 16r1d50f007 ] assert.
 	[ (data unsignedShortAt: 5) = 4 ] assert.
 	index := 8.
-	traces := (0 to: 4096) collect: [ :tr | | trace |
-		trace := RJITVMProfileTrace new id: tr; vmprofile: self; yourself.
+	traceProfiles := (0 to: 4096) collect: [ :tr |
+		| profile subject |
+		subject := { #trace -> tr. #vmprofile -> self. } asDictionary.
+		profile := RJITProfile new subject: subject; yourself.
 		#(interp: c: igc: exit: record: opt: asm: head: loop: jgc: ffi:) do: [ :selector |
-			trace perform: selector with: (data unsignedLongLongAt: index+1).
+			profile perform: selector with: (data unsignedLongLongAt: index+1).
 			index := index + 8. ].
-		trace. ].
+		profile. ].
 
 ]
 
@@ -84,7 +87,7 @@ RJITVMProfile >> locations [
 
 { #category : #'accessing-data' }
 RJITVMProfile >> mcode [
-	^ (traces collect: #mcode) sum.
+	^ (traceProfiles collect: #mcode) sum.
 
 ]
 
@@ -114,19 +117,57 @@ RJITVMProfile >> process: aRaptorJITProcess [
 ]
 
 { #category : #'accessing-data' }
+RJITVMProfile >> profile [
+	profile ifNil: [ profile := RJITProfile of: self aggregating: self traceProfiles ].
+	^ profile
+
+]
+
+{ #category : #'text dump' }
+RJITVMProfile >> textDumpInDirectory: dir [
+	| tracelist sep |
+	sep := ' | '.
+	tracelist := self traces select: [ :tr | tr all > 0 ].
+	tracelist sort: [ :a :b | a all > b all ].
+	dir asFileReference dumpStudioFile: (self name, '.txt') with: [ :s |
+		#(Samples MCode VM GC) do: [ :col |
+			s nextPutAll: (col padRightTo: 8), sep. ].
+		s nextPutAll: 'Trace'.
+		s lf.
+		tracelist do: [ :tr |
+			s nextPutAll: (tr all asString padLeftTo: 8), sep.
+			{  tr mcodePercent. tr vmPercent. tr gcPercent } do: [ :pct |
+				s nextPutAll: ((pct printShowingDecimalPlaces: 1), '%' padLeftTo: 6), '  ', sep ].
+			s nextPutAll: (process traces detect: [ :trace | trace traceno = tr id ]) printString.
+			s lf.
+		 ]
+	].
+]
+
+{ #category : #'accessing-data' }
 RJITVMProfile >> total [
-	^ (traces collect: #all) sum.
+	^ (traceProfiles collect: #all) sum.
 
 ]
 
 { #category : #'accessing-data' }
 RJITVMProfile >> trace: tr [
-	^ traces detect: [ :profile | profile id = tr traceno ].
+	^ traceProfiles detect: [ :profile | profile subject at: #trace = (tr traceno) ]
+]
+
+{ #category : #'accessing-data' }
+RJITVMProfile >> traceProfiles [
+	^ traceProfiles
+]
+
+{ #category : #'accessing-data' }
+RJITVMProfile >> traces [
+	^ traces
 ]
 
 { #category : #'accessing-data' }
 RJITVMProfile >> vm [
-	^ (traces collect: #vm) sum.
+	^ (traceProfiles collect: #vm) sum.
 
 ]
 

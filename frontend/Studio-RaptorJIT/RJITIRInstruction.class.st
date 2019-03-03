@@ -160,7 +160,15 @@ RJITIRInstruction >> constantValue [
 
 { #category : #initialization }
 RJITIRInstruction >> disassemble [
-	^ RJITDisassembler disassemble: mcode address: mcodeAddress.
+	^ trace disassembleFrom: mcodeAddress to: mcodeAddress + mcode size.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtInputsListingIn: aView [
+	<gtView>
+	^ (self transitiveInputs irColumnedListViewIn: aView title: 'Inputs' translated) priority: 11.
+
 ]
 
 { #category : #initialization }
@@ -227,6 +235,20 @@ RJITIRInstruction >> gtInspectorUsesTreeIn: composite [
 	composite roassal2
 		title: 'Uses Tree';
 		initializeView: [ trace irTreeViewOfInstructions: self transitiveUses ].
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtRelatedListingIn: aView [
+	<gtView>
+	^ (self transitiveRelations irColumnedListViewIn: aView title: 'Related' translated) priority: 10.
+
+]
+
+{ #category : #initialization }
+RJITIRInstruction >> gtUsesListingIn: aView [
+	<gtView>
+	^ (self transitiveUses irColumnedListViewIn: aView title: 'Uses' translated) priority: 12.
 
 ]
 
@@ -675,6 +697,15 @@ RJITIRInstruction >> szmcode: size [
 	szmcode := size
 ]
 
+{ #category : #testing }
+RJITIRInstruction >> test [
+	^{
+		self gtInputsListingIn: GtPhlowView empty.
+		self gtRelatedListingIn: GtPhlowView empty.
+		self gtUsesListingIn: GtPhlowView empty.
+	}.
+]
+
 { #category : #querying }
 RJITIRInstruction >> transitiveInputs [
 	^ trace transitiveInputsOf: self.
@@ -682,7 +713,7 @@ RJITIRInstruction >> transitiveInputs [
 
 { #category : #accessing }
 RJITIRInstruction >> transitiveRelations [
-	^ self transitiveInputs union: self transitiveUses
+	^ (self transitiveInputs union: self transitiveUses) sort: [ :a :b | a index < b index ]
 ]
 
 { #category : #querying }
