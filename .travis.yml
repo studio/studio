@@ -22,4 +22,4 @@ script:
 - . /home/travis/.nix-profile/etc/profile.d/nix.sh && bin/studio test
 - docker build -t studioproject/studio .
 - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-- docker push studioproject/studio
+- if [ docker run -t studioproject/studio test ]; then docker push studioproject/studio; fi
