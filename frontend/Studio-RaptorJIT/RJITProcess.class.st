@@ -1,3 +1,8 @@
+"
+I represent the cold state of a RaptorJIT process that finished executing.
+
+I provide access to logs and diagnostic data.
+"
 Class {
 	#name : #RJITProcess,
 	#superclass : #Object,
@@ -5,7 +10,8 @@ Class {
 		'dwarf',
 		'auditLog',
 		'vmprofiles',
-		'path'
+		'path',
+		'name'
 	],
 	#category : #'Studio-RaptorJIT'
 }
@@ -49,9 +55,18 @@ RJITProcess >> fromPath: aPath [
 	UIManager default inform: 'Loaded ', vmprofiles size asString, ' RaptorJIT profiles'.
 ]
 
+{ #category : #'instance creation' }
+RJITProcess >> gtHotTracesFor: aView [
+	<gtView>
+	| profiles |
+	profiles := self traceProfiles sort: [ :a :b | a all > b all ].
+	^ (profiles subjectViewTitled: 'Hot traces' translated subjectName: 'Trace' translated onView: aView) priority: 15.
+
+]
+
 { #category : #accessing }
 RJITProcess >> gtInspectorEventsIn: composite [
-	<gtInspectorPresentationOrder: 6>
+	"<gtInspectorPresentationOrder: 6>"
 	composite fastList
 		title: 'Events';
 		display: [ self auditLog events reverse ];
@@ -63,14 +78,14 @@ RJITProcess >> gtInspectorEventsIn: composite [
 
 { #category : #accessing }
 RJITProcess >> gtInspectorFilesIn: composite [
-	<gtInspectorPresentationOrder: 9>
+	"<gtInspectorPresentationOrder: 9>"
 	path gtInspectorItemsIn: composite.
 
 ]
 
 { #category : #accessing }
 RJITProcess >> gtInspectorTraceListIn: composite [
-	<gtInspectorPresentationOrder: 1>
+	"<gtInspectorPresentationOrder: 1>"
 	composite fastTable
 		title: 'Trace List';
 		display: [ self auditLog traces ];
@@ -84,7 +99,7 @@ RJITProcess >> gtInspectorTraceListIn: composite [
 
 { #category : #accessing }
 RJITProcess >> gtInspectorTraceMapIn: composite [
-	<gtInspectorPresentationOrder: 2>
+	"<gtInspectorPresentationOrder: 2>"
 	composite roassal2
 		title: 'Trace Map';
 		initializeView: [ self traceMapView ].
@@ -93,7 +108,7 @@ RJITProcess >> gtInspectorTraceMapIn: composite [
 
 { #category : #'instance creation' }
 RJITProcess >> gtInspectorVMProfilesIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	"<gtInspectorPresentationOrder: 5>"
 	| w percent |
 	w := 50. "width of numeric columns"
 	^ composite tabulator
@@ -146,6 +161,50 @@ RJITProcess >> gtInspectorVMProfilesIn: composite [
 			t transmit toOutsidePort: #selection; from: #traces port: #selection transformed: #trace.
 			].
 
+]
+
+{ #category : #'instance creation' }
+RJITProcess >> gtProfileFor: aView [
+	<gtView>
+	^ self profile gtProfileFor: aView
+
+]
+
+{ #category : #accessing }
+RJITProcess >> label: arg1 [
+	self shouldBeImplemented
+]
+
+{ #category : #accessing }
+RJITProcess >> name [
+	^ name
+]
+
+{ #category : #accessing }
+RJITProcess >> name: aName [
+	name := aName
+]
+
+{ #category : #printing }
+RJITProcess >> printOn: aStream [
+	(self name isNil or: [ name size = 0 ])
+		ifTrue: [ super printOn: aStream ]
+		ifFalse: [ aStream nextPutAll: self class name, ' ', self name ].
+
+]
+
+{ #category : #accessing }
+RJITProcess >> profile [
+	^ RJITProfile of: self aggregating: (self vmprofiles collect: #profile)
+]
+
+{ #category : #testing }
+RJITProcess >> test [
+	^{
+		self gtHotTracesFor: GtPhlowView empty.
+		self gtProfileFor: GtPhlowView empty.
+		self traces collect: #test.
+	}.
 ]
 
 { #category : #'text dump' }
@@ -223,6 +282,15 @@ RJITProcess >> traceMapView [
 ]
 
 { #category : #accessing }
+RJITProcess >> traceProfiles [
+	| traceVMProfiles |
+	traceVMProfiles := self vmprofiles collect: #traceProfiles.
+	^RJITProfileList withAll: (self traces collect: [ :trace |
+		RJITProfile of: trace aggregating: (traceVMProfiles collect: [ :ps | ps at: trace traceno + 1 ]) ]).
+
+]
+
+{ #category : #accessing }
 RJITProcess >> traces [
 	^ auditLog traces
 ]
@@ -258,7 +326,7 @@ RJITProcess >> visualizeTraces: traces withProfile: profile [
 
 { #category : #accessing }
 RJITProcess >> vmProfile: aVMProfile named: name [ 
-	vmprofiles ifNil: [ vmprofiles := Dictionary new. ].
+	vmprofiles ifNil: [ vmprofiles := RJITProcessProfile new. ].
 	vmprofiles at: name put: aVMProfile.
 
 ]

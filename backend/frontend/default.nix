@@ -10,28 +10,32 @@ let
       inherit name version;
       sourceRoot = ".";
       src = fetchurl {
-        inherit url sha256;
+        inherit name url sha256;
       };
       nativeBuildInputs = [ unzip ];
       installPhase = ''
         mkdir $out
         cp *.image $out/pharo.image
         cp *.changes $out/pharo.changes
+        cp *.sources $out/
       '';
     };
 
   # Pharo image that includes all external dependencies.
   # Built on Inria CI (Jenkins) with Metacello to install Studio.
   base-image = fetchImageZip rec {
-    name = "studio-base-image-${version}";
-    version = "32";
-    url = "https://ci.inria.fr/pharo-contribution/job/Studio/default/${version}/artifact/Studio.zip";
-    sha256 = "08hjh3qldh5h1rgjk9pqx56d2zwn34j79gh44d9vcgw8vxvdkgaz";
+    name = "studio-base-image-${version}.zip";
+    version = "0.5.13";
+    url = "https://drive.google.com/uc?export=download&id=1Lb-2soLTZQnt1atdj4y2qCZUHDDLh6QE";
+    sha256 = "0q5ji8ahnprnb9bh6qgkhmllcrsm029w6q1d5lx58ps7k5bqc81f";
   };
 
   # Script to update and customize the image for Studio.
   loadSmalltalkScript = writeScript "studio-load-smalltalk-script.st" ''
     | repo window |
+
+    "Disable cache to prevent access to path that is not available."
+    MCCacheRepository uniqueInstance disable.
 
     "Force reload of all Studio packages from local sources."
     repo := '${../../frontend}' asFileReference.
@@ -52,21 +56,29 @@ let
     "Setup desktop"
     Pharo3Theme beCurrent. "light theme"
     World closeAllWindowsDiscardingChanges.
-    StudioInspector open openFullscreen.
 
     "Save image"
-    Smalltalk saveAs: 'new'.
+    (Smalltalk saveAs: 'new')
+      ifTrue: [
+        "Run in resumed image on startup."
+        GtInspector openOnPlayBook:
+          (Gt2Document forFile: Studio dir / 'doc' / 'Studio.pillar').
+        SystemWindow topWindow openFullscreen.
+      ].
+
   '';
 
   # Studio image that includes the exact code in this source tree.
   # Built by refreshing the base image.
   studio-image = runCommand "studio-image"
-    { nativeBuildInputs = [ pharo ]; }
+    { nativeBuildInputs = [ pharo unzip xvfb_run ]; }
     ''
-      cp ${base-image}/* .
+      cp ${base-image}/*.image pharo.image
+      cp ${base-image}/*.changes pharo.changes
+      cp ${base-image}/*.sources .
       chmod +w pharo.image
       chmod +w pharo.changes
-      pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript}
+      xvfb-run pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript}
       mkdir $out
       cp new.image $out/pharo.image
       cp new.changes $out/pharo.changes
@@ -75,7 +87,7 @@ let
   studio-inspector-screenshot = { name, object, view, width ? 640, height ? 480 }:
     runCommand "studio-screenshot-${name}.png"
       {
-        nativeBuildInputs = [ pharo ];
+        nativeBuildInputs = [ pharo xvfb_run ];
         smalltalkScript = writeScript "studio-screenshot.st"
           ''
             | __window __object __morph __presentations |
@@ -105,7 +117,7 @@ let
       ''
         cp ${studio-image}/* .
         chmod +w pharo.image pharo.changes
-        pharo --nodisplay pharo.image st --quit $smalltalkScript
+        xvfb-run pharo --nodisplay pharo.image st --quit $smalltalkScript
         mkdir $out
         cp screenshot.png $out/${name}.png
       '';
@@ -122,6 +134,7 @@ let
       cp ${studio-image}/pharo.changes pharo-$version.changes
       chmod +w pharo-$version.image
       chmod +w pharo-$version.changes
+      cp ${pharo.pharo-share}/lib/*.sources .
       realpath "pharo-$version.image"
     '';
   };
@@ -133,7 +146,6 @@ let
     executable = true;
     text = ''
       #!${stdenv.shell}
-      export STUDIO_PATH=''${STUDIO_PATH:-${../..}}
       image=$(${studio-get-image}/bin/studio-get-image)
       ${pharo}/bin/pharo $image "$@"
     '';
@@ -174,15 +186,8 @@ let
     # Script to do a simple test of the GUI.
     let studio-test-script = writeScript "studio-test-script.st" ''
         Transcript show: 'Exercising the Studio UI..'; cr.
-        StudioInspector new
-          go: 'with import <studio>; raptorjit.run "for i = 1, 1e8 do end"'.
-        GTInspector openOn: (RJITAuditLog allInstances first) traces first irTreeView.
-        Transcript show: 'Taking a screenshot..'; cr.
-        [ (Smalltalk imageDirectory / 'studio-test.png') asFileReference delete ]
-          on: FileDoesNotExist do: []. "Ignore."
-        PNGReadWriter putForm: World imageForm
-                      onFileNamed: Smalltalk imageDirectory / 'studio-test.png'.
-        Transcript show: 'Took screenshot'; cr.
+        RaptorJIT test.
+        Transcript show: 'Finished.'; cr.
       ''; in
      writeTextFile {
       name = "studio-test-${studio-version}";
@@ -191,7 +196,7 @@ let
       text = ''
         #!${stdenv.shell}
         image=$(${studio-get-image}/bin/studio-get-image)
-        timeout 600 \
+        timeout 600 ${xvfb_run}/bin/xvfb-run \
           ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-test-script}
       '';
   };
@@ -224,6 +229,12 @@ let
             ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-decode-script}
         '';
   };
+  # Environment for nix-shell
+  studio-env = runCommandNoCC "studio" {
+      nativeBuildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run binutils
+                            binutils gnugrep
+                            studio-x11 studio-vnc studio-test studio-decode ];
+    } "echo ok > $out";
 in
   
 {
@@ -234,6 +245,7 @@ in
   studio-gui-vnc = studio-vnc;       # deprecated
   studio-base-image = base-image;
   studio-image = studio-image;
+  studio-env = studio-env;
   inherit studio-inspector-screenshot;
   inherit studio-x11 studio-vnc studio-test studio-decode;
 }

@@ -117,7 +117,7 @@ RJITAuditLog >> loadFromFileNamed: fileName [
 		job title: 'Reading audit.log into memory'.
 		events := OrderedCollection new.
 		"Read into memory."
-		log := fileName asFileReference binaryReadStream contentsOfEntireFile.
+		log := fileName asFileReference binaryReadStream contents.
 		stream := ReadStream on: log.
 		mp := MpDecoder on: stream.
 		count := 1.

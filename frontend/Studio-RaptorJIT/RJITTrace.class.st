@@ -145,63 +145,81 @@ RJITTrace >> functionContour [
 				 ] ] ].
 ]
 
+{ #category : #accessing }
+RJITTrace >> gtContourFor: aView [
+	<gtView>
+	^aView textEditor
+		title: 'Contour';
+		priority: 5;
+		text: [ (self printString, String cr, self functionContour) asRopedText ].
+
+]
+
 { #category : #'gt-inspector-extension' }
+RJITTrace >> gtIRListingFor: aView [
+	<gtView>
+	^ self irInstructionsNoNop irColumnedListViewIn: aView title: 'IR List'.
+
+]
+
+{ #category : #deprecated }
 RJITTrace >> gtInspectorBytecodesIn: composite [
-	<gtInspectorPresentationOrder: 2>
+	"<gtInspectorPresentationOrder: 2>"
 	jitState ifNil: [ ^nil ].
 	jitState gtInspectorBytecodesIn: composite.
 
 ]
 
-{ #category : #accessing }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorContourIn: composite [
-	<gtInspectorPresentationOrder: 2>
-	composite text
+	"<gtInspectorPresentationOrder: 2>"
+	composite textEditor
 		title: 'Contour';
-		display: [ self ownFunctionContour ].
+		display: [
+			self printString asRopedText italic, String cr, self functionContour ].
 
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorDWARFIn: composite [
-	<gtInspectorPresentationOrder: 6>
+	"<gtInspectorPresentationOrder: 6>"
 	^ gctrace dwarfValue gtInspectorDWARFIn: composite.
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorGCTraceIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	"<gtInspectorPresentationOrder: 5>"
 "	^ gctrace dwarfValue gtInspectorDWARFIn: composite."
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorIRListingIn: composite [
-	<gtInspectorPresentationOrder: 3>
+	"<gtInspectorPresentationOrder: 3>"
 	self irInstructionsNoNop irListViewIn: composite title: 'IR List'.
 
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorIRTreeIn: composite [
-	<gtInspectorPresentationOrder: 4>
+	"<gtInspectorPresentationOrder: 4>"
 	composite roassal2
 		title: 'IR Tree';
 		initializeView: [ self irTreeView ].
 
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorJITIn: composite [
-	<gtInspectorPresentationOrder: 5>
+	"<gtInspectorPresentationOrder: 5>"
 	composite fastList 
 		title: 'JIT';
 		display: [ self jitEvents ].
 
 ]
 
-{ #category : #accessing }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorProfileIn: composite [
-	<gtInspectorPresentationOrder: 6>
+	"<gtInspectorPresentationOrder: 6>"
 	| tab |
 	tab := composite fastTable 
 		title: 'Profile';
@@ -215,15 +233,32 @@ RJITTrace >> gtInspectorProfileIn: composite [
 
 ]
 
-{ #category : #accessing }
+{ #category : #deprecated }
 RJITTrace >> gtInspectorSummaryIn: composite [
-	<gtInspectorPresentationOrder: 1>
+	"<gtInspectorPresentationOrder: 1>"
 	composite fastTable
 		title: 'Summary';
 		display: [ self info ];
 		selectionTransformation: #value;
 		column: 'Name' evaluated: #key width: 100;
 		column: 'Value' evaluated: #value width: 600.
+
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> gtJITFor: aView [
+	<gtView>
+	^aView list
+		title: 'JIT Events';
+		priority: 25;
+		items: [ self jitEvents ].
+
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> gtProfileFor: aView [
+	<gtView>
+	^ self profile gtProfileFor: aView
 
 ]
 
@@ -478,7 +513,7 @@ RJITTrace >> printOn: aStream [
 	aStream nextPutAll: 'trace '.
 	aStream nextPutAll: traceno asString.
 	"self isSideTrace ifTrue: [ aStream nextPutAll: ' (' , self parentname, ')' ]."
-	aStream nextPutAll: (self hasLoop ifTrue: [ ' loop at ' ] ifFalse: [ ' patch from ' ]).
+	aStream nextPutAll: (self hasLoop ifTrue: [ ' loop at ' ] ifFalse: [ ' line from ' ]).
 	aStream nextPutAll: self startLineShort.
 	self hasLoop ifFalse: [ 
 		aStream nextPutAll: ' to '.
@@ -492,6 +527,11 @@ RJITTrace >> printOn: aStream [
 { #category : #accessing }
 RJITTrace >> process [
 	^ gctrace flashback auditLog process
+]
+
+{ #category : #accessing }
+RJITTrace >> profile [
+	^ self process traceProfiles detect: [ :profile | profile subject = self ]
 ]
 
 { #category : #initializing }
@@ -553,6 +593,16 @@ RJITTrace >> startLineShort [
 RJITTrace >> startPrototype [
 	^ gctrace flashback decodeGCprotoAt: gctrace startpt.
 
+]
+
+{ #category : #testing }
+RJITTrace >> test [
+	^ { 
+		self gtIRListingFor: GtPhlowView empty.
+		self gtJITFor: GtPhlowView empty.
+		self gtProfileFor: GtPhlowView empty.
+		self irInstructions collect: #test.
+	}
 ]
 
 { #category : #'text dump' }

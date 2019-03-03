@@ -27,6 +27,39 @@ RJITBytecodeRecordLog >> from: aCollectionOfBytecodes [
 ]
 
 { #category : #accessing }
+RJITBytecodeRecordLog >> gtBytecodesFor: aView [
+	<gtView>
+	| aList |
+	aList := aView columnedList 
+		title: 'Bytecode Log' translated;
+		priority: 20;
+		items: [ self bytecodes ].
+
+	aList column 
+		title: 'Index' translated;
+		width: 60;
+		item: [ :item :index | index ].
+	
+	aList column
+		title: 'Depth' translated;
+		width: 60;
+		item: [ :item :index | item framedepth ].
+		
+	aList column
+		title: 'Opcode' translated;
+		width: 60;
+		item: [ :item :index | item opcodeName ].
+		
+	aList column
+		title: 'Source line' translated;
+		matchParent;
+		item: [ :item :index | item sourceLine ].
+		
+	^ aList
+
+]
+
+{ #category : #accessing }
 RJITBytecodeRecordLog >> gtInspectorBytecodesIn: composite [
 	<gtInspectorPresentationOrder: 1>
 	composite fastTable

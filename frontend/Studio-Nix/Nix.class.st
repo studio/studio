@@ -24,7 +24,7 @@ Nix class >> command: commandLine [
 	| process stdout stderr out err |
 	stdout := WriteStream on: String new.
 	stderr := WriteStream on: String new.
-	process := PipeableOSProcess command: 'NIX_PATH=studio=', self studioNixPath, ' ', commandLine.
+	process := PipeableOSProcess command: 'LD_LIBRARY_PATH= NIX_PATH=studio=', self studioNixPath, ' ', commandLine.
 	process close.
 	[  process isComplete ] whileFalse: [ 
 		process updateErrorPipelineStream.
@@ -69,13 +69,13 @@ Nix class >> instantiate: expression [
 	| tmp |
 	tmp := FileReference newTempFilePrefix: 'eval-' suffix: '.nix'.
 	tmp writeStream nextPutAll: expression; cr; close.
-	[ ^ (self command: 'nix-instantiate ', tmp pathString) lines ]
+	[ ^ (self command: 'nix-instantiate --show-trace ', tmp pathString) lines ]
 		ensure: [ tmp delete ].
 ]
 
 { #category : #'instance creation' }
 Nix class >> realize: deriv [
-	^(self command: 'nix-store --realize ', deriv) lines.
+	^(self command: 'nix-store --show-trace --realize ', deriv) lines.
 ]
 
 { #category : #private }
