@@ -18,7 +18,6 @@ script:
   cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM='
 - if test -n "$authtoken"; then cachix authtoken $authtoken; fi
 - cachix use studio
-- cat ~/.config/cachix/cachix.dhall
 - nix-build -j2 -A studio-env . | cachix push studio
 - docker build -t studioproject/studio .
 - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
