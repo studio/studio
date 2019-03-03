@@ -16,10 +16,11 @@ services:
 script:
 - nix-env -if https://github.com/cachix/cachix/tarball/master --extra-substituters https://cachix.cachix.org --trusted-public-keys 'cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
   cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM='
-- cachix authtoken $authtoken
+- if test -n "$authtoken"; then cachix authtoken $authtoken; fi
 - cachix use studio
 - cat ~/.config/cachix/cachix.dhall
 - nix-build -j2 -A studio-env . | cachix push studio
 - docker build -t studioproject/studio .
 - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-- if docker run -t studioproject/studio test; then docker push studioproject/studio; else exit 1; fi
+- docker run -t studioproject/studio test
+- if test -n "$DOCKER_PASSWORD"; then docker push studioproject/studio; fi
