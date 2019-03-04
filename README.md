@@ -11,9 +11,9 @@ interactive graphical user interface.
 
 Studio runs on Linux/x86-64 and publishes its GUI via VNC. You can run
 Studio on a Linux server, or in a Docker container on
-Linux/macOS/Windows, or in a virtual machine and then access the GUI
-using a VNC client. (You can also run Studio directly via X11 if you
-prefer.)
+Linux/macOS/Windows, or in a virtual machine. You can then access the
+GUI from anywhere using a VNC client. (You can also run Studio
+directly via X11 if you prefer.)
 
 #### Connecting with VNC
 
@@ -54,7 +54,7 @@ Docker tips:
 - `docker pull studioproject/master` will upgrade to the latest Studio image from CI.
 - `docker run ... studioproject/FOO` will run Studio from the branch named FOO (for any value of FOO.)
 - `docker build .` will build the Docker container for Studio from source.
-- `docker run -v /:/host` bind-mounts local files to be accessible to Studio under `/host/*` from inside the container.
+- `docker run -v /:/host ...` bind-mounts local files to be accessible to Studio under `/host/*` from inside the container.
 
 #### Running Studio directly on Linux
 
@@ -73,6 +73,10 @@ cachix use studio
 git clone https://github.com/studio/studio
 studio/bin/studio vnc  # or x11
 ```
+
+### Hacking Studio
+
+... To be written!
 
 ----
 
