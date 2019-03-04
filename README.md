@@ -9,32 +9,69 @@ interactive graphical user interface.
 
 ### Getting Started
 
-Studio runs on Linux/x86. You can run it anywhere (server, VM, docker,
-etc) and access the GUI with VNC.
+Studio runs on Linux/x86-64 and publishes its GUI via VNC. You can run
+Studio on a Linux server, or in a Docker container on
+Linux/macOS/Windows, or in a virtual machine and then access the GUI
+using a VNC client. (You can also run Studio directly via X11 if you
+prefer.)
 
-Here is how to download and run Studio:
+#### Connecting with VNC
+
+Once you have Studio running in VNC mode you can connect to the GUI like this:
 
 ```shell
-curl https://nixos.org/nix/install | sh                 # Get nix package manager
-nix-env -iA cachix -f https://cachix.org/api/v1/install # Install Nix cache manager
-cachix use studio                                       # Enable download of cached builds
-git clone https://github.com/studio/studio              # Get Studio
-studio/run vnc                                          # Start GUI as VNC server
+vncviewer hostname:1
 ```
 
-And in a docker container:
+where *hostname* is the machine running Studio and *:1* is the VNC
+desktop number (corresponding to TCP port 5901.)
+
+We recommend using a VNC client such
+as [TigerVNC](https://tigervnc.org/) that supports automatically
+resizing the desktop to match your client window.
+
+#### Running Studio in Docker
+
+You can run Studio via the Dockerhub
+repository
+[`studioproject/master`](https://hub.docker.com/r/studioproject/master).
+Studio CI automatically publishes the latest working build of the
+`master` branch (and every other branch) to Dockerhub for easy
+installation.
+
+Here is a one-liner to start Studio in a Docker container (on
+macOS/Windows this automatically runs inside a Linux VM):
 
 ```shell
-docker run -d -p 127.0.0.1:5901:5901 studioproject/studio vnc # Run studio in the background in VNC mode, listening on localhost:5901
-vncviewer 127.0.0.1:5901                        # Connect to studio using TigerVNC
+docker run --rm -ti -p 127.0.0.1:5901:5901 studioproject/master vnc
 ```
 
-Optional extras:
+You can then connect to the GUI on VNC display `127.0.0.1` because TCP
+port 5901 is forwarded into the container.
+
+Docker tips:
+
+- `docker pull studioproject/master` will upgrade to the latest Studio image from CI.
+- `docker run ... studioproject/FOO` will run Studio from the branch named FOO (for any value of FOO.)
+- `docker build .` will build the Docker container for Studio from source.
+- `docker run -v /:/host` bind-mounts local files to be accessible to Studio under `/host/*` from inside the container.
+
+#### Running Studio directly on Linux
+
+You can also run Studio on Linux directly from source:
 
 ```shell
-git checkout next         # Switch to development version
-studio/run x11            # Start GUI directly as X11 client
-docker build -t studio .  # Build new docker image
+# Install the Nix package manager to automatically manage dependencies.
+curl https://nixos.org/nix/install | sh
+
+# Setup Cachix to speed up Nix by downloading cached binaries when available.
+# (This step is optional but recommended.)
+nix-env -iA cachix -f https://cachix.org/api/v1/install
+cachix use studio 
+
+# Download and run Studio
+git clone https://github.com/studio/studio
+studio/bin/studio vnc  # or x11
 ```
 
 ----
