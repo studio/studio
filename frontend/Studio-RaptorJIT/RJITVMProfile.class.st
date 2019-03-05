@@ -106,6 +106,11 @@ RJITVMProfile >> name: aName [
 	name := aName.
 ]
 
+{ #category : #printing }
+RJITVMProfile >> printOn: aStream [
+	aStream nextPutAll: name
+]
+
 { #category : #initialization }
 RJITVMProfile >> process [
 	^process

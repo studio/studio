@@ -170,6 +170,14 @@ RJITProcess >> gtProfileFor: aView [
 
 ]
 
+{ #category : #'instance creation' }
+RJITProcess >> gtVMProfilesFor: aView [
+	<gtView>
+	| profiles |
+	profiles := RJITProfileList withAll: (self vmprofiles collect: #profile).
+	^ (profiles subjectViewTitled: 'VMProfiles' translated subjectName: 'VMProfile' translated onView: aView) priority: 10
+]
+
 { #category : #accessing }
 RJITProcess >> label: arg1 [
 	self shouldBeImplemented
