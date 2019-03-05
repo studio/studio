@@ -16,7 +16,7 @@ services:
 script:
 - nix-env -iA cachix -f https://cachix.org/api/v1/install
 - cachix use studio
-- nix-build -j2 -A studio-env . | cachix push studio
+- nix-build -j2 -A studio-env . | (if test -n "$CACHIX_SIGNING_KEY"; then cachix push studio; else cat; fi)
 - docker build -t studioproject/$TRAVIS_BRANCH .
 - docker run -t studioproject/$TRAVIS_BRANCH test
 - if [[ $TRAVIS_PULL_REQUEST == "false" ]]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin; docker push studioproject/$TRAVIS_BRANCH; fi
