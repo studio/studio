@@ -69,7 +69,7 @@ Nix class >> instantiate: expression [
 	| tmp |
 	tmp := FileReference newTempFilePrefix: 'eval-' suffix: '.nix'.
 	tmp writeStream nextPutAll: expression; cr; close.
-	[ ^ (self command: 'nix-instantiate --show-trace ', tmp pathString) lines ]
+	[ ^ (self command: 'LD_LIBRARY_PATH= nix-instantiate --show-trace ', tmp pathString) lines ]
 		ensure: [ tmp delete ].
 ]
 
