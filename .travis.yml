@@ -16,8 +16,8 @@ services:
 script:
 - nix-env -iA cachix -f https://cachix.org/api/v1/install
 - cachix use studio
-- nix-build -j2 -A studio-env . | cachix push studio
-- cachix push cachix --watch-store&
+- nix-build -j2 -A studio-env . | (if -n "$CACHIX_SIGNING_KEY"; then cachix push studio; else cat; fi)
+- (if test -n "$CACHIX_SIGNING_KEY"; then cachix push cachix --watch-store; fi) &
 - bin/studio test
 - docker build -t studioproject/$TRAVIS_BRANCH .
 - docker run -t studioproject/$TRAVIS_BRANCH test
