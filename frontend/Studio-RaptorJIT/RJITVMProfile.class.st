@@ -177,7 +177,7 @@ RJITVMProfile >> total [
 
 { #category : #'accessing-data' }
 RJITVMProfile >> trace: tr [
-	^ traceProfiles detect: [ :profile | profile subject at: #trace = (tr traceno) ]
+	^ traceProfiles detect: [ :profile | profile subject = tr ]
 ]
 
 { #category : #'accessing-data' }
