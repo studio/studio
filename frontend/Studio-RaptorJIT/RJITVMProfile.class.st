@@ -143,6 +143,11 @@ RJITVMProfile >> profile [
 
 ]
 
+{ #category : #testing }
+RJITVMProfile >> test [ 
+	^ self gtHotTracesFor: GtPhlowView empty.
+]
+
 { #category : #'text dump' }
 RJITVMProfile >> textDumpInDirectory: dir [
 	| tracelist sep |

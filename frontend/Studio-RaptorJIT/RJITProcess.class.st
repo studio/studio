@@ -211,7 +211,9 @@ RJITProcess >> test [
 	^{
 		self gtHotTracesFor: GtPhlowView empty.
 		self gtProfileFor: GtPhlowView empty.
+		self gtVMProfilesFor: GtPhlowView empty.
 		self traces collect: #test.
+		self vmprofiles collect: #test.
 	}.
 ]
 
