@@ -43,11 +43,13 @@ Here is a one-liner to start Studio in a Docker container (on
 macOS/Windows this automatically runs inside a Linux VM):
 
 ```shell
-docker run --rm -ti -p 127.0.0.1:5901:5901 studioproject/master vnc
+docker run --rm -ti -p 0.0.0.0:5901:5901 studioproject/master vnc
 ```
 
-You can then connect to the GUI on VNC display `127.0.0.1` because TCP
-port 5901 is forwarded into the container.
+You can then connect to the GUI on this machine using VNC display `:1`
+because TCP port 5901 is forwarded into the container. (If you want to
+use a different display number then change the first `:5901` to a
+higher number.)
 
 Docker tips:
 
