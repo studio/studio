@@ -175,7 +175,7 @@ RJITProcess >> gtVMProfilesFor: aView [
 	<gtView>
 	| profiles |
 	profiles := RJITProfileList withAll: (self vmprofiles collect: #profile).
-	^ (profiles subjectViewTitled: 'VMProfiles' translated subjectName: 'VMProfile' translated onView: aView) priority: 10
+	^ (profiles subjectViewTitled: 'VMProfiles' translated subjectName: 'VMProfile' translated onView: aView) priority: 20
 ]
 
 { #category : #accessing }
@@ -248,6 +248,12 @@ RJITProcess >> totalSamples [
 RJITProcess >> totalSamplesFor: trace [
 	vmprofiles ifEmpty: [ ^0 ]. 
 	^ vmprofiles sum: [ :p | (p trace: trace) all]
+]
+
+{ #category : #accessing }
+RJITProcess >> trace: traceno [
+	^ self traces at: traceno
+
 ]
 
 { #category : #visualization }

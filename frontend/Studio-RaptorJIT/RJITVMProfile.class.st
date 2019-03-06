@@ -31,9 +31,9 @@ Class {
 { #category : #'instance creation' }
 RJITVMProfile class >> loadFromFileNamed: filename name: aName process: aProcess [
 	^self new
-		loadFromFileNamed: filename;
-		name: aName;
 		process: aProcess;
+		name: aName;
+		loadFromFileNamed: filename;
 		yourself.
 ]
 
@@ -49,6 +49,14 @@ RJITVMProfile >> gcPercent [
 ]
 
 { #category : #initialization }
+RJITVMProfile >> gtHotTracesFor: aView [
+	<gtView>
+	| profiles |
+	profiles := self traceProfiles sort: [ :a :b | a all > b all ].
+	^ (profiles subjectViewTitled: 'Hot traces' translated subjectName: 'Trace' translated onView: aView).
+]
+
+{ #category : #initialization }
 RJITVMProfile >> gtInspectorHotTracesIn: composite [
 	"<gtInspectorPresentationOrder: 5>"
 	process ifNil: [ ^nil ].
@@ -61,18 +69,17 @@ RJITVMProfile >> gtInspectorHotTracesIn: composite [
 RJITVMProfile >> loadFromFileNamed: aFilename [
 	| data index |
 	data := (File named: aFilename) readStream upToEnd.
-	[ (data unsignedLongAt: 1) = 16r1d50f007 ] assert.
-	[ (data unsignedShortAt: 5) = 4 ] assert.
+	[ (data unsignedLongAt: 1) = 16r1d50f007 ]  assert.
+	[ (data unsignedShortAt: 5) = 4 ]  assert.
 	index := 8.
-	traceProfiles := (0 to: 4096) collect: [ :tr |
-		| profile subject |
+	traceProfiles := RJITProfileList withAll: ((0 to: process traces size) collect: [ :tr |
+		| prof subject |
 		subject := { #trace -> tr. #vmprofile -> self. } asDictionary.
-		profile := RJITProfile new subject: subject; yourself.
+		prof := RJITProfile new subject: (self lookupTrace: tr); yourself.
 		#(interp: c: igc: exit: record: opt: asm: head: loop: jgc: ffi:) do: [ :selector |
-			profile perform: selector with: (data unsignedLongLongAt: index+1).
+			prof perform: selector with: (data unsignedLongLongAt: index+1).
 			index := index + 8. ].
-		profile. ].
-
+		prof. ])
 ]
 
 { #category : #accessing }
@@ -83,6 +90,14 @@ RJITVMProfile >> locations [
 	groups keysAndValuesDo: [ :loc :trs |
 		locations add: (RJITRootTraceSet new location: loc value; traces: trs; profile: self). ].
 	^ locations.
+]
+
+{ #category : #initialization }
+RJITVMProfile >> lookupTrace: traceno [
+	^ traceno = 0
+		ifTrue: [ '(Unknown)' ]
+		ifFalse: [ [ process trace: traceno ]
+						on: SubscriptOutOfBounds do: [ '(No trace ', traceno printString, ')'  ] ]
 ]
 
 { #category : #'accessing-data' }
