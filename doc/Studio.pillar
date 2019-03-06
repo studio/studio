@@ -4,6 +4,8 @@ This is an interactive "playbook" that will show you how to interactively inspec
 
 (These playbooks contain snippets of Smalltalk code that you need to edit and run. Sorry about that. In the future these will be replaced by custom widgets for entering code, filenames, URLs, etc. You can read more about all of this in ${inputFile:path=Evolution-of-Studio.pillar}$.)
 
+Note for Mac users: This UI is running on Linux and the shortcuts for copy/paste are Control-C and Control-V. (Sorry, Command-C and Command-V don't work here.)
+
 !!! RaptorJIT
 
 Studio loads and analyzes diagnostic data from the RaptorJIT Lua virtual machine.
