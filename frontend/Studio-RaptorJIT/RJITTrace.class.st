@@ -151,6 +151,7 @@ RJITTrace >> gtContourFor: aView [
 	^aView textEditor
 		title: 'Contour';
 		priority: 5;
+		look: BrGlamorousCodeEditorLook new;
 		text: [ (self printString, String cr, self functionContour) asRopedText ].
 
 ]
@@ -252,6 +253,17 @@ RJITTrace >> gtJITFor: aView [
 		title: 'JIT Events';
 		priority: 25;
 		items: [ self jitEvents ].
+
+]
+
+{ #category : #accessing }
+RJITTrace >> gtMCodeFor: aView [
+	<gtView>
+	^aView textEditor
+		title: 'MCode';
+		priority: 10;
+		look: BrGlamorousCodeEditorLook new;
+		text: [ (self mcodeDump) asRopedText ].
 
 ]
 

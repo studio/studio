@@ -170,6 +170,14 @@ RJITProcess >> gtProfileFor: aView [
 
 ]
 
+{ #category : #'instance creation' }
+RJITProcess >> gtVMProfilesFor: aView [
+	<gtView>
+	| profiles |
+	profiles := RJITProfileList withAll: (self vmprofiles collect: #profile).
+	^ (profiles subjectViewTitled: 'VMProfiles' translated subjectName: 'VMProfile' translated onView: aView) priority: 20
+]
+
 { #category : #accessing }
 RJITProcess >> label: arg1 [
 	self shouldBeImplemented
@@ -203,7 +211,9 @@ RJITProcess >> test [
 	^{
 		self gtHotTracesFor: GtPhlowView empty.
 		self gtProfileFor: GtPhlowView empty.
+		self gtVMProfilesFor: GtPhlowView empty.
 		self traces collect: #test.
+		self vmprofiles collect: #test.
 	}.
 ]
 
@@ -240,6 +250,12 @@ RJITProcess >> totalSamples [
 RJITProcess >> totalSamplesFor: trace [
 	vmprofiles ifEmpty: [ ^0 ]. 
 	^ vmprofiles sum: [ :p | (p trace: trace) all]
+]
+
+{ #category : #accessing }
+RJITProcess >> trace: traceno [
+	^ self traces at: traceno
+
 ]
 
 { #category : #visualization }
