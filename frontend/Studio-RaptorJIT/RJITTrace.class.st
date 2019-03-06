@@ -102,6 +102,12 @@ RJITTrace >> exitno [
 ]
 
 { #category : #accessing }
+RJITTrace >> family [
+	^ self process traces select: [ :tr | tr root = root ]
+
+]
+
+{ #category : #accessing }
 RJITTrace >> flashback [
 	^ gctrace flashback
 ]
@@ -154,6 +160,30 @@ RJITTrace >> gtContourFor: aView [
 		look: BrGlamorousCodeEditorLook new;
 		text: [ (self printString, String cr, self functionContour) asRopedText ].
 
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> gtFamilyFor: aView [
+	<gtView>
+	^ aView mondrian
+		title: 'Family';
+		priority: 25;
+		painting: [ :view |
+			view nodes
+			  shape: [ :x |
+				| text |
+				text := BlTextElement new
+			      text: (x startLineShort asRopedText foreground: x hotnessColor).
+				x = self ifTrue: [
+					text padding: (BlInsets all: 5); border: (BlBorder paint: x hotnessColor width: 2).].
+				text ];
+			  with: self family.
+			view edges
+			  fromCenterBottom;
+			  toCenterTop;
+			  connectFrom: #parent.
+			view layout tree levelDistance: 20; nodeDistance: 20.
+			view ].
 ]
 
 { #category : #'gt-inspector-extension' }
@@ -282,6 +312,18 @@ RJITTrace >> hasLoop [
 { #category : #initializing }
 RJITTrace >> headInstructions [
 	^ self irInstructions copyUpTo: self loop.
+]
+
+{ #category : #accessing }
+RJITTrace >> hotness [
+	^ [ (self process totalSamplesFor: self) / self process totalSamples ] 
+		on: ZeroDivide do: [ 0.0 ].
+]
+
+{ #category : #accessing }
+RJITTrace >> hotnessColor [
+	^ Color red mixed: self hotness * 5 with: Color black.
+
 ]
 
 { #category : #accessing }
