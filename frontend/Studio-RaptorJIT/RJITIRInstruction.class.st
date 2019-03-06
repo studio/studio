@@ -239,6 +239,17 @@ RJITIRInstruction >> gtInspectorUsesTreeIn: composite [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> gtMCodeFor: aView [
+	<gtView>
+	^ aView textEditor 
+		title: 'MCode';
+		priority: 20;
+		look: BrGlamorousCodeEditorLook new;
+		text: [ self disassemble asRopedText ]
+
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> gtRelatedListingIn: aView [
 	<gtView>
 	^ (self transitiveRelations irColumnedListViewIn: aView title: 'Related' translated) priority: 10.
@@ -552,6 +563,28 @@ RJITIRInstruction >> opcode [
 	^ opcode
 ]
 
+{ #category : #initialization }
+RJITIRInstruction >> opcodeColor [
+	self isAllocation ifTrue: [
+		^ self isSunk ifTrue: [ Color pink ] ifFalse: [ Color red ].
+	].
+	self isArithmetic ifTrue: [ ^Color paleGreen. ].
+	self isBitOp ifTrue: [ ^Color paleGreen darker. ].
+	"Calls"
+	self isBarrier ifTrue: [ ^Color orange lighter. ].
+	self isCall ifTrue: [ ^Color orange. ].
+	"Checks and conversions."
+	self isGuardedAssertion ifTrue: [ ^Color palePeach. ].
+	self isTypeConversion ifTrue: [ ^Color palePeach darker. ].	
+	"Memory access"
+	self isMemoryReference ifTrue: [ ^ Color paleBlue. ].
+	self isLoad ifTrue: [ ^ Color paleBlue darker. ].
+	self isStore ifTrue: [ ^ Color paleBlue darker darker. ].
+	self isLoop ifTrue: [ ^ Color transparent. ].
+	self isMisc ifTrue: [ ^ Color paleGreen. ].
+	^ Color cyan. "unrecognized"
+]
+
 { #category : #'as yet unclassified' }
 RJITIRInstruction >> operand1String [
 	^ String streamContents: [ :s |
@@ -627,25 +660,8 @@ RJITIRInstruction >> resolveIR: num in: aGCtrace [
 ]
 
 { #category : #initialization }
-RJITIRInstruction >> roassalColor [	
-	self isAllocation ifTrue: [
-		^ self isSunk ifTrue: [ Color pink ] ifFalse: [ Color red ].
-	].
-	self isArithmetic ifTrue: [ ^Color paleGreen. ].
-	self isBitOp ifTrue: [ ^Color paleGreen darker. ].
-	"Calls"
-	self isBarrier ifTrue: [ ^Color orange lighter. ].
-	self isCall ifTrue: [ ^Color orange. ].
-	"Checks and conversions."
-	self isGuardedAssertion ifTrue: [ ^Color palePeach. ].
-	self isTypeConversion ifTrue: [ ^Color palePeach darker. ].	
-	"Memory access"
-	self isMemoryReference ifTrue: [ ^ Color paleBlue. ].
-	self isLoad ifTrue: [ ^ Color paleBlue darker. ].
-	self isStore ifTrue: [ ^ Color paleBlue darker darker. ].
-	self isLoop ifTrue: [ ^ Color transparent. ].
-	self isMisc ifTrue: [ ^ Color paleGreen. ].
-	^ Color cyan. "unrecognized"
+RJITIRInstruction >> roassalColor [
+	^ self opcodeColor
 ]
 
 { #category : #initialization }
