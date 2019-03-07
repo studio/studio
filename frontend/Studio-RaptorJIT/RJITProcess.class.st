@@ -40,15 +40,14 @@ RJITProcess >> dwarf: aDWARF [
 RJITProcess >> fromPath: aPath [
 	| dwarfPath auditPath |
 	path := aPath asFileReference.
-	dwarfPath := path / 'raptorjit-dwarf.json'.
-	auditPath := path / 'audit.log'.
+auditPath := path / 'audit.log'.
 	[ auditPath isFile ] assertWithDescription:
 		'JIT audit log not found in ', path asString.
 	auditLog := RJITAuditLog new loadFromFileNamed: auditPath pathString.
 	auditLog process: self.
 	"Load VMProfile data with progress monitoring."
 	vmprofiles := OrderedCollection new.
-	(path / 'vmprofile') children
+	(self vmprofilePathsUnder: aPath)
 		do: [ :vmprofile |
 			vmprofiles add: (RJITVMProfile loadFromFileNamed: vmprofile pathString name: vmprofile basenameWithoutExtension process: self) ]
 		displayingProgress: [ :x | 'Loading VMProfile: ', x base ].
@@ -344,6 +343,16 @@ RJITProcess >> visualizeTraces: traces withProfile: profile [
 RJITProcess >> vmProfile: aVMProfile named: name [ 
 	vmprofiles ifNil: [ vmprofiles := RJITProcessProfile new. ].
 	vmprofiles at: name put: aVMProfile.
+
+]
+
+{ #category : #'instance creation' }
+RJITProcess >> vmprofilePathsUnder: dir [
+	| paths |
+	paths := OrderedCollection new.
+	[ paths addAll: (dir / 'vmprofile') children ] on: FileSystemError do: [ "no vmprofile/ dir" ].
+	paths addAll: (dir allChildrenMatching: '*.vmprofile').
+	^ paths
 
 ]
 

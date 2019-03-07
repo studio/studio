@@ -25,14 +25,14 @@ RaptorJIT class >> inspect: aPath [
 { #category : #running }
 RaptorJIT class >> inspectAll: aPath [
 	| paths logs progress num |
-	paths := aPath allChildrenMatching: 'audit.log'.
+	paths := aPath asFileReference allChildrenMatching: 'audit.log'.
 	progress := 0.
 	num := paths size.
 	[  :job |
 		job title: 'Reading logs' translated.
 		logs := paths collect: [ :log |
 			| shortPath |
-			shortPath := (GtFileUtility fileNameOf: log parent relativeTo: aPath).
+			shortPath := (GtFileUtility fileNameOf: log parent relativeTo: aPath asFileReference).
 			job title: ('Reading log {1}/{2}: {3}' format: { progress + 1. num. shortPath. }).
 			job progress: progress / num.
 			progress := progress + 1.			(self inspect: log) name: shortPath.
