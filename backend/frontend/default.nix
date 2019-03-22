@@ -226,7 +226,7 @@ let
           export STUDIO_DECODE_INPUT=$1
           export STUDIO_DECODE_OUTPUT=$2
           image=$(${studio-get-image}/bin/studio-get-image)
-          timeout 600 \
+          timeout 600 ${xvfb_run}/bin/xvfb-run \
             ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-decode-script}
         '';
   };
