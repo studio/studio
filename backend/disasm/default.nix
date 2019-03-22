@@ -9,9 +9,9 @@ writeScriptBin "disasm" ''
   file="$1"
   start="$2"
 
-  objdump -mi386 -M intel -M intel-mnemonic -M x86-64 \
+  ${binutils}/bin/objdump -mi386 -M intel -M intel-mnemonic -M x86-64 \
           --adjust-vma=$start \
           --no-show-raw-insn \
           -D -b binary "$file" \
-    | grep -E '^ *[0-9a-fA-F]+:'
+    | ${gnugrep}/bin/grep -E '^ *[0-9a-fA-F]+:'
 ''

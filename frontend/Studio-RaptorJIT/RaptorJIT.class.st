@@ -47,8 +47,8 @@ RaptorJIT class >> inspectBuild: build [
 ]
 
 { #category : #running }
-RaptorJIT class >> load: arg1 [
-	^ self inspectAll: arg1
+RaptorJIT class >> load: aPath [
+	^ self inspectAll: aPath
 ]
 
 { #category : #running }

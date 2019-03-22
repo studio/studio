@@ -8,3 +8,8 @@ Class {
 	#superclass : #RJITProcessList,
 	#category : #'Studio-Snabb'
 }
+
+{ #category : #dumping }
+SnabbProcessList >> textDumpInDirectory: aDirectory [
+	self do: [ :process | process textDumpInDirectory: aDirectory ]
+]
