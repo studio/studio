@@ -82,6 +82,7 @@ let
       mkdir $out
       cp new.image $out/pharo.image
       cp new.changes $out/pharo.changes
+      cp *.sources $out/
     '';
 
   studio-inspector-screenshot = { name, object, view, width ? 640, height ? 480 }:
@@ -134,7 +135,7 @@ let
       cp ${studio-image}/pharo.changes pharo-$version.changes
       chmod +w pharo-$version.image
       chmod +w pharo-$version.changes
-      cp ${pharo.pharo-share}/lib/*.sources .
+      cp ${studio-image}/*.sources .
       realpath "pharo-$version.image"
     '';
   };
