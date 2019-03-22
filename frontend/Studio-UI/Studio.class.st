@@ -11,6 +11,12 @@ Studio class >> build: arg1 [
 	self doBuild: arg1 ] asJob run
 ]
 
+{ #category : #'as yet unclassified' }
+Studio class >> decodeFrom: inputDirectory to: outputDirectory [ 
+	^ (RaptorJIT load: inputDirectory) textDumpInDirectory: outputDirectory.
+
+]
+
 { #category : #accessing }
 Studio class >> dir [
 	^ Nix studioNixPath asFileReference

@@ -663,13 +663,13 @@ RJITTrace >> test [
 RJITTrace >> textDumpInDirectory: dir [ 
 	dir ensureCreateDirectory.
 	dir dumpStudioFile: 'name.txt' with: [ :s |
-		s text. s nextPutAll: self asString withUnixLineEndings ].
+		s nextPutAll: self asString withUnixLineEndings ].
 	dir dumpStudioFile: 'ir.txt' with: [ :s | 
-		s text. s nextPutAll: self irDump withUnixLineEndings ].
+		s nextPutAll: self irDump withUnixLineEndings ].
 	dir dumpStudioFile: 'mcode.txt' with: [ :s | 
-		s text. s nextPutAll: self mcodeDump withUnixLineEndings ].
+		s nextPutAll: self mcodeDump withUnixLineEndings ].
 	dir dumpStudioFile: 'contour.txt' with: [ :s | 
-		s text. s nextPutAll: self ownFunctionContour withUnixLineEndings ]
+		s nextPutAll: self ownFunctionContour withUnixLineEndings ]
 	
 ]
 

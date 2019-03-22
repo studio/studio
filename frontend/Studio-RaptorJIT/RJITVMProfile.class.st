@@ -148,25 +148,27 @@ RJITVMProfile >> test [
 	^ self gtHotTracesFor: GtPhlowView empty.
 ]
 
-{ #category : #'text dump' }
+{ #category : #dumping }
 RJITVMProfile >> textDumpInDirectory: dir [
 	| tracelist sep |
 	sep := ' | '.
-	tracelist := self traces select: [ :tr | tr all > 0 ].
+	tracelist := self traceProfiles select: [ :tr | tr all > 0 ].
 	tracelist sort: [ :a :b | a all > b all ].
 	dir asFileReference dumpStudioFile: (self name, '.txt') with: [ :s |
-		#(Samples MCode VM GC) do: [ :col |
-			s nextPutAll: (col padRightTo: 8), sep. ].
-		s nextPutAll: 'Trace'.
-		s lf.
-		tracelist do: [ :tr |
-			s nextPutAll: (tr all asString padLeftTo: 8), sep.
-			{  tr mcodePercent. tr vmPercent. tr gcPercent } do: [ :pct |
-				s nextPutAll: ((pct printShowingDecimalPlaces: 1), '%' padLeftTo: 6), '  ', sep ].
-			s nextPutAll: (process traces detect: [ :trace | trace traceno = tr id ]) printString.
-			s lf.
-		 ]
+		 #(Samples Native VM GC) do: [ :col |
+			  s nextPutAll: (col padRightTo: 8), sep. ].
+		 s nextPutAll: 'Trace'.
+		 s lf.
+		 tracelist do: [ :tr |
+			  s nextPutAll: (tr all asString padLeftTo: 8), sep.
+			  {  tr nativeCode. tr virtualMachine. tr garbageCollection } do: [ :pct |
+				   s nextPutAll: ((pct printShowingDecimalPlaces: 1), '%' padLeftTo: 6), '  ', sep ].
+			  s nextPutAll: tr subject printString.
+			  s lf.
+		  ]
 	].
+        
+
 ]
 
 { #category : #'accessing-data' }
