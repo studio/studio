@@ -50,9 +50,6 @@ stdenv.mkDerivation rec {
   source-date = "Tue May 30 19:41:27 2017 -0700.1";
   source-url  = "https://github.com/OpenSmalltalk/opensmalltalk-vm";
 
-  # Shared data (for the sources file)
-  pharo-share = import ./share.nix { inherit stdenv fetchurl unzip runCommand; };
-
   # Note: -fPIC causes the VM to segfault.
   hardeningDisable = [ "format" "pic"
                        # while the VM depends on <= gcc48:
@@ -102,7 +99,6 @@ stdenv.mkDerivation rec {
     mkdir -p "$out"
     cp products/lib/squeak/5.0-*/squeak "$out/pharo"
     cp -r products/lib/squeak/5.0-*/*.so "$out"
-    ln -s "${pharo-share}/lib/"*.sources "$out"
 
     # Create a shell script to run the VM in the proper environment.
     #

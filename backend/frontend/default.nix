@@ -25,9 +25,9 @@ let
   # Built on Inria CI (Jenkins) with Metacello to install Studio.
   base-image = fetchImageZip rec {
     name = "studio-base-image-${version}.zip";
-    version = "0.5.79";
-    url = "https://drive.google.com/uc?export=download&id=1yjrmt-LAoN5oradRinnIGppmeBtGdPmz";
-    sha256 = "12ggi0yaykhl5qz6887q6gi2g9qcnpvs8g9cw3y6wmirmf9na3ra";
+    version = "0.5.126";
+    url = "https://github.com/studio/base-images/raw/master/Studio-Base-GToolkit-v${version}.zip";
+    sha256 = "0g60x8y7g3qva2cidi1rv0g7s70yc6ds6j5p4ljknqg9ck2hbg7p";
   };
 
   # Script to update and customize the image for Studio.
@@ -82,6 +82,7 @@ let
       mkdir $out
       cp new.image $out/pharo.image
       cp new.changes $out/pharo.changes
+      cp *.sources $out/
     '';
 
   studio-inspector-screenshot = { name, object, view, width ? 640, height ? 480 }:
@@ -134,7 +135,7 @@ let
       cp ${studio-image}/pharo.changes pharo-$version.changes
       chmod +w pharo-$version.image
       chmod +w pharo-$version.changes
-      cp ${pharo.pharo-share}/lib/*.sources .
+      cp ${studio-image}/*.sources .
       realpath "pharo-$version.image"
     '';
   };
@@ -225,17 +226,18 @@ let
           export STUDIO_DECODE_INPUT=$1
           export STUDIO_DECODE_OUTPUT=$2
           image=$(${studio-get-image}/bin/studio-get-image)
-          timeout 600 \
+          timeout 600 ${xvfb_run}/bin/xvfb-run \
             ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-decode-script}
         '';
   };
   # Environment for nix-shell
   studio-env = runCommandNoCC "studio" {
-      buildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run binutils
+      buildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run
                       binutils gnugrep
                       dwarfish.binutils
                       studio-x11 studio-vnc studio-test studio-decode ];
     } "echo ok > $out";
+
 in
   
 {
