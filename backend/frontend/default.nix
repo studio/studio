@@ -232,11 +232,12 @@ let
   };
   # Environment for nix-shell
   studio-env = runCommandNoCC "studio" {
-      buildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run binutils
+      buildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run
                       binutils gnugrep
                       dwarfish.binutils
                       studio-x11 studio-vnc studio-test studio-decode ];
     } "echo ok > $out";
+
 in
   
 {
