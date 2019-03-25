@@ -11,7 +11,8 @@ StudioIntroduction class >> menuCommandOn: aBuilder [
 		order: 200.0;
 		parent: #Studio;
 		label: 'Playbook: Welcome to Studio';
-		action: [ self new open ].
+		action: [ self new open ];
+		withSeparatorAfter.
 ]
 
 { #category : #api }

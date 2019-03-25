@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-studio="$(dirname $(readlink -f $0))/.."
+studio="$(readlink -f $(dirname $(readlink -f $0))/..)"
 
 error() {
     echo "error: $*" >&2
