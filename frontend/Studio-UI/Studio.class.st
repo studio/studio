@@ -30,9 +30,9 @@ Studio class >> doBuild: arg1 [
 { #category : #'world menu' }
 Studio class >> menuCommandOn: aBuilder [
 	<worldMenu>
-	(aBuilder item: #Studio)
+	(aBuilder item: #'Studio')
 		order: 0;
-		label: 'Studio: Interactive Software Diagnostics';
+		label: 'Studio';
 		withSeparatorAfter.
 ]
 

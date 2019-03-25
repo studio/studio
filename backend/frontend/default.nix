@@ -39,25 +39,22 @@ let
 
     "Force reload of all Studio packages from local sources."
     repo := '${../../frontend}' asFileReference.
-    (FileSystem disk childrenAt: repo) do: [ :path |
-      | packageName reader |
-      path asFileReference entries ifNotEmpty: [
-        packageName := path basenameWithoutExtension.
-        Transcript show: 'Loading package: ', packageName; cr.
-        reader := (TonelReader on: repo fileName: packageName).
-        reader version load. ].
-      ].
 
-    "Load additional patches to the image."
+    Transcript show: 'Loading StudioLoader..'; cr.
+    (TonelReader on: repo fileName: #'Studio-Loader') version load.
+
+    Transcript show: 'Loading all Studio packages..'; cr.
+    StudioLoader new loadAllStudioPackagesFrom: repo.
+
+    Transcript show: 'Loading additional patches to the Pharo image..'; cr.
     '${./patches}' asFileReference entries do: [ :entry |
         Transcript show: 'Patching: ', entry asFileReference fullName; cr.
         entry asFileReference fileIn. ].
 
-    "Setup desktop"
-    Pharo3Theme beCurrent. "light theme"
+    Transcript show: 'Customizing image..'; cr.
     World closeAllWindowsDiscardingChanges.
 
-    "Save image"
+    Transcript show: 'Saving image to disk..'; cr.
     (Smalltalk saveAs: 'new')
       ifTrue: [
         "Run in resumed image on startup."
@@ -78,7 +75,7 @@ let
       cp ${base-image}/*.sources .
       chmod +w pharo.image
       chmod +w pharo.changes
-      xvfb-run pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript}
+      xvfb-run pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript} ${filterPharoOutput}
       mkdir $out
       cp new.image $out/pharo.image
       cp new.changes $out/pharo.changes
@@ -148,7 +145,7 @@ let
     text = ''
       #!${stdenv.shell}
       image=$(${studio-get-image}/bin/studio-get-image)
-      ${pharo}/bin/pharo $image "$@"
+      ${pharo}/bin/pharo $image "$@" ${filterPharoOutput}
     '';
   };
 
@@ -165,6 +162,9 @@ let
       #!${stdenv.shell}
       exec ${ratpoison}/bin/ratpoison -f ${ratpoisonConfig}
     '';
+
+  # Pharo spews some unhelpful error messages. Suppress them.
+  filterPharoOutput = "| (egrep -v -e '^warning:' -e ': GLib-' -e 'pthread_setschedparam failed: Operation not permitted')";
 
   # Script to run everything in VNC.
   studio-vnc = writeTextFile {
@@ -198,7 +198,7 @@ let
         #!${stdenv.shell}
         image=$(${studio-get-image}/bin/studio-get-image)
         timeout 600 ${xvfb_run}/bin/xvfb-run \
-          ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-test-script}
+          ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-test-script} ${filterPharoOutput}
       '';
   };
 
@@ -227,7 +227,7 @@ let
           export STUDIO_DECODE_OUTPUT=$2
           image=$(${studio-get-image}/bin/studio-get-image)
           timeout 600 ${xvfb_run}/bin/xvfb-run \
-            ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-decode-script}
+            ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-decode-script} ${filterPharoOutput}
         '';
   };
   # Environment for nix-shell

@@ -13,8 +13,8 @@ RJITTraceEvent >> from: dict flashback: aFlashback [
 
 { #category : #'as yet unclassified' }
 RJITTraceEvent >> gcTraceWithExistingTraces: traces [
-	trace := RJITTrace new from: self decode withExistingTraces: traces; jitState: jitState.
-	^ trace.
+	^ RJITTrace new from: self decode withExistingTraces: traces; jitState: jitState.
+
 ]
 
 { #category : #'gt-inspector-extension' }

@@ -41,20 +41,6 @@ RJITTrace >> ancestorFunctionContour [
 			parent functionContour, String cr. ]
 ]
 
-{ #category : #'gt-inspector-extension' }
-RJITTrace >> asElement [
-	| base |
-	base := self hasLoop ifTrue: [ RTEllipse new ] ifFalse: [ RTBox new ].
-	base size: [ :tr |
-		| area |
-		area := tr numberOfHeadIrInstructions * 10.
-		self hasLoop ifTrue: [ 2 * (area / Float pi) sqrt ] ifFalse: [ area sqrt ]].
-	base borderColor: Color black;
-			color: [ :tr | Color red alpha: ((self totalSamples) / (Float fmin + self process totalSamples)) ].
-	self isRootTrace ifTrue: [ base borderColor: Color black; borderWidth: 2 ].
-	^ base	+ (RTLabel new color: Color black; text: #traceno) elementOn: self.	
-]
-
 { #category : #initialization }
 RJITTrace >> bytecodes [
 	^ jitState bytecodes
@@ -386,55 +372,6 @@ RJITTrace >> irTreeView [
 	^ self irTreeViewOfInstructions: self irInstructionsNoNop.
 ]
 
-{ #category : #'gt-inspector-extension' }
-RJITTrace >> irTreeViewOfInstructions: insns [
-	| headInsns loopInsns view head loop all separator popup layoutEdges |
-	self hasLoop ifTrue: [
-		| loopindex |
-		loopindex := self loop index.
-		headInsns := insns select: [ :i | i index < loopindex ].
-		loopInsns := insns select: [ :i | i index > loopindex ].
-	] ifFalse: [ 
-		headInsns := insns.
-		loopInsns := { }.
-	 ].
-	head := RTGroup new addAll: (headInsns collect: #asElement); yourself.
-	loop := RTGroup new addAll: (loopInsns reject: #isPhi thenCollect: #asElement); yourself.
-	all := RTGroup new addAll: head; addAll: loop; yourself.
-	separator := RTLabel new color: Color black; height: 18; elementOn: #'LOOP:'.
-	view := RTView new.
-	view addAll: all.
-
-	popup := RTPopup new
-		text: #popupSummary;
-		alphaPopupBackground: 1.0;
-		borderColor: Color black;
-		backgroundColor: Color white.
-	all @ popup.
-	
-	view @ RTZoomableBoxView.
-	view @ RTDoubleScrollBar.
-	RTEdgeBuilder new
-		view: view;
-		objects: (self irInstructions);
-		shape: (RTLine new color: Color black trans; attachPoint: RJITOperand1AttachPoint new; yourself);
-		connectFrom: #op1ins;
-		shape: (RTLine new color: Color black trans; attachPoint: RJITOperand2AttachPoint new; yourself);
-		connectFrom: #op2ins.
-	layoutEdges := RTElement edgesForLongTree: all.
-	RTTreeLayout new doNotAttachPoint; userDefinedEdges: layoutEdges; on: head.
-	RTTreeLayout new doNotAttachPoint; "userDefinedEdges: layoutEdges;" on: loop.
-	RTEdgeBuilder new
-		view: view;
-		objects: (self irInstructions);
-		shape: (RTArrowedLine new color: (Color red alpha: 0.5); attachPoint: RTBorderAttachPoint new);
-		connectFrom: #phiChild.
-	loopInsns size > 0 ifTrue: [
-		view add: separator.
-		RTVerticalLineLayout on: { head. separator. loop }. ].
-	^ view 
-]
-
 { #category : #accessing }
 RJITTrace >> isRootTrace [
 	^ parent isNil or: [ exitno = 0 and: [ parent isRootTrace ] ].
@@ -586,39 +523,6 @@ RJITTrace >> process [
 { #category : #accessing }
 RJITTrace >> profile [
 	^ self process traceProfiles detect: [ :profile | profile subject = self ]
-]
-
-{ #category : #initializing }
-RJITTrace >> roassal [
-	| view elements head loop headIns loopIns insShape shapeContainer shapeIns headLabel loopLabel line border |
-	view := RTView new.
-	"Border surrounding the trace."
-	border := RTBox new width: 250; color: Color transparent; borderColor: Color black; element.
-	"Containers for the head and loop with a separating line."
-	shapeContainer := RTBox new width: 200; color: Color transparent; yourself.
-	head := shapeContainer element.
-	loop := shapeContainer element.
-	line := RTBox new extent: 250@1; element.
-	"Shapes for the individual instructions."
-	shapeIns := (RTBox new size: 20; color: [ :e | e roassalColor ]).
-	headIns := (shapeIns elementsOn: self headInstructions).
-	loopIns := shapeIns elementsOn: self loopInstructions.
-	"Put everything into the view."
-	view add: border; add: head; add: loop; addAll: headIns; addAll: loopIns; add: line.
-	"Apply layout."
-	headIns @ (RTLabeled center text: #opcode).
-	RTGridLayout new lineItemsCount: 10; on: headIns; on: loopIns.
-	RTVerticalLineLayout new on: { head. line. loop. }.
-	RTVerticalLineLayout new on: { border. }.
-	"Setup nesting."
-	RTNest new
-	   on: head nest: headIns; 
-	   on: loop nest: loopIns;
-	   on: border nest: { head. line. loop. }.
-	"Final tweaks."
-	border width: 250.
-	RTAlignment new elements: { head. loop. }; left.
-   ^view
 ]
 
 { #category : #accessing }

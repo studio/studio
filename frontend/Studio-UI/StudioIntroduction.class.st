@@ -10,7 +10,7 @@ StudioIntroduction class >> menuCommandOn: aBuilder [
 	(aBuilder item: #StudioIntroduction)
 		order: 200.0;
 		parent: #Studio;
-		label: 'Open "Welcome to Studio" top-level starting point';
+		label: 'Playbook: Welcome to Studio';
 		action: [ self new open ].
 ]
 
