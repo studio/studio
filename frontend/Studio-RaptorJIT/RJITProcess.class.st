@@ -257,45 +257,6 @@ RJITProcess >> trace: traceno [
 
 ]
 
-{ #category : #visualization }
-RJITProcess >> traceMapView [
-	| shape roots rootElems rootBoxes view popup |
-	view := RTView new.
-
-"	roots := {((self traces select: #isRootTrace) select: [ :tr | tr children size > 3 ]) atRandom}."
-
-	popup := (RTPopup new
-		text: #printString;
-		alphaPopupBackground: 1.0;
-		borderColor: Color black;
-		backgroundColor: Color white).
-
-	roots := self traces select: #isRootTrace.
-	rootBoxes := (RTBox new color: Color transparent; borderWidth: 1) elementsOn: (roots collect: [ :tr | tr ]).
-	view addAll: rootBoxes.
-	RTNest new for: rootBoxes add: [ :group :tr |
-		| traces elements edges |
-		traces := tr withAllChildren.
-		elements := traces collect: #asElement.
-		group addAll: elements.
-		group @ popup.
-		edges := RTEdgeBuilder new
-						view: group;
-						objects: traces;
-						shape: (RTLine new color: Color black);
-						connectToAll: #children.
-		RTHorizontalTreeLayout on: elements edges: edges.
-		].
-
-	RTVerticalLineLayout new on: rootBoxes.
-
-	view @ RTZoomableBoxView.
-	view @ RTDoubleScrollBar.
-
-	^ view
-
-]
-
 { #category : #accessing }
 RJITProcess >> traceProfiles [
 	| traceVMProfiles |
@@ -308,35 +269,6 @@ RJITProcess >> traceProfiles [
 { #category : #accessing }
 RJITProcess >> traces [
 	^ auditLog traces
-]
-
-{ #category : #visualization }
-RJITProcess >> visualizeTraces: traces withProfile: profile [
-	| b groups |
-	b := RTMondrian new.
-	b shape rectangle
-		borderColor: Color black;
-		color: Color transparent.
-	groups := (traces groupedBy: [ :x | x root ifNil: [ Object new ] ]).
-	profile ifNotNil: [ 
-		groups := groups select: [ :group | | samples |
-			samples := group inject: 0 into: [ :acc :tr | acc + (profile traceAll: tr traceno) ].
-			samples > 0 ifTrue: [Transcript show: samples; show: ' '; show: profile totalSamples; cr. ].
-			samples > 0.1  ]
-		].
-	b nodes: groups
-		forEach: [ :group |
-		b shape rectangle
-			color: [ :tr | Color red alphaMixed: (profile traceAll: tr traceno) with: Color white ];
-			borderColor: Color black;
-			size: 100;
-			withTextAbove: [ :tr | 'Trace ', tr traceno asString ].
-		b nodes: group value.
-		b layout dominanceTree.
-		b edges connectFrom: #parent. ].
-	b layout flow.
-	^ b build.
-
 ]
 
 { #category : #accessing }

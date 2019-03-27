@@ -18,3 +18,9 @@ Try some standard example data with ${inputFile:path=RaptorJIT-Examples.pillar}$
 
 Learn about the RaptorJIT diagnostic data formats and how Studio uses them at ${inputFile:path=About-RaptorJIT-Support.pillar}$.
 
+!!! Studio itself
+
+To understand the backstory you can read ${inputFile:path=Evolution-of-Studio.pillar}$.
+
+To customize Studio you can read ${inputFile:path=Hacking-Studio.pillar}$
+

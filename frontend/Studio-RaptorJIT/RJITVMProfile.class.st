@@ -188,11 +188,6 @@ RJITVMProfile >> traceProfiles [
 ]
 
 { #category : #'accessing-data' }
-RJITVMProfile >> traces [
-	^ traces
-]
-
-{ #category : #'accessing-data' }
 RJITVMProfile >> vm [
 	^ (traceProfiles collect: #vm) sum.
 

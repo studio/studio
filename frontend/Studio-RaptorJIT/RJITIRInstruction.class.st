@@ -143,16 +143,6 @@ RJITIRInstruction >> attributes [
 		}
 ]
 
-{ #category : #roassal }
-RJITIRInstruction >> baseShape [
-	| shape |
-	shape := RTBox new width: 50; height: 20; color: self roassalColor; borderColor: Color lightGray; borderWidth: 1.
-	szmcode = 0 ifTrue: [ shape borderStyle: #dash ].
-	self isSpilledOntoStack ifTrue: [ shape borderColor: Color black; borderWidth: 2 ].
-	^ shape
-
-]
-
 { #category : #accessing }
 RJITIRInstruction >> constantValue [
 	self shouldBeImplemented.
@@ -168,73 +158,6 @@ RJITIRInstruction >> disassemble [
 RJITIRInstruction >> gtInputsListingIn: aView [
 	<gtView>
 	^ (self transitiveInputs irColumnedListViewIn: aView title: 'Inputs' translated) priority: 11.
-
-]
-
-{ #category : #initialization }
-RJITIRInstruction >> gtInspectorIRInstructionIn: composite [
-	<gtInspectorPresentationOrder: 1>
-	composite tabulator
-		title: 'Info';
-		with: [ :t |
-			t row: #element; row: #details.
-			t transmit to: #element; andShow: [ :a |
-				a roassal2
-					title: 'Instruction View';
-					initializeView: [ RTView new add: self asElement ] ].
-			t transmit to: #details; andShow: [ :a |
-				a text
-					title: 'Details';
-					display: [ self popupSummary ] ].
-		]
-
-]
-
-{ #category : #initialization }
-RJITIRInstruction >> gtInspectorInputListingIn: composite [
-	<gtInspectorPresentationOrder: 3>
-	self transitiveInputs irListViewIn: composite title: 'Input List'.
-
-]
-
-{ #category : #initialization }
-RJITIRInstruction >> gtInspectorInputTreeIn: composite [
-	<gtInspectorPresentationOrder: 6>
-	composite roassal2
-		title: 'Input Tree';
-		initializeView: [ trace irTreeViewOfInstructions: self transitiveInputs ].
-
-]
-
-{ #category : #initialization }
-RJITIRInstruction >> gtInspectorRelatedListingIn: composite [
-	<gtInspectorPresentationOrder: 2>
-	self transitiveRelations irListViewIn: composite title: 'Related List'.
-
-]
-
-{ #category : #initialization }
-RJITIRInstruction >> gtInspectorRelatedTreeIn: composite [
-	<gtInspectorPresentationOrder: 5>
-	composite roassal2
-		title: 'Related Tree';
-		initializeView: [ trace irTreeViewOfInstructions: self transitiveRelations ].
-
-]
-
-{ #category : #initialization }
-RJITIRInstruction >> gtInspectorUsesListingIn: composite [
-	<gtInspectorPresentationOrder: 4>
-	self transitiveUses irListViewIn: composite title: 'Uses List'.
-
-]
-
-{ #category : #initialization }
-RJITIRInstruction >> gtInspectorUsesTreeIn: composite [
-	<gtInspectorPresentationOrder: 7>
-	composite roassal2
-		title: 'Uses Tree';
-		initializeView: [ trace irTreeViewOfInstructions: self transitiveUses ].
 
 ]
 
@@ -665,42 +588,8 @@ RJITIRInstruction >> roassalColor [
 ]
 
 { #category : #initialization }
-RJITIRInstruction >> roassalElement [
-	^ RTBox new size: 20 ; color: self roassalColor; elementOn: self.
-
-]
-
-{ #category : #initialization }
-RJITIRInstruction >> roassalShape [
-	^ RTBox.
-
-]
-
-{ #category : #initialization }
 RJITIRInstruction >> setPhiOperand [
 	isPhiOperand := true.
-]
-
-{ #category : #roassal }
-RJITIRInstruction >> shape [
-	| shape |
-"
-	true ifTrue: [ 
-		^(RTBox new width: 50; height: 20; borderColor: Color lightGray; color: self roassalColor) +
-			(RTLabel new text: opcode asString).
- ].
-"
-	shape := RTCompositeShape new.
-	self op1InlineString ifNotNil: [ :str |
-		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
-			(RTLabel new color: Color veryDarkGray; text: str)) allOfSameSize ].
-	shape add:
-		self baseShape + (RTLabel new color: Color veryDarkGray; text: opcode asString).
-	self op2InlineString ifNotNil: [ :str |
-		shape add: ((RTBox new width: 50; height: 20; borderStyle: #dash; borderColor: Color lightGray; color: Color transparent) +
-				(RTLabel new color: Color veryDarkGray; text: str)) allOfSameSize ].
-	shape horizontal.
-	^shape
 ]
 
 { #category : #initialization }
