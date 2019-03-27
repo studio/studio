@@ -560,6 +560,7 @@ RJITTrace >> test [
 		self gtJITFor: GtPhlowView empty.
 		self gtProfileFor: GtPhlowView empty.
 		self irInstructions collect: #test.
+		[ self mcodeInstructions size > 0 ] assert.
 	}
 ]
 
