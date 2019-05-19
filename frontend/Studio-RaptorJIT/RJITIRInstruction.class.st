@@ -131,7 +131,7 @@ RJITIRInstruction class >> opcodeSummaries [
 
 { #category : #roassal }
 RJITIRInstruction >> asElement [
-	^ self shape elementOn: self.
+	^ RJITBlIRInstruction for: self
 ]
 
 { #category : #initialization }
@@ -141,6 +141,76 @@ RJITIRInstruction >> attributes [
 		'Type' -> type.
 		'Opcode' -> opcode.
 		}
+]
+
+{ #category : #roassal }
+RJITIRInstruction >> baseBlShape [
+	| container shape |
+
+	container := BlElement new
+		layout: BlFrameLayout new;
+		border: self blBorder;
+		background: self opcodeColor; 
+		width: 50;
+		height: 20.
+
+	shape := BlTextElement new
+					text: self opcode asRopedText glamorousCodeFont;
+					constraintsDo: [ :c |
+						c frame vertical alignCenter.
+						c frame horizontal alignCenter. ].
+
+	"no mcode border dashed"
+	"isSpilledOntoStack border bold"
+
+	container addChild: shape.
+	
+	^ container
+]
+
+{ #category : #roassal }
+RJITIRInstruction >> blBorder [
+	| builder |
+	builder := BlBorder builder paint: Color black.
+	self isSpilledOntoStack ifTrue: [ builder width: 2 ].
+	szmcode = 0 ifTrue: [ builder dashed ].
+	^ builder build.
+
+]
+
+{ #category : #bloc }
+RJITIRInstruction >> blInlineText: aString [
+	| container text |
+
+	container := BlElement new
+		layout: BlFrameLayout new;
+		border: (BlBorder paint: Color gray);
+		padding: (BlInsets left: 5 right: 5);
+		constraintsDo: [ :c |
+			c vertical matchParent.
+			c horizontal matchParent. ].
+
+	text := BlTextElement new 
+			text: aString asRopedText glamorousCodeFont;
+			constraintsDo: [ :c |
+				c frame vertical alignCenter.
+				c frame horizontal alignCenter. ].
+			
+	container addChild: text.
+
+	^ container
+]
+
+{ #category : #bloc }
+RJITIRInstruction >> blShape [
+	| el |
+	el := BlElement new.
+	self op1InlineString ifNotNil: [ :s | el addChild: (self blInlineText: s) ].
+	el addChild: self baseBlShape as: #opcode.
+	self op2InlineString ifNotNil: [ :s | el addChild: (self blInlineText: s) ].
+	el constraintsDo: [ :c | c horizontal fitContent. c vertical fitContent. ].
+	el layout: (BlLinearLayout horizontal).	
+	^ el
 ]
 
 { #category : #accessing }
@@ -156,7 +226,7 @@ RJITIRInstruction >> disassemble [
 
 { #category : #initialization }
 RJITIRInstruction >> gtInputsListingIn: aView [
-	<gtView>
+	"<gtView>"
 	^ (self transitiveInputs irColumnedListViewIn: aView title: 'Inputs' translated) priority: 11.
 
 ]
@@ -173,15 +243,25 @@ RJITIRInstruction >> gtMCodeFor: aView [
 ]
 
 { #category : #initialization }
+RJITIRInstruction >> gtRelatedGraphIn: aView [
+	<gtView>
+	^ aView explicit
+		title: 'Related Graph';
+		priority: 15;
+		stencil: [ RJITBlIRFragment forIrInstructions: self transitiveRelations ].
+
+]
+
+{ #category : #initialization }
 RJITIRInstruction >> gtRelatedListingIn: aView [
 	<gtView>
-	^ (self transitiveRelations irColumnedListViewIn: aView title: 'Related' translated) priority: 10.
+	^ (self transitiveRelations irColumnedListViewIn: aView title: 'Related List' translated) priority: 10.
 
 ]
 
 { #category : #initialization }
 RJITIRInstruction >> gtUsesListingIn: aView [
-	<gtView>
+	"<gtView>"
 	^ (self transitiveUses irColumnedListViewIn: aView title: 'Uses' translated) priority: 12.
 
 ]
@@ -595,6 +675,11 @@ RJITIRInstruction >> setPhiOperand [
 { #category : #initialization }
 RJITIRInstruction >> stackSlot [
 	^ stackSlot
+]
+
+{ #category : #printing }
+RJITIRInstruction >> szmcode [
+	^ szmcode
 ]
 
 { #category : #accessing }

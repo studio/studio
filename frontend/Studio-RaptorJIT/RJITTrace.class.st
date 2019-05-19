@@ -142,7 +142,7 @@ RJITTrace >> gtContourFor: aView [
 	<gtView>
 	^aView textEditor
 		title: 'Contour';
-		priority: 5;
+		priority: 1;
 		look: BrGlamorousCodeEditorLook new;
 		text: [ (self printString, String cr, self functionContour) asRopedText ].
 
@@ -173,9 +173,19 @@ RJITTrace >> gtFamilyFor: aView [
 ]
 
 { #category : #'gt-inspector-extension' }
+RJITTrace >> gtIRGraphFor: aView [
+	<gtView>
+	^ aView explicit
+		title: 'IR Graph';
+		priority: 17;
+		stencil: [ self irGraphView ].
+
+]
+
+{ #category : #'gt-inspector-extension' }
 RJITTrace >> gtIRListingFor: aView [
 	<gtView>
-	^ self irInstructionsNoNop irColumnedListViewIn: aView title: 'IR List'.
+	^ (self irInstructions irColumnedListViewIn: aView title: 'IR List') priority: 15.
 
 ]
 
@@ -212,7 +222,7 @@ RJITTrace >> gtInspectorGCTraceIn: composite [
 { #category : #deprecated }
 RJITTrace >> gtInspectorIRListingIn: composite [
 	"<gtInspectorPresentationOrder: 3>"
-	self irInstructionsNoNop irListViewIn: composite title: 'IR List'.
+	self irInstructions irListViewIn: composite title: 'IR List'.
 
 ]
 
@@ -277,7 +287,7 @@ RJITTrace >> gtMCodeFor: aView [
 	<gtView>
 	^aView textEditor
 		title: 'MCode';
-		priority: 10;
+		priority: 20;
 		look: BrGlamorousCodeEditorLook new;
 		text: [ (self mcodeDump) asRopedText ].
 
@@ -286,8 +296,7 @@ RJITTrace >> gtMCodeFor: aView [
 { #category : #'gt-inspector-extension' }
 RJITTrace >> gtProfileFor: aView [
 	<gtView>
-	^ self profile gtProfileFor: aView
-
+	^ (self profile gtProfileFor: aView) priority: 5
 ]
 
 { #category : #initializing }
@@ -344,12 +353,19 @@ RJITTrace >> irDump [
 
 ]
 
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> irGraphView [
+	^ RJITBlIRFragment forTrace: self
+
+]
+
 { #category : #initializing }
 RJITTrace >> irInstructions [
 	irInstructions isBlock ifTrue: [ 
 		irInstructions := irInstructions value.
 		irInstructions do: [ :ins | ins link: self. ].
 		self decodeIrMcodeMapping.
+		irInstructions := irInstructions reject: #isNop.
  		].
 	^ irInstructions.
 
@@ -363,13 +379,68 @@ RJITTrace >> irInstructionsNoNop [
 { #category : #'as yet unclassified' }
 RJITTrace >> irListing [
 	^ String streamContents: [ :s |
-		self irInstructionsNoNop do: [ :i | s nextPutAll: i irString; cr. ] ].
+		self irInstructions do: [ :i | s nextPutAll: i irString; cr. ] ].
 
 ]
 
 { #category : #'gt-inspector-extension' }
+RJITTrace >> irTreeBlView [
+	^ self irTreeBlViewOfInstructionGroups:
+		(self hasLoop
+			ifTrue: [ { self headInstructions. self loopInstructions. } ]
+			ifFalse: [ { self irInstructions } ])
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> irTreeBlViewOfInstructionGroups: groups [
+	| view |
+	view := BlElement new
+				layout: BlFlowLayout vertical;
+				constraintsDo: [ :c |
+					c horizontal fitContent.
+					c vertical fitContent. ].
+	groups do: [ :group | 
+		view addChild: ((self irTreeFragment: group) root
+			constraintsDo: [ :c |
+				c horizontal fitContent.
+				c vertical fitContent ]) ].
+	^ view asScrollableElement
+
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> irTreeBlViewOfInstructions: insns [
+	^ self irTreeBlViewOfInstructionGroups:
+		(self hasLoop
+			ifTrue: [ { self headInstructions. self loopInstructions. } ]
+			ifFalse: [ { self irInstructions } ])
+]
+
+{ #category : #'gt-inspector-extension' }
+RJITTrace >> irTreeFragment: insns [
+	"Answer a Bloc view of the instructions (head or loop but not mixed.)"
+	| view |
+	view := GtMondrian new.
+	view nodes
+		shape: [ :ins | ins blShape ];
+		with: insns.
+	"Edges included in layout."
+	view edges
+		fromCenterBottom;
+		toTopLeft;
+		connectFrom: #op1ins.
+	view edges
+		fromCenterBottom;
+		toTopRight;
+		connectFrom: #op2ins.
+	"Edges excluded from layout."
+	view layout custom: GtGradNorthHierarchicalTreeLayout new.
+	^ view
+]
+
+{ #category : #'gt-inspector-extension' }
 RJITTrace >> irTreeView [
-	^ self irTreeViewOfInstructions: self irInstructionsNoNop.
+	^ self irTreeViewOfInstructions: self irInstructions.
 ]
 
 { #category : #accessing }
@@ -455,16 +526,16 @@ RJITTrace >> mcodeInstructions [
 { #category : #'as yet unclassified' }
 RJITTrace >> mcodeListing [
 	^ String streamContents: [ :s |
-		self irInstructionsNoNop do: [ :i |
-			| mcode firstmcode |
-			mcode := i disassemble lines.
-			firstmcode := mcode ifEmpty: [ '' ] ifNotEmpty: [ mcode first ].
+		self irInstructions do: [ :i |
+			| mc firstmcode |
+			mc := i disassemble lines.
+			firstmcode := mc ifEmpty: [ '' ] ifNotEmpty: [ mc first ].
 			s
 				nextPutAll: (firstmcode padRightTo: 54);
 				nextPutAll: ' | ';
 				nextPutAll: i irString;
 				cr.
-			mcode allButFirstDo: [ :nextmcode |
+			mc allButFirstDo: [ :nextmcode |
 				s
 					nextPutAll: (nextmcode padRightTo: 54);
 					nextPutAll: ' |';
