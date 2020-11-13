@@ -4,10 +4,10 @@
 with pkgs; with stdenv;
 
 let
-  firefox-file = "FIREFOX_AURORA_52_BASE.tar.gz";
+  firefox-file = "FIREFOX_AURORA_52_BASE.zip";
   firefox-src = fetchurl {
     url = "https://hg.mozilla.org/mozilla-central/archive/${firefox-file}";
-    sha256 = "10iz6gvxqzxkyp6jy6ri5lwag7rzi6928xw20j7qjssv63jll0ks";
+    sha256 = "1gdy1x6sp8vcmjfk9n6lfix7897biwy5ihvrrp1yly4bgr9fj1aw";
   };
 in
 
@@ -23,6 +23,15 @@ mkDerivation {
   buildPhase = ''
     # Build script will detect the source archive by filename
     cp ${firefox-src} ${firefox-file}
+    echo "Re-packaging source as tar.gz"
+    echo "Unzipping..."
+    mkdir tmp
+    unzip -d tmp ${firefox-file} >/dev/null
+    pushd tmp
+    echo "Taring..."
+    tar czf ../${(lib.removeSuffix ".zip" firefox-file) + ".tar.gz"} *
+    popd
+    rm -rf tmp
     # Fix for build issue https://bugzilla.mozilla.org/show_bug.cgi?id=1329272
     cp ${./sedm4.patch} patches/sedm4.patch
     # cmake available during build (but not used for this derivation)
