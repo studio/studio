@@ -65,10 +65,7 @@ RJITBlIRFragment >> layoutInstructions [
 "		layout: GtGraphTreeLayout new."
 		layout: (GtGradNorthHierarchicalTreeLayout new levelDistance: 5).
 "		layout: (GtGradNorthHierarchicalLayout new interRanksSpacing: 20)."
-
-"
-constraintsDo: [ :c |
+	self constraintsDo: [ :c |
 			c horizontal fitContent.
 			c vertical fitContent. ].
-"
 ]

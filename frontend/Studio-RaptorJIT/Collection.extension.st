@@ -3,41 +3,34 @@ Extension { #name : #Collection }
 { #category : #'*studio-raptorjit' }
 Collection >> irColumnedListViewIn: aView title: aTitle [
 	| aList |
-	aList := aView  columnedList
+	aList := aView columnedList
 		title: aTitle translated;
 		priority: 10;
 		items: [ self ].
-	
-	aList column 
+	aList column
 		title: 'Num' translated;
 		width: 40;
 		item: [ :item :index | item irRefString ].
-		
-	aList column 
+	aList column
 		title: 'Loc' translated;
 		width: 50;
 		item: [ :item :index | item irRegisterString ].
-		
 	aList column
 		title: 'F' translated;
 		width: 10;
 		item: [ :item :index | item irFlagsString ].
-	
-	aList column 
+	aList column
 		title: 'Type' translated;
 		width: 50;
 		item: [ :item :index | item typename ].
-		
 	aList column
 		title: 'Opcode' translated;
 		width: 50;
 		item: [ :item :index | item opcode ].
-		
-	aList column 	
+	aList column
 		title: 'Operands' translated;
-		matchParent;
+		weight: 1;
 		item: [ :item :index | item operandsString ].
-		
 	^ aList
 ]
 

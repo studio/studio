@@ -85,7 +85,7 @@ StudioLoader >> packageNames [
 
 { #category : #'load and saving' }
 StudioLoader >> repo [
-	^ (OSProcess thisOSProcess environment at: #STUDIO_PATH) asFileReference / #frontend
+	^ (Smalltalk os environment at: #STUDIO_PATH) asFileReference / #frontend
 
 ]
 

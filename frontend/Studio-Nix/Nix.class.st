@@ -22,34 +22,20 @@ Nix class >> build: expr [
 { #category : #'instance creation' }
 Nix class >> command: commandLine [
 	| process stdout stderr out err |
-	stdout := WriteStream on: String new.
-	stderr := WriteStream on: String new.
-	process := PipeableOSProcess command: 'LD_LIBRARY_PATH= NIX_PATH=studio=', self studioNixPath, ' ', commandLine.
-	process close.
-	[  process isComplete ] whileFalse: [ 
-		process updateErrorPipelineStream.
-		out := process upToEnd.
-		err := process errorUpToEnd.
-		stdout nextPutAll: out.
-		stderr nextPutAll: err.
-		self showProgress: out.
-		self showProgress: err.
-		World doOneCycle.
-		(Delay forMilliseconds: 50) wait.
-	].
-	out := process upToEndOfFile.
-	err := process errorUpToEndOfFile.
-	stdout nextPutAll: out.
-	stderr nextPutAll: err.
-	self showProgress: out.
-	self showProgress: err.
-	process succeeded ifFalse: [ 
+	process := GtUnixSubprocess command: '/usr/bin/env' arguments: {
+		'bash'.
+		'-c'.
+		commandLine.
+	}.
+	process removeLD_LIBRARY_PATH.
+	process process environmentAt: 'NIX_PATH' put: 'studio=',self studioNixPath.
+	process runAndWait.
+	process isSuccess ifFalse: [ 
 		| reason |
-		reason := stderr contents asByteArray utf8Decoded.
+		reason := process stderr asByteArray utf8Decoded.
 		Transcript show: 'Nix error:'; cr; show: reason.
 		NixError new messageText: reason; signal ].
-	^ stdout contents.
-
+	^ process stdout.
 ]
 
 { #category : #'as yet unclassified' }
@@ -90,10 +76,10 @@ Nix class >> showProgress: aString [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 Nix class >> studioNixPath [
 	"XXX The user needs to know about this somehow..."
-	^ OSProcess thisOSProcess environment
+	^ Smalltalk os environment
 		at: #STUDIO_PATH
-		ifAbsent: OSProcess thisOSProcess getCwd.
+		ifAbsent: FileSystem workingDirectory.
 ]

@@ -116,7 +116,7 @@ DWARFValue >> type [
 ]
 
 { #category : #accessing }
-DWARFValue >> type: aDWARFType. [
+DWARFValue >> type: aDWARFType [.
 	type := aDWARFType.
 ]
 

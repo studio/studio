@@ -23,8 +23,9 @@ in
 
 rec {
   elf2text = elf: runCommand "dwarftext" { inherit elf; } ''
-    set +e
-    ${readelf}/bin/readelf -W --debug-dump=info,macro $elf > $out
+#    set +e
+    ${readelf}/bin/readelf -W --debug-dump=info,macro $elf > $out || true
+#    cat $out
   '';
   elf2yaml = elf: runCommand "dwarfyaml" { text = elf2text elf;
                                            buildInputs = [ gawk ]; } ''
