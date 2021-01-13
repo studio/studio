@@ -143,7 +143,7 @@ RJITTrace >> gtContourFor: aView [
 	^aView textEditor
 		title: 'Contour';
 		priority: 1;
-		look: BrGlamorousCodeEditorLook new;
+		look: BrGlamorousCodeEditorLook;
 		text: [ (self printString, String cr, self functionContour) asRopedText ].
 
 ]
@@ -178,7 +178,7 @@ RJITTrace >> gtIRGraphFor: aView [
 	^ aView explicit
 		title: 'IR Graph';
 		priority: 17;
-		stencil: [ self irGraphView ].
+		stencil: [ self irGraphView asPannableElement ].
 
 ]
 
@@ -231,7 +231,7 @@ RJITTrace >> gtInspectorIRTreeIn: composite [
 	"<gtInspectorPresentationOrder: 4>"
 	composite roassal2
 		title: 'IR Tree';
-		initializeView: [ self irTreeView ].
+		initializeView: [ self irTreeView asScrollableElement ].
 
 ]
 
@@ -288,7 +288,7 @@ RJITTrace >> gtMCodeFor: aView [
 	^aView textEditor
 		title: 'MCode';
 		priority: 20;
-		look: BrGlamorousCodeEditorLook new;
+		look: BrGlamorousCodeEditorLook;
 		text: [ (self mcodeDump) asRopedText ].
 
 ]
@@ -518,7 +518,7 @@ RJITTrace >> mcodeInstructions [
 		| disasm |
 		disasm := RJITDisassembler disassemble: mcode address: mcodeAddress.
 		mcodeInstructions := disasm lines collect: [ :line |
-			(Integer readFrom: line base: 16) -> line. ] ].
+		(Integer readFrom: line base: 16) -> line. ] ].
 	^ mcodeInstructions
 
 ]

@@ -9,12 +9,17 @@ RJITDisassembler class >> disassemble: byteArray [
 	^ self disassemble: byteArray address: 0
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 RJITDisassembler class >> disassemble: byteArray address: address [
-	| tmp proc |
+	| tmp proc stdout |
 	tmp := FileReference newTempFilePrefix: 'mcode' suffix: '.bin'.
 	tmp binaryWriteStream nextPutAll: byteArray asByteArray; close.
-	proc := PipeableOSProcess command: 'disasm ', tmp fullName, ' 0x', (address radix: 16).
-	^ proc output copyReplaceAll: String tab with: '  '.
+	proc := GtUnixSubprocess command: '/usr/bin/env' arguments: {
+		'disasm'.
+		tmp fullName.
+		'0x', (address radix:16).
+	}.
+	proc runAndWait.
+	^ proc stdout copyReplaceAll: String tab with: '  '.
 
 ]

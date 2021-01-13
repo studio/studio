@@ -45,7 +45,7 @@ DWARFTypeDef >> from: dict via: references [
 ]
 
 { #category : #initialization }
-DWARFTypeDef >> hasChildren: dwarfValue. [
+DWARFTypeDef >> hasChildren: dwarfValue [.
 	^ type hasChildren: dwarfValue.
 ]
 

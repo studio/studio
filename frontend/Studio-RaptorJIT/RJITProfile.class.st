@@ -125,40 +125,35 @@ RJITProfile >> gc [
 RJITProfile >> gtProfileFor: aView [
 	<gtView>
 	| aList states |
-	states := { 
-		'Native Trace Code (Loop)' -> self loop.
-		'Native Trace Code (Straight)' -> self head.
-		'GC for Native Code' -> self jgc.
-		'FFI calls' -> self ffi.
-		'C Library' -> self c.
-		'Bytecode Interpreter' -> self interp.
-		'GC for Interpreted Code' -> self igc.
-		'Trace Exit Handlers' -> self exit.
-		'JIT recording' -> self record.
-		'JIT optimization' -> self opt.
-		'JIT assembling' -> self asm.
-		}.
-
-	aList := aView columnedList 
+	states := {('Native Trace Code (Loop)' -> self loop).
+	('Native Trace Code (Straight)' -> self head).
+	('GC for Native Code' -> self jgc).
+	('FFI calls' -> self ffi).
+	('C Library' -> self c).
+	('Bytecode Interpreter' -> self interp).
+	('GC for Interpreted Code' -> self igc).
+	('Trace Exit Handlers' -> self exit).
+	('JIT recording' -> self record).
+	('JIT optimization' -> self opt).
+	('JIT assembling' -> self asm)}.
+	aList := aView columnedList
 		title: 'Profile' translated;
 		priority: 10;
 		items: [ states ].
-		
-	aList column 
+	aList column
 		title: 'State' translated;
-		matchParent;
+		weight: 1;
 		item: [ :item :index | item key translated ].
-		
-	aList column 
+	aList column
 		title: 'Percent' translated;
-		matchParent;
-		item: [ :item :index | (item value * 100.0 / (self all max: 1) printShowingDecimalPlaces: 1), '%' ].
-		
-	aList column 
+		weight: 1;
+		item: [ :item :index | 
+			(item value * 100.0 / (self all max: 1) printShowingDecimalPlaces: 1)
+				, '%' ].
+	aList column
 		title: 'Samples' translated;
-		matchParent;
+		weight: 1;
 		item: [ :item :index | item value ].
-	
 	^ aList
 ]
 

@@ -237,7 +237,7 @@ RJITIRInstruction >> gtMCodeFor: aView [
 	^ aView textEditor 
 		title: 'MCode';
 		priority: 20;
-		look: BrGlamorousCodeEditorLook new;
+		look: BrGlamorousCodeEditorLook;
 		text: [ self disassemble asRopedText ]
 
 ]

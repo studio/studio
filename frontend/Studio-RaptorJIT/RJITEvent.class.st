@@ -36,17 +36,14 @@ RJITEvent >> gtInfoFor: aView [
 		title: 'Info' translated;
 		priority: 10;
 		items: [ self info ].
-
-	aList column 
+	aList column
 		title: 'Name' translated;
-		matchParent;
+		weight: 1;
 		item: [ :item :index | item key ].
-		
 	aList column
 		title: 'Value' translated;
-		matchParent;
+		weight: 1;
 		item: [ :item :index | item value ].
-
 	^ aList
 ]
 

@@ -131,39 +131,34 @@ RJITProfileList >> gtSubjectsFor: aView [
 ]
 
 { #category : #inspector }
-RJITProfileList >> subjectViewTitled: aTitle subjectName: aName onView: aView [ 
+RJITProfileList >> subjectViewTitled: aTitle subjectName: aName onView: aView [
 	| aList |
-	
-	aList := aView columnedList 
+	aList := aView columnedList
 		title: aTitle translated;
 		priority: 10;
 		items: [ self collect: #subject ].
-
-	aList column 
+	aList column
 		title: aName translated;
-		matchParent;
+		weight: 1;
 		item: [ :item :index | (self at: index) subject ].
-		
 	aList column
 		title: 'Samples' translated;
 		width: 70;
 		item: [ :item :index | (self at: index) all ].
-
 	aList column
 		title: 'Native' translated;
 		width: 60;
-		item: [ :item :index | ((self at: index) nativeCode rounded printString), '%'].
-		
+		item:
+				[ :item :index | (self at: index) nativeCode rounded printString , '%' ].
 	aList column
 		title: 'VM' translated;
 		width: 60;
-		item: [ :item :index | ((self at: index) virtualMachine rounded printString), '%' ].
-	
+		item:
+				[ :item :index | (self at: index) virtualMachine rounded printString , '%' ].
 	aList column
 		title: 'GC' translated;
 		width: 60;
-		item: [ :item :index | ((self at: index) garbageCollection rounded printString), '%' ].
-
+		item:
+				[ :item :index | (self at: index) garbageCollection rounded printString , '%' ].
 	^ aList
-	
 ]

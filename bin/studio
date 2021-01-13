@@ -51,6 +51,9 @@ case "$1" in
     x11)
         runstudio studio-x11
         ;;
+    gtoolkit)
+	runstudio studio-gtoolkit
+	;;
     cache)
         runstudio "echo 'Cache retrieved...'"
         ;;

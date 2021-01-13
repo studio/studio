@@ -1,43 +1,110 @@
 { pkgs }:
-with pkgs; with stdenv;
+with pkgs; with stdenv; with lib;
 
 let studio-version = import ../../nix/studio-version.nix; in
 
-let
-  # Function to fetch a Pharo image from a zip file.
-  fetchImageZip = { name, version, url, sha256 }:
-    mkDerivation {
-      inherit name version;
-      sourceRoot = ".";
-      src = fetchurl {
-        inherit name url sha256;
-      };
-      nativeBuildInputs = [ unzip ];
-      installPhase = ''
-        mkdir $out
-        cp *.image $out/pharo.image
-        cp *.changes $out/pharo.changes
-        cp *.sources $out/
-      '';
-    };
+#
+# Currently we build the Studio Pharo frontend by packaging the
+# binaries built and distributed by Feenk for GToolkit.
+#
+# Specifically we package the VM, libraries, and bare image built by
+# their CI.
+#
+# We don't package their main release because it mixes all these
+# pieces together and comes with a graphical image that doesn't start
+# easily inside a Nix build sandbox (tries to do X11/OpenGL stuff on
+# startup.)
+#
+# We don't build from source mostly because the Skia graphics library
+# is a Rust library that requires more Rust build support than I could
+# find for nixpkgs at the moment.
+#
+# Maybe we should build the Smalltalk VM ourselves like we used to?
+# Feenk have a fork on Github that we could try.
+#
 
-  # Pharo image that includes all external dependencies.
-  # Built on Inria CI (Jenkins) with Metacello to install Studio.
-  base-image = fetchImageZip rec {
-    name = "studio-base-image-${version}.zip";
-    version = "0.6.46";
-    url = "https://github.com/studio/base-images/raw/master/Studio-Base-GToolkit-v${version}.zip";
-    sha256 = "120g1ahh6g7v1fkng5dqs3zfiiaq66f68yqn36p2fzp082xgc877";
+let
+  # Dependencies for Pharo/GToolkit.
+  deps = [
+      fontconfig
+      freetype
+      gdk_pixbuf
+      glib
+      gtk3
+      gtk3-x11
+      gtk2
+      libGL
+      libpulseaudio
+      mesa
+      mesa.drivers
+      mesa.osmesa
+      libGLU
+      libGL_driver
+      xorg.libX11
+      xorg.libXext
+      xorg.libXrender
+      xorg.libXt
+      xorg.libxcb
+      xorg.libXcursor
+      xorg.libXrandr
+      xorg.libXi
+    ];
+
+  gt-version = "v0.8.407";
+
+  gt-lib = mkDerivation {
+    name = "gt-lib-${gt-version}";
+    src = fetchzip {
+      url = "https://github.com/feenkcom/gtoolkit/releases/download/${gt-version}/libLinux64.zip";
+      sha256 = "1x537pf10w71k82dmax9bdxhsky6r20c4g21kzz296nfpqj4x6y9";
+    };
+    buildInputs = deps;
+    nativeBuildInputs = [ autoPatchelfHook ];
+    dontConfigure = true;
+    dontBuild = true;
+    installPhase = ''
+      mkdir -p $out/lib
+      cp *.so $out/lib
+    '';
   };
+
+  gt-bin = mkDerivation {
+    name = "gt-bin-${gt-version}";
+    buildInputs = deps ++ [ gt-lib ];
+    nativeBuildInputs = [ autoPatchelfHook ];
+    src = fetchzip {
+      url = "https://github.com/feenkcom/gtoolkit/releases/download/${gt-version}/GlamorousToolkitVM-linux64-bin.zip";
+      sha256 = "18lvx6mr5cjhlaw63rr6cd43n1b0nvwvicnr4ha038fa4z7r4fkw";
+      stripRoot = false;
+    };
+    dontConfigure = true;
+    dontBuild = true;
+    installPhase = ''
+      mkdir $out
+      cp -a * $out/
+      ln -s ${mesa.drivers}/lib/libGLX_mesa.so.0 $out/lib/libGLX_indirect.so.0
+    '';
+  };
+
+  gt-image = fetchzip {
+    name = "gt-image-${gt-version}";
+    url = "https://github.com/feenkcom/gtoolkit/releases/download/${gt-version}/GT.zip";
+    sha256 = "1bvaqij1x93wgk6q9hpc3zz1fvh1fss8nar0dxjc5kyiwklynfjv";
+  };
+
+
+  gt-pharo = writeScriptBin "pharo" ''
+    #!${shell}
+    LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:${makeLibraryPath ([ gt-bin gt-lib ] ++ deps)}" \
+      exec ${gt-bin}/lib/glamoroustoolkit "$@"
+  '';
 
   # Script to update and customize the image for Studio.
   loadSmalltalkScript = writeScript "studio-load-smalltalk-script.st" ''
     | repo window |
 
-    "Disable cache to prevent access to path that is not available."
-    MCCacheRepository uniqueInstance disable.
-
     "Force reload of all Studio packages from local sources."
+    Transcript show: 'Finding repo'; cr.
     repo := '${../../frontend}' asFileReference.
 
     Transcript show: 'Loading StudioLoader..'; cr.
@@ -46,79 +113,30 @@ let
     Transcript show: 'Loading all Studio packages..'; cr.
     StudioLoader new loadAllStudioPackagesFrom: repo.
 
-    Transcript show: 'Loading additional patches to the Pharo image..'; cr.
-    '${./patches}' asFileReference entries do: [ :entry |
-        Transcript show: 'Patching: ', entry asFileReference fullName; cr.
-        entry asFileReference fileIn. ].
-
-    Transcript show: 'Customizing image..'; cr.
-    World closeAllWindowsDiscardingChanges.
-
     Transcript show: 'Saving image to disk..'; cr.
-    (Smalltalk saveAs: 'new')
+    (Smalltalk saveAs: 'studio')
       ifTrue: [
         "Run in resumed image on startup."
-        GtInspector openOnPlayBook:
-          (Gt2Document forFile: Studio dir / 'doc' / 'Studio.pillar').
-        SystemWindow topWindow openFullscreen.
+	GtInspector openOn:
+          (GtDocumenter forFile: Studio dir / 'doc' / 'Studio.pillar').
       ].
 
+    Transcript show: 'Done.'; cr.
   '';
 
-  # Studio image that includes the exact code in this source tree.
-  # Built by refreshing the base image.
-  studio-image = runCommand "studio-image"
-    { nativeBuildInputs = [ pharo unzip xvfb_run ]; }
+  gt-test = runCommand "x"
+    { nativeBuildInputs = [ gt-pharo ]; }
     ''
-      cp ${base-image}/*.image pharo.image
-      cp ${base-image}/*.changes pharo.changes
-      cp ${base-image}/*.sources .
-      chmod +w pharo.image
-      chmod +w pharo.changes
-      xvfb-run pharo --nodisplay pharo.image st --quit ${loadSmalltalkScript} ${filterPharoOutput}
+      cp -a ${gt-image}/* .
+      chmod +w *.changes
+      export HOME=$(pwd)
+      pharo GlamorousToolkit.image st --quit ${loadSmalltalkScript}
       mkdir $out
-      cp new.image $out/pharo.image
-      cp new.changes $out/pharo.changes
-      cp *.sources $out/
+      cp -a *.sources gt-extra studio.image studio.changes $out
+      ln -s ${gt-pharo}/bin/pharo $out/pharo
     '';
 
-  studio-inspector-screenshot = { name, object, view, width ? 640, height ? 480 }:
-    runCommand "studio-screenshot-${name}.png"
-      {
-        nativeBuildInputs = [ pharo xvfb_run ];
-        smalltalkScript = writeScript "studio-screenshot.st"
-          ''
-            | __window __object __morph __presentations |
-            Transcript show: 'Taking screenshot'; cr.
-            "Create the object."
-            __object := [
-              ${object}
-            ] value.
-
-            "Create the inspector."
-            __window := GTInspector inspector: __object.
-            __window width: ${toString width}; height: ${toString height}.
-
-            "Select the right presentation."
-            __presentations := __window model panes first 
-                                 presentations first cachedPresentation first.
-            __presentations pane lastActivePresentation:
-              (__presentations presentations detect: [ :each |
-                each title = '${view}' ]).
-
-            "Save the screenshot."
-            PNGReadWriter putForm: __window imageForm
-                          onFileNamed: Smalltalk imageDirectory / 'screenshot.png'.
-            Transcript show: 'Took screenshot'; cr.
-          '';
-       }
-      ''
-        cp ${studio-image}/* .
-        chmod +w pharo.image pharo.changes
-        xvfb-run pharo --nodisplay pharo.image st --quit $smalltalkScript
-        mkdir $out
-        cp screenshot.png $out/${name}.png
-      '';
+  studio-image = gt-test;
 
   # Get a read-write copy of the Pharo image.
   studio-get-image = writeTextFile {
@@ -128,8 +146,8 @@ let
     text = ''
       #!${stdenv.shell}
       version=$(basename ${studio-image})
-      cp ${studio-image}/pharo.image pharo-$version.image
-      cp ${studio-image}/pharo.changes pharo-$version.changes
+      cp ${studio-image}/*.image pharo-$version.image
+      cp ${studio-image}/*.changes pharo-$version.changes
       chmod +w pharo-$version.image
       chmod +w pharo-$version.changes
       cp ${studio-image}/*.sources .
@@ -144,8 +162,39 @@ let
     executable = true;
     text = ''
       #!${stdenv.shell}
+      set -x
       image=$(${studio-get-image}/bin/studio-get-image)
-      ${pharo}/bin/pharo $image "$@" ${filterPharoOutput}
+      ${gt-pharo}/bin/pharo $image --no-quit --interactive "$@"
+    '';
+  };
+
+  #
+  # Separately package the standard release of GToolkit without
+  # Studio. This can be handy for testing and experimenting.
+  #
+
+  gtoolkit-full = fetchzip {
+    name = "gtoolkit-${gt-version}";
+    url = "https://dl.feenk.com/gt/GlamorousToolkitLinux64-${gt-version}.zip";
+    sha256 = "1nccja0rpxz4b5s447d3vl93x119fif097ln4sg7wzg29s6qhqs0";
+   };
+
+  # Script to start the standard GToolkit image.
+  studio-gtoolkit = writeTextFile {
+    name = "studio-gtoolkit-${studio-version}";
+    destination = "/bin/studio-gtoolkit";
+    executable = true;
+    text = ''
+      #!${stdenv.shell}
+      set -e
+      set -x
+      tmp=$(mktemp -d)
+      echo "tmp = $tmp"
+      cp -r ${gtoolkit} $tmp
+      chmod -R a+w $tmp
+      cd $tmp/*
+      echo $DISPLAY
+      ${gt-pharo}/bin/pharo GlamorousToolkit.image --no-quit --interactive "\$@"
     '';
   };
 
@@ -198,7 +247,7 @@ let
         #!${stdenv.shell}
         image=$(${studio-get-image}/bin/studio-get-image)
         timeout 600 ${xvfb_run}/bin/xvfb-run \
-          ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-test-script} ${filterPharoOutput}
+          ${gt-pharo}/bin/pharo --nodisplay $image st --quit ${studio-test-script}
       '';
   };
 
@@ -227,29 +276,29 @@ let
           export STUDIO_DECODE_OUTPUT=$2
           image=$(${studio-get-image}/bin/studio-get-image)
           timeout 600 ${xvfb_run}/bin/xvfb-run \
-            ${pharo}/bin/pharo --nodisplay $image st --quit ${studio-decode-script} ${filterPharoOutput}
+            ${gt-pharo}/bin/pharo --nodisplay $image st --quit ${studio-decode-script} ${filterPharoOutput}
         '';
   };
   # Environment for nix-shell
-  studio-env = runCommandNoCC "studio" {
-      buildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run
+  studio-env = runCommand "studio" {
+      buildInputs = [ nixUnstable xorg.xauth perl disasm xvfb_run cacert
                       binutils gnugrep
                       dwarfish.binutils
-                      studio-x11 studio-vnc studio-test studio-decode ];
+                      studio-x11 studio-vnc studio-test studio-decode studio-gtoolkit ];
     } "echo ok > $out";
 
 in
   
 {
   # main package collection for 'nix-env -i'
-  studio = { inherit studio-x11 studio-vnc studio-test studio-decode tigervnc; };
+  studio = { inherit studio-x11 studio-vnc studio-gtoolkit studio-test studio-decode tigervnc; };
   # individual packages
   studio-gui = studio-x11;           # deprecated
   studio-gui-vnc = studio-vnc;       # deprecated
-  studio-base-image = base-image;
   studio-image = studio-image;
   studio-env = studio-env;
   inherit studio-inspector-screenshot;
-  inherit studio-x11 studio-vnc studio-test studio-decode;
+  inherit studio-x11 studio-vnc studio-gtoolkit studio-test studio-decode;
+  inherit gt-test;
 }
 

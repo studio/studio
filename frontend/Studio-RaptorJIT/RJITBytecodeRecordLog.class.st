@@ -30,33 +30,27 @@ RJITBytecodeRecordLog >> from: aCollectionOfBytecodes [
 RJITBytecodeRecordLog >> gtBytecodesFor: aView [
 	<gtView>
 	| aList |
-	aList := aView columnedList 
+	aList := aView columnedList
 		title: 'Bytecode Log' translated;
 		priority: 20;
 		items: [ self bytecodes ].
-
-	aList column 
+	aList column
 		title: 'Index' translated;
 		width: 60;
 		item: [ :item :index | index ].
-	
 	aList column
 		title: 'Depth' translated;
 		width: 60;
 		item: [ :item :index | item framedepth ].
-		
 	aList column
 		title: 'Opcode' translated;
 		width: 60;
 		item: [ :item :index | item opcodeName ].
-		
 	aList column
 		title: 'Source line' translated;
-		matchParent;
+		weight: 1;
 		item: [ :item :index | item sourceLine ].
-		
 	^ aList
-
 ]
 
 { #category : #accessing }
