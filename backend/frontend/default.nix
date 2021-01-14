@@ -182,7 +182,7 @@ let
   gtoolkit-full = fetchzip {
     name = "gtoolkit-${gt-version}";
     url = "https://dl.feenk.com/gt/GlamorousToolkitLinux64-${gt-version}.zip";
-    sha256 = "1nccja0rpxz4b5s447d3vl93x119fif097ln4sg7wzg29s6qhqs0";
+    sha256 = "0sg2hpdigphi6cgvr17c9r30gb26vyy56v52094hnmlwijp8b3bf";
    };
 
   # Script to start the standard GToolkit image.
@@ -196,7 +196,7 @@ let
       set -x
       tmp=$(mktemp -d)
       echo "tmp = $tmp"
-      cp -r ${gtoolkit} $tmp
+      cp -r ${gtoolkit-full} $tmp
       chmod -R a+w $tmp
       cd $tmp/*
       echo $DISPLAY

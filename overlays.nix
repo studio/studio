@@ -14,7 +14,6 @@
       dwarfish = super.callPackage ./backend/dwarfish {};
       disasm = super.callPackage ./backend/disasm {};
       Moz2D = super.callPackage ./backend/Moz2D {};
-      gtoolkit = super.callPackage ./backend/gtoolkit {};
     })
 ]
 
