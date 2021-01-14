@@ -67,16 +67,19 @@ RJITVMProfile >> gtInspectorHotTracesIn: composite [
 
 { #category : #initialization }
 RJITVMProfile >> loadFromFileNamed: aFilename [
-	| data index |
+	| data index categories numberOfBuckets count |
 	data := (File named: aFilename) readStream upToEnd.
 	[ (data unsignedLongAt: 1) = 16r1d50f007 ]  assert.
 	[ (data unsignedShortAt: 5) = 4 ]  assert.
 	index := 8.
-	traceProfiles := RJITProfileList withAll: ((0 to: process traces size) collect: [ :tr |
+	categories := #(interp: c: igc: exit: record: opt: asm: head: loop: jgc: ffi:).
+	numberOfBuckets := (data size - index) / (categories size * 8).
+	count := process traces size min: numberOfBuckets.
+	traceProfiles := RJITProfileList withAll: ((1 to: count) collect: [ :tr |
 		| prof subject |
 		subject := { #trace -> tr. #vmprofile -> self. } asDictionary.
 		prof := RJITProfile new subject: (self lookupTrace: tr); yourself.
-		#(interp: c: igc: exit: record: opt: asm: head: loop: jgc: ffi:) do: [ :selector |
+		categories do: [ :selector |
 			prof perform: selector with: (data unsignedLongLongAt: index+1).
 			index := index + 8. ].
 		prof. ])
