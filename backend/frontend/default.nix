@@ -117,8 +117,14 @@ let
     (Smalltalk saveAs: 'studio')
       ifTrue: [
         "Run in resumed image on startup."
-	GtInspector openOn:
-          (GtDocumenter forFile: Studio dir / 'doc' / 'Studio.pillar').
+         GtWorld openWithSpaces: { 
+            BlSpace new
+                title: 'Studio Overview';
+                addChild: (GtDocumenter forFile: Studio dir / 'doc' / 'Studio.pillar').
+            BlSpace new
+                title: 'Playground';
+                addChild: GtPlayground create
+        }
       ].
 
     Transcript show: 'Done.'; cr.
